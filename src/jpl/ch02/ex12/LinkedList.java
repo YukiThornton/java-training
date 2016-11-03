@@ -1,5 +1,7 @@
 package jpl.ch02.ex12;
 
+import jpl.ch02.ex10.Vehicle;
+
 /*
  * Answer: 
  * 複数のLinkedListオブジェクトを引数に取ってそれらを評価するようなstaticメソッドであれば
@@ -44,15 +46,14 @@ public class LinkedList {
 		Vehicle vehicleB = new Vehicle();
 		Vehicle vehicleC = new Vehicle();
 
+		LinkedList linkedListA = new LinkedList(vehicleA);
+		LinkedList linkedListB = new LinkedList(vehicleB);
 		LinkedList linkedListC = new LinkedList(vehicleC);
-		LinkedList linkedListB = new LinkedList(vehicleB, linkedListC);
-		LinkedList linkedListA = new LinkedList(vehicleA, linkedListB);
+
+		linkedListA.nextItem = linkedListB;
+		linkedListB.nextItem = linkedListC;
 		
 		System.out.println(linkedListA);
-		System.out.println(linkedListB);
-		System.out.println(linkedListC);
-		
-		System.out.println(linkedListB.object + " is linked from " + linkedFrom(linkedListB, linkedListA, linkedListB, linkedListC).object);
 	}
 	
 	public String toString() {

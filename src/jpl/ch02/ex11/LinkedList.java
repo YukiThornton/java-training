@@ -1,6 +1,6 @@
 package jpl.ch02.ex11;
 
-import jpl.ch02.ex10.*;
+import jpl.ch02.ex10.Vehicle;;
 
 public class LinkedList {
 	public Object object;
@@ -20,13 +20,14 @@ public class LinkedList {
 		Vehicle vehicleB = new Vehicle();
 		Vehicle vehicleC = new Vehicle();
 
+		LinkedList linkedListA = new LinkedList(vehicleA);
+		LinkedList linkedListB = new LinkedList(vehicleB);
 		LinkedList linkedListC = new LinkedList(vehicleC);
-		LinkedList linkedListB = new LinkedList(vehicleB, linkedListC);
-		LinkedList linkedListA = new LinkedList(vehicleA, linkedListB);
+
+		linkedListA.nextItem = linkedListB;
+		linkedListB.nextItem = linkedListC;
 		
 		System.out.println(linkedListA);
-		System.out.println(linkedListB);
-		System.out.println(linkedListC);
 	}
 	
 	public String toString() {

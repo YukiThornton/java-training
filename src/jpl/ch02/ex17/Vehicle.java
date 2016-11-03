@@ -63,6 +63,23 @@ public class Vehicle {
 		return nextId - 1;
 	}
 
+	/**
+	 * 与えられた引数の中で、一番大きなspeedを持つVehicleオブジェクトを返すメソッド.
+	 * 同じspeedを持つVehicleオブジェクトが複数あり、かつそれが最大のspeedである場合、
+	 * 引数の中で一番左側に宣言されたものが返る。
+	 * @param vehicles
+	 * @return 一番大きなspeedを持つVehicleオブジェクト
+	 */
+	public static Vehicle getFastestVehicle(Vehicle... vehicles) {
+		Vehicle fastestVehicle = vehicles[0];
+		for (int i = 1; i < vehicles.length; i++) {
+			if (fastestVehicle.speed < vehicles[i].speed) {
+				fastestVehicle = vehicles[i];
+			}
+		}
+		return fastestVehicle;
+	}
+
 	public static void main (String[] args) {
 		Vehicle vehicleA = new Vehicle();
 		vehicleA.speed= 60.0;
@@ -81,8 +98,6 @@ public class Vehicle {
 		System.out.println(vehicleA);
 		System.out.println(vehicleB);
 		System.out.println(vehicleC);
-
-		System.out.println("The largest ID is " + getMaxId()); 
 	}
 	
 	public String toString() {

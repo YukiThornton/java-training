@@ -5,7 +5,7 @@ package jpl.ch02.ex12;
  * Answer: 
  * 複数のVehicleオブジェクトを引数に取ってそれらを評価するようなstaticメソッドであれば
  * 可変長引数メソッドが必要である。
- * 例として、以下にlinkedFromメソッドを実装した。
+ * 例として、以下にgetFastestVehicleメソッドを実装した。
  */
 
 public class Vehicle {
@@ -64,9 +64,6 @@ public class Vehicle {
 		System.out.println(vehicleA);
 		System.out.println(vehicleB);
 		System.out.println(vehicleC);
-
-		System.out.println("The largest ID is " + getMaxId()); 
-		System.out.println("The fastest car is " + getFastestVehicle(vehicleA, vehicleB, vehicleC)); 
 	}
 	
 	public String toString() {

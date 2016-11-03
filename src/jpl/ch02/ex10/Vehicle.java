@@ -39,10 +39,8 @@ public class Vehicle {
 		System.out.println(vehicleA);
 		System.out.println(vehicleB);
 		System.out.println(vehicleC);
-
-		System.out.println("The largest ID is " + getMaxId()); 
 	}
-	
+
 	public String toString() {
 		String desc = "Vehicle No." + this.ID + ": ";
 		desc += "speed=" + this.speed + "km/h, "; 

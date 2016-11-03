@@ -52,8 +52,6 @@ public class Vehicle {
 				+ vehicleC.speed + "km/h, direction=" 
 				+ vehicleC.direction + ", owner=" 
 				+ vehicleC.owner);
-
-		System.out.println("The largest ID is " + getMaxId()); 
 	}
 
 }
