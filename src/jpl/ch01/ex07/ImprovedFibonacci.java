@@ -13,12 +13,14 @@ public class ImprovedFibonacci {
 		String mark;
 		
 		System.out.println("1: " + lo);
+		int count = 1;
 		for (int i = MAX_INDEX; i >= 2; i--) {
+			count++;
 			if (hi % 2 == 0) 
 				mark = " *";
 			else
 				mark = "";
-			System.out.println(i + ": " + hi + mark);
+			System.out.println(count + ": " + hi + mark);
 			hi = lo + hi;
 			lo = hi - lo;
 		}
