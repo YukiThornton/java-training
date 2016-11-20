@@ -19,7 +19,7 @@ public class ObjectBenchmarkTest {
 		ObjectBenchmark objectBenchmark = new ObjectBenchmark();
 		
 		try {
-			long result = objectBenchmark.repeat(1);
+			objectBenchmark.repeat(1);
 		} catch (Exception e) {
 			fail("Exception!");
 		}
@@ -30,7 +30,7 @@ public class ObjectBenchmarkTest {
 		ObjectBenchmark objectBenchmark = new ObjectBenchmark();
 		
 		try {
-			long result = objectBenchmark.repeat(0);
+			objectBenchmark.repeat(0);
 		} catch (Exception e) {
 			fail("Exception!");
 		}
@@ -41,7 +41,7 @@ public class ObjectBenchmarkTest {
 		ObjectBenchmark objectBenchmark = new ObjectBenchmark();
 		
 		try {
-			long result = objectBenchmark.repeat(-1);
+			objectBenchmark.repeat(-1);
 		} catch (Exception e) {
 			fail("Exception!");
 		}		
