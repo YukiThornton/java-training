@@ -2,16 +2,16 @@ package gui.ex12;
 
 
 import java.awt.Button;
+import java.awt.Checkbox;
+import java.awt.CheckboxGroup;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Label;
 import java.awt.Scrollbar;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -23,12 +23,11 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.omg.PortableServer.ID_ASSIGNMENT_POLICY_ID;
-
+@SuppressWarnings("serial")
 public class PreferenceDialog extends Dialog implements ItemListener, AdjustmentListener, ActionListener{
 	
 	private ClockFrame owner;
-	private static List<Font> fontList;
+	private List<Font> fontList;
 	
 	private List<Component> tabs;
 	private List<Component> fontComponents;
@@ -39,36 +38,35 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 	
 	private Choice fontChoice;
 	private Scrollbar fontSizeScrollbar;
-	private Scrollbar[] mainTextScrollbars;
-	private Scrollbar[] sideTextScrollbars;
-	private Scrollbar[] footerTextScrollbars;
+	private Checkbox radioButtonForMain;
+	private Checkbox radioButtonForSub;
+	private Checkbox radioButtonForFooter;	
+	private Scrollbar[] textColorScrollbars;
 	
 	private Scrollbar[] backgroundScrollbars;
 	
-	private static int selectedFontIndex = 0;
-	private static int selectedFontSize = Constants.DEFAULT_FONT.getSize();
-	private static Color selectedBackgroundColor = Constants.DEFAULT_BACKGROUND_COLOR;
-	private static Color selectedMainTextColor = Constants.DEFAULT_TEXT_COLOR_MAIN;
-	private static Color selectedSideTextColor = Constants.DEFAULT_TEXT_COLOR_SIDE;
-	private static Color selectedFooterTextColor = Constants.DEFAULT_TEXT_COLOR_FOOTER;
+	private int selectedFontIndex = 0;
+	private int selectedFontSize = Constants.DEFAULT_FONT.getSize();
+	private Checkbox selectedRadioButtonForTextColor;
+	private Color selectedBackgroundColor = Constants.DEFAULT_BACKGROUND_COLOR;
+	private Color selectedMainTextColor = Constants.DEFAULT_TEXT_COLOR_MAIN;
+	private Color selectedSideTextColor = Constants.DEFAULT_TEXT_COLOR_SIDE;
+	private Color selectedFooterTextColor = Constants.DEFAULT_TEXT_COLOR_FOOTER;
 	
 	private final Font PREFERENCE_FONT = new Font("Dialog", Font.PLAIN, 15);
 	
-	static {
-		fontList = new ArrayList<Font>();
-		fontList.add(Constants.DEFAULT_FONT);
-		for (Font font: GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
-			fontList.add(font);
-		}
+	public static PreferenceDialog getPreferenceDialog(ClockFrame owner) {
+		PreferenceDialog preferenceDialog = new PreferenceDialog(owner);
+		preferenceDialog.setup();
+		return preferenceDialog;
+		
 	}
-	
-	public PreferenceDialog(ClockFrame owner) {
+	private PreferenceDialog(ClockFrame owner) {
 		super(owner);
 		this.owner = owner;
-		setup();
 	}
 	
-	protected void setup() {
+	private void setup() {
 		setSize(Constants.FIXED_DIALOG_SIZE);
 		setMinimumSize(Constants.FIXED_DIALOG_SIZE);
 		setMaximumSize(Constants.FIXED_DIALOG_SIZE);
@@ -76,6 +74,11 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 		addWindowListener(new DialogWindowAdaptor());
 		setLayout(null);
 		
+		fontList = new ArrayList<Font>();
+		fontList.add(Constants.DEFAULT_FONT);
+		for (Font font: GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
+			fontList.add(font);
+		}
 		/*
 		TextField fontSizeInput = new TextField("aaa");
 		fontSizeInput.setBounds(10, 10, 20, 10);
@@ -125,32 +128,36 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 		add(labelFontSize);
 		fontComponents.add(labelFontSize);
 		
-		fontSizeScrollbar = new Scrollbar(Scrollbar.HORIZONTAL, selectedFontSize, 10, 5, 150);
+		fontSizeScrollbar = new Scrollbar(Scrollbar.HORIZONTAL, selectedFontSize, 10, Constants.MINIMUM_FONT_SIZE, Constants.MAXIMUM_FONT_SIZE + 10);
 		fontSizeScrollbar.setBounds(20, 140, 200, 13);
 		fontSizeScrollbar.addAdjustmentListener(this);
 		add(fontSizeScrollbar);
 		fontComponents.add(fontSizeScrollbar);
 		
-		Label labelMainTextFont = new Label("Font color (Main):");
-		labelMainTextFont.setFont(PREFERENCE_FONT);
-		labelMainTextFont.setBounds(20, 160, 200, 20);
-		add(labelMainTextFont);
-		fontComponents.add(labelMainTextFont);		
-		mainTextScrollbars = makeContainerWithScrollbars(20, 180, selectedMainTextColor, fontComponents);
+		CheckboxGroup radioButtonsForTextColor = new CheckboxGroup();
+		radioButtonForMain = new Checkbox("Main", true, radioButtonsForTextColor);
+		radioButtonForMain.setBounds(20, 180, 70, 20);
+		radioButtonForMain.addItemListener(this);
+		add(radioButtonForMain);
+		fontComponents.add(radioButtonForMain);		
+		radioButtonForSub = new Checkbox("Sub", false, radioButtonsForTextColor);
+		radioButtonForSub.setBounds(90, 180, 60, 20);
+		radioButtonForSub.addItemListener(this);
+		add(radioButtonForSub);
+		fontComponents.add(radioButtonForSub);		
+		radioButtonForFooter = new Checkbox("Footer", false, radioButtonsForTextColor);
+		radioButtonForFooter.setBounds(150, 180, 80, 20);
+		radioButtonForFooter.addItemListener(this);
+		add(radioButtonForFooter);
+		fontComponents.add(radioButtonForFooter);
+		selectedRadioButtonForTextColor = radioButtonForMain;
 		
-		Label labelSideTextFont = new Label("Font color (Sub):");
-		labelSideTextFont.setFont(PREFERENCE_FONT);
-		labelSideTextFont.setBounds(20, 240, 200, 20);
-		add(labelSideTextFont);
-		fontComponents.add(labelSideTextFont);		
-		sideTextScrollbars = makeContainerWithScrollbars(20, 260, selectedSideTextColor, fontComponents);
-		
-		Label labelFooterTextFont = new Label("Font color (Footer):");
-		labelFooterTextFont.setFont(PREFERENCE_FONT);
-		labelFooterTextFont.setBounds(20, 320, 200, 20);
-		add(labelFooterTextFont);
-		fontComponents.add(labelFooterTextFont);		
-		footerTextScrollbars = makeContainerWithScrollbars(20, 340, selectedFooterTextColor, fontComponents);
+		Label labelForTextFont = new Label("Font color:");
+		labelForTextFont.setFont(PREFERENCE_FONT);
+		labelForTextFont.setBounds(20, 160, 200, 20);
+		add(labelForTextFont);
+		fontComponents.add(labelForTextFont);		
+		textColorScrollbars = makeContainerWithScrollbars(20, 200, selectedMainTextColor, fontComponents);
 		
 		backgroundComponents = new ArrayList<>();
 		Label labelBackgroundColor = new Label("Background color:");
@@ -160,11 +167,6 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 		backgroundComponents.add(labelBackgroundColor);		
 		backgroundScrollbars = makeContainerWithScrollbars(20, 100, selectedBackgroundColor, backgroundComponents);
 		turnOnBackgroundTab(false);
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private Scrollbar[] makeContainerWithScrollbars(int x, int y, Color selectedColor, List<Component> componentList) {
@@ -205,9 +207,6 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 		
 	}
 	
-	private void addRGBLabel() {
-		
-	}
 	class DialogWindowAdaptor extends WindowAdapter {
 		public void windowOpened(WindowEvent event) {
 			System.out.println("Opened a dialog.");		
@@ -221,9 +220,35 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getItemSelectable().equals(fontChoice)) {
-			owner.changeFont(fontList.get(fontChoice.getSelectedIndex()));
+			owner.getCanvas().changeFont(fontList.get(fontChoice.getSelectedIndex()));
 			selectedFontIndex = fontChoice.getSelectedIndex();
-			
+		} else if (e.getItemSelectable().equals(radioButtonForMain)) {
+			changeTextColorScrollbarTarget(radioButtonForMain, selectedMainTextColor);
+		} else if (e.getItemSelectable().equals(radioButtonForSub)) {
+			changeTextColorScrollbarTarget(radioButtonForSub, selectedSideTextColor);
+		} else if (e.getItemSelectable().equals(radioButtonForFooter)) {
+			changeTextColorScrollbarTarget(radioButtonForFooter, selectedFooterTextColor);
+		}
+	}
+	
+	private void changeTextColorScrollbarTarget(Checkbox selected, Color previousColor) {
+		selectedRadioButtonForTextColor = selected;
+		textColorScrollbars[0].setValue(previousColor.getRed());
+		textColorScrollbars[1].setValue(previousColor.getGreen());
+		textColorScrollbars[2].setValue(previousColor.getBlue());
+		System.out.println("previousColor" + previousColor.getRed() + ","  + previousColor.getGreen() + ","  + previousColor.getBlue());
+	}
+
+	private void changeTextColor(Color newColor) {
+		if (selectedRadioButtonForTextColor == radioButtonForMain) {
+			selectedMainTextColor = newColor;
+			owner.getCanvas().changeMainTextColor(selectedMainTextColor);
+		} else if (selectedRadioButtonForTextColor == radioButtonForSub) {
+			selectedSideTextColor = newColor;
+			owner.getCanvas().changeSideTextColor(selectedSideTextColor);			
+		} else if (selectedRadioButtonForTextColor == radioButtonForFooter) {
+			selectedFooterTextColor = newColor;
+			owner.getCanvas().changeFooterTextColor(selectedFooterTextColor);			
 		}
 	}
 
@@ -231,20 +256,30 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 	public void adjustmentValueChanged(AdjustmentEvent e) {
 		if (e.getSource().equals(backgroundScrollbars[0]) || e.getSource().equals(backgroundScrollbars[1]) || e.getSource().equals(backgroundScrollbars[2])) {
 			selectedBackgroundColor = new Color(backgroundScrollbars[0].getValue(), backgroundScrollbars[1].getValue(), backgroundScrollbars[2].getValue());
-			owner.changeBackGroundColor(selectedBackgroundColor);			
-		} else if (e.getSource().equals(mainTextScrollbars[0]) || e.getSource().equals(mainTextScrollbars[1]) || e.getSource().equals(mainTextScrollbars[2])) {
-			selectedMainTextColor = new Color(mainTextScrollbars[0].getValue(), mainTextScrollbars[1].getValue(), mainTextScrollbars[2].getValue());
-			owner.changeTextMainColor(selectedMainTextColor);
-		} else if (e.getSource().equals(sideTextScrollbars[0]) || e.getSource().equals(sideTextScrollbars[1]) || e.getSource().equals(sideTextScrollbars[2])) {
-			selectedSideTextColor = new Color(sideTextScrollbars[0].getValue(), sideTextScrollbars[1].getValue(), sideTextScrollbars[2].getValue());
-			owner.changeTextSideColor(selectedSideTextColor);			
-		} else if (e.getSource().equals(footerTextScrollbars[0]) || e.getSource().equals(footerTextScrollbars[1]) || e.getSource().equals(footerTextScrollbars[2])) {
-			selectedFooterTextColor = new Color(footerTextScrollbars[0].getValue(), footerTextScrollbars[1].getValue(), footerTextScrollbars[2].getValue());
-			owner.changeTextFooterColor(selectedFooterTextColor);			
-		} else if (e.getSource().equals(fontSizeScrollbar)) {
-			selectedFontSize = e.getValue();
-			owner.changeFontSize(e.getValue());
+			owner.getCanvas().changeBackgroundColor(selectedBackgroundColor);			
+		} else if (e.getSource().equals(textColorScrollbars[0]) || e.getSource().equals(textColorScrollbars[1]) || e.getSource().equals(textColorScrollbars[2])) {
+			Color newColor = new Color(textColorScrollbars[0].getValue(), textColorScrollbars[1].getValue(), textColorScrollbars[2].getValue());
+			changeTextColor(newColor);
+		}  else if (e.getSource().equals(fontSizeScrollbar)) {
+			changeFontSize(e.getValue());
 		}
+	}
+	public void changeFontSize(int newSize) {
+		if (newSize < Constants.MINIMUM_FONT_SIZE) {
+			newSize = Constants.MINIMUM_FONT_SIZE;
+		} else if (newSize > Constants.MAXIMUM_FONT_SIZE) {
+			newSize = Constants.MAXIMUM_FONT_SIZE;
+		}
+		selectedFontSize = newSize;
+		fontSizeScrollbar.setValue(selectedFontSize);
+		owner.getCanvas().changeFontSize(selectedFontSize);		
+	}
+	public void enlargeTextFont() {
+		changeFontSize(selectedFontSize + 10);
+	}
+
+	public void shrinkTextFont() {
+		changeFontSize(selectedFontSize - 10);
 	}
 
 	@Override
@@ -266,10 +301,5 @@ public class PreferenceDialog extends Dialog implements ItemListener, Adjustment
 		}
 		fontButton.setEnabled(isBackgroundTabOn);	
 		backgroundButton.setEnabled(!isBackgroundTabOn);
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 }

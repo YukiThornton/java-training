@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+@SuppressWarnings("serial")
 class ClockCanvas extends Canvas implements Runnable {
 
 	private String fontFamily = Constants.DEFAULT_FONT.getName();
@@ -25,6 +26,13 @@ class ClockCanvas extends Canvas implements Runnable {
 	private Color textColorMain = Constants.DEFAULT_TEXT_COLOR_MAIN;
 	private Color textColorFooter = Constants.DEFAULT_TEXT_COLOR_FOOTER;
 	private Color textColorSide = Constants.DEFAULT_TEXT_COLOR_SIDE;
+	
+	private TextData dateText;
+	private TextData periodText;
+	
+	int getFontSize () {
+		return baseFontSize;
+	}
 	
 	void changeFont (Font font) {
 		fontFamily = font.getFontName();
@@ -105,12 +113,12 @@ class ClockCanvas extends Canvas implements Runnable {
 		secondText.draw();
 		
 		// side[a]
-		TextData periodText = new TextData(now.format(DateTimeFormatter.ofPattern("a", Locale.ENGLISH)), sideFont, textColorSide, graphicBuffer);
+		periodText = new TextData(now.format(DateTimeFormatter.ofPattern("a", Locale.ENGLISH)), sideFont, textColorSide, graphicBuffer);
 		periodText.locate(secondText.x(), hourText.y() - secondText.height()/2 - (5 * baseFontSize / Constants.DEFAULT_FONT.getSize()));
 		periodText.draw();
 		
 		// footer[EEEE - MMMM d]
-		TextData dateText = new TextData(now.format(DateTimeFormatter.ofPattern("EEEE - MMMM d", Locale.ENGLISH)), footerFont, textColorFooter, graphicBuffer);
+		dateText = new TextData(now.format(DateTimeFormatter.ofPattern("EEEE - MMMM d", Locale.ENGLISH)), footerFont, textColorFooter, graphicBuffer);
 		dateText.locate(basePoint.x - (dateText.width() / 2), hourText.y() + (int)(30 * baseFontSize / Constants.DEFAULT_FONT.getSize()));
 		dateText.draw();
 	
@@ -119,6 +127,14 @@ class ClockCanvas extends Canvas implements Runnable {
 	
 	public void update(Graphics g) {
 		paint(g);
+	}
+	
+	public double getDateTextWidth() {
+		return dateText.width();
+	}
+	
+	public double getTotalTextHeight() {
+		return (dateText.y() - periodText.y()) + dateText.height();
 	}
 	
 }
