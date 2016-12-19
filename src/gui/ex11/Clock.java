@@ -6,12 +6,10 @@ import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
 import java.util.Locale;
 
 public class Clock {
@@ -25,6 +23,7 @@ public class Clock {
 		frame.setVisible(true);		
 	}
 
+	@SuppressWarnings("serial")
 	protected static class MyFrame extends Frame {
 		private final int DEFAULT_FRAME_X = 400;
 		private final int DEFAULT_FRAME_Y = 600;
@@ -104,4 +103,3 @@ public class Clock {
 	}
 	
 }
-
