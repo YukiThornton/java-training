@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -32,6 +33,10 @@ class ClockCanvas extends Canvas implements Runnable {
 	
 	int getFontSize () {
 		return baseFontSize;
+	}
+	
+	void changeCanvasSize(Rectangle frame) {
+		repaint();
 	}
 	
 	void changeFont (Font font) {
