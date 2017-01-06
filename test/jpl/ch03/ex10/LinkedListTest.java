@@ -72,7 +72,7 @@ public class LinkedListTest {
 	}
 	
 	@Test
-	public void testClone() {
+	public void testClone() throws CloneNotSupportedException {
 		
 		Object object1 = "object1";
 		Object object2 = "object2";
@@ -85,7 +85,7 @@ public class LinkedListTest {
 		LinkedList clonedList = linkedList1.clone();
 		
 		assertTrue(linkedList1.getObject() == clonedList.getObject());
-		assertTrue(linkedList1.getNextItem() == clonedList.getNextItem());
+		assertTrue(linkedList1.getNextItem().getObject() == clonedList.getNextItem().getObject());
 		
 	}
 

@@ -62,10 +62,13 @@ public class LinkedList implements Cloneable {
 	
 	/**
 	 * 元のインスタンスが保持するオブジェクトへの参照をコピーするメソッド.
+	 * @throws CloneNotSupportedException 
 	 */
-	public LinkedList clone() {
-		LinkedList clonedList = new LinkedList(getObject());
-		clonedList.setNextItem(getNextItem());
+	public LinkedList clone() throws CloneNotSupportedException {
+		LinkedList clonedList = (LinkedList)super.clone();
+		if (getNextItem() != null) {
+			clonedList.setNextItem((LinkedList)getNextItem().clone());
+		}
 		return clonedList;
 	}
 	
