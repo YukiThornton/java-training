@@ -10,6 +10,8 @@ import java.awt.MenuShortcut;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -19,7 +21,10 @@ public class ClockFrame extends Frame {
 
 	private ClockCanvas canvas;
 	private PreferenceDialog preferenceDialog;
-
+	
+	private final int CANVAS_MARGIN_WIDTH = 80;
+	private final int CANVAS_MARGIN_HEIGHT = 80;
+	
 	public ClockCanvas getCanvas() {
 		return canvas;
 	}
@@ -41,6 +46,7 @@ public class ClockFrame extends Frame {
 		setLayout(new GridLayout());
 		
 		addWindowListener(new ClockWindowAdaptor());
+		addComponentListener(new ClockComponentListener());
 		
 		canvas = new ClockCanvas();
 		add(canvas);
@@ -54,14 +60,19 @@ public class ClockFrame extends Frame {
 		return getBounds();
 	}
 	
-	private void changeFrameSize(double width, double height) {
+	private void changeFrameSize() {
 		Rectangle rectangle = getBounds();
-		setBounds(rectangle.x, rectangle.y, (int) width, (int)height);
+		canvas.changeCanvasSize(rectangle);
+	}
+	
+	private void autofit() {
+		Rectangle rectangle = getBounds();
+		setBounds(rectangle.x, rectangle.y, (int)canvas.getDateTextWidth() + CANVAS_MARGIN_WIDTH, (int)canvas.getTotalTextHeight() + CANVAS_MARGIN_HEIGHT);
 	}
 	
 	private void autofill() {
-		double widthRatio = (getBounds().getWidth() - 20) / canvas.getDateTextWidth();
-		double heightRatio = (getBounds().getHeight() - 20) / canvas.getTotalTextHeight();
+		double widthRatio = (getBounds().getWidth() - CANVAS_MARGIN_WIDTH) / canvas.getDateTextWidth();
+		double heightRatio = (getBounds().getHeight() - CANVAS_MARGIN_HEIGHT) / canvas.getTotalTextHeight();
 		if (widthRatio < heightRatio) {
 			preferenceDialog.changeFontSize((int)(canvas.getFontSize() * widthRatio));
 		} else {
@@ -69,6 +80,12 @@ public class ClockFrame extends Frame {
 		}
 	}
 	
+	class ClockComponentListener extends ComponentAdapter {
+		public void componentResized(ComponentEvent event) {
+			changeFrameSize();
+		}
+		
+	}
 	
 	class ClockWindowAdaptor extends WindowAdapter {
 		public void windowOpened(WindowEvent event) {
@@ -135,7 +152,7 @@ public class ClockFrame extends Frame {
 				break;
 				
 			case MENU_AUTOFIT_TEXT:
-				changeFrameSize(canvas.getDateTextWidth() + 20, canvas.getTotalTextHeight() + 20);
+				autofit();
 				break;
 				
 			case MENU_AUTOFILL_WINDOW:
