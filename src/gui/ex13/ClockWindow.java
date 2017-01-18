@@ -161,9 +161,25 @@ public class ClockWindow extends Window{
 	}
 	
 	class ClockPopupMenu extends PopupMenu implements ActionListener {
+		private static final String MENU_LABEL_BG_COLOR = "Background Color";
+		private static final String MENU_LABEL_TXT_COLOR = "Text Color";
+		private static final String MENU_LABEL_TXT_FONT = "Text Font";
+		private static final String MENU_LABEL_TXT_SIZE = "Text Size";
 		private static final String MENU_LABEL_CLOSE = "Close";
 
 		ClockPopupMenu() {
+			MenuItem menuBgColor = new MenuItem(MENU_LABEL_BG_COLOR);
+			menuBgColor.addActionListener(this);
+			add(menuBgColor);
+			MenuItem menuTxtColor = new MenuItem(MENU_LABEL_TXT_COLOR);
+			menuTxtColor.addActionListener(this);
+			add(menuTxtColor);
+			MenuItem menuTxtFont = new MenuItem(MENU_LABEL_TXT_FONT);
+			menuTxtFont.addActionListener(this);
+			add(menuTxtFont);
+			MenuItem menuTxtSize = new MenuItem(MENU_LABEL_TXT_SIZE);
+			menuTxtSize.addActionListener(this);
+			add(menuTxtSize);
 			MenuItem menuClose = new MenuItem(MENU_LABEL_CLOSE);
 			menuClose.addActionListener(this);
 			add(menuClose);
@@ -172,6 +188,22 @@ public class ClockWindow extends Window{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
+			case MENU_LABEL_BG_COLOR:
+				System.out.println("MENU_LABEL_BG_COLOR");
+				break;
+
+			case MENU_LABEL_TXT_COLOR:
+				System.out.println("MENU_LABEL_TXT_COLOR");
+				break;
+
+			case MENU_LABEL_TXT_FONT:
+				System.out.println("MENU_LABEL_TXT_FONT");
+				break;
+
+			case MENU_LABEL_TXT_SIZE:
+				System.out.println("MENU_LABEL_TXT_SIZE");
+				break;
+
 			case MENU_LABEL_CLOSE:
 				System.exit(0);
 				break;
