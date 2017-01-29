@@ -6,8 +6,7 @@ public class ClockMain implements Runnable{
 
 	private static ClockWindow window;
 
-	private final static Dimension DEFAULT_FRAME_SIZE = new Dimension(400, 600);
-	private final static Dimension MINIMUN_FRAME_SIZE = new Dimension(275, 160);
+	private final static Dimension DEFAULT_FRAME_SIZE = new Dimension(1, 1);
 	private final static int PAINT_INTERVAL = 100;
 	
 	public static void main(String[] args) {
@@ -15,9 +14,8 @@ public class ClockMain implements Runnable{
 		
 		window = new ClockWindow(null);
 		window.setSize(DEFAULT_FRAME_SIZE);
-		window.setMinimumSize(MINIMUN_FRAME_SIZE);
 
-		window.setVisible(true);
+        window.setVisible(true);
 		thread.start();
 	}
 
