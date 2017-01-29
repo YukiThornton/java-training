@@ -6,12 +6,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Label;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.PopupMenu;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,10 +19,6 @@ import java.awt.event.MouseMotionListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.jar.Attributes.Name;
-
-import javax.swing.plaf.synth.SynthScrollBarUI;
 
 @SuppressWarnings("serial")
 public class ClockWindow extends Window{
@@ -33,28 +27,37 @@ public class ClockWindow extends Window{
     private final int WINDOW_MARGIN_HEIGHT = 30;
     
     private static final ClockColor WHITE = new ClockColor("White", 255, 255, 255);
-    private static final ClockColor BEIGE = new ClockColor("Beige", 230, 225, 225);
-    private static final ClockColor BURNT_ORANGE = new ClockColor("Burnt Orange", 192, 108, 12);
+    private static final ClockColor CREAM = new ClockColor("Cream", 230, 225, 225);
+    private static final ClockColor YELLOW = new ClockColor("Yellow", 255, 215, 0);
+    private static final ClockColor BURNT_ORANGE = new ClockColor("Dark Orange", 192, 108, 12);
+    private static final ClockColor RED = new ClockColor("Red", 255, 51, 51);
+    private static final ClockColor BROWN = new ClockColor("Brown",139, 69, 19);
     private static final ClockColor DARK_BROWN = new ClockColor("Dark Brown", 77, 49, 49);
-    private static final ClockColor MINT_GREEN = new ClockColor("Mint Green", 128, 255, 212);
-    private static final ClockColor LIGHT_GRAY = new ClockColor("Light Gray", 204, 204, 204);
-    private static final ClockColor DARK_GRAY = new ClockColor("Dark Gray", 112, 107, 107);
+    private static final ClockColor MINT_GREEN = new ClockColor("Mint Green", 127, 255, 212);
+    private static final ClockColor GREEN = new ClockColor("Green", 0, 153, 51);
+    private static final ClockColor BLUE = new ClockColor("Blue",30, 144, 255);
+    private static final ClockColor LIGHT_GRAY = new ClockColor("Light Gray", 211, 211, 211);
+    private static final ClockColor DARK_GRAY = new ClockColor("Dark Gray", 105, 105, 105);
     private static final ClockColor BLACK = new ClockColor("Black", 0, 0, 0);
     
     private static final Font FONT_ARIAL_BLACK = new Font("Arial Black", Font.PLAIN, 24);
-    private static final Font FONT_CALIBRI = new Font("Calibri", Font.PLAIN, 24);
     private static final Font FONT_IMPACT = new Font("Impact", Font.PLAIN, 24);
-    private static final Font FONT_SEGOE = new Font("Segoe UI Black", Font.PLAIN, 24);
+    private static final Font FONT_GEORGIA = new Font("Georgia", Font.PLAIN, 24);
+    private static final Font FONT_COUERIER = new Font("Courier New", Font.BOLD, 24);
+    private static final Font FONT_NEW_ROMAN = new Font("Times New Roman", Font.PLAIN, 24);
+    private static final Font FONT_TREBUCHET = new Font("Trebuchet MS", Font.PLAIN, 24);
+    private static final Font FONT_VERDANA = new Font("Verdana", Font.PLAIN, 24);
+    private static final Font FONT_COMIC_SANS = new Font("Comic Sans MS", Font.PLAIN, 24);
     
-    private static final ClockTheme THEME_CALM = new ClockTheme("Calm", BEIGE, DARK_BROWN, DARK_GRAY, BURNT_ORANGE, FONT_ARIAL_BLACK);
-    private static final ClockTheme THEME_SIMPLE = new ClockTheme("Simple", WHITE, BLACK, DARK_GRAY, DARK_GRAY, FONT_CALIBRI);
-    private static final ClockTheme THEME_DARK = new ClockTheme("Dark", DARK_GRAY, LIGHT_GRAY, LIGHT_GRAY, LIGHT_GRAY, FONT_IMPACT);
-    private static final ClockTheme THEME_CHOCO = new ClockTheme("Chocolate Mint", MINT_GREEN, DARK_BROWN, DARK_BROWN, DARK_BROWN, FONT_SEGOE);
+    private static final ClockTheme THEME_CALM = new ClockTheme("Calm", CREAM, DARK_BROWN, DARK_GRAY, BURNT_ORANGE, FONT_ARIAL_BLACK);
+    private static final ClockTheme THEME_SIMPLE = new ClockTheme("Simple", WHITE, BLACK, DARK_GRAY, RED, FONT_VERDANA);
+    private static final ClockTheme THEME_DARK = new ClockTheme("Dark", BLACK, LIGHT_GRAY, DARK_GRAY, DARK_GRAY, FONT_IMPACT);
+    private static final ClockTheme THEME_CHOCO = new ClockTheme("Mint Chocolate", MINT_GREEN, DARK_BROWN, DARK_BROWN, BROWN, FONT_TREBUCHET);
 
     private static final ClockTheme[] THEME_OPTIONS = new ClockTheme[]{THEME_CALM, THEME_SIMPLE, THEME_DARK, THEME_CHOCO};
-    private static final ClockColor[] COLOR_OPTIONS = new ClockColor[] {WHITE, BEIGE, BURNT_ORANGE, DARK_BROWN, LIGHT_GRAY, DARK_GRAY, BLACK, MINT_GREEN};
-    private static final Font[] FONT_OPTIONS = new Font[]{FONT_ARIAL_BLACK, FONT_CALIBRI, FONT_IMPACT, FONT_SEGOE};
-    private static final int[] TXT_SIZE_OPTIONS = new int[]{5, 10, 12, 16, 20, 24, 28, 36, 48, 60, 80, 100};
+    private static final ClockColor[] COLOR_OPTIONS = new ClockColor[] {WHITE, CREAM, YELLOW, BURNT_ORANGE, RED, BROWN, DARK_BROWN, MINT_GREEN, GREEN, BLUE, LIGHT_GRAY, DARK_GRAY, BLACK};
+    private static final Font[] FONT_OPTIONS = new Font[]{FONT_ARIAL_BLACK, FONT_IMPACT, FONT_GEORGIA, FONT_COUERIER, FONT_NEW_ROMAN, FONT_TREBUCHET, FONT_VERDANA, FONT_COMIC_SANS};
+    private static final int[] TXT_SIZE_OPTIONS = new int[]{5, 10, 12, 16, 20, 24, 28, 36, 48, 60, 80, 100, 120, 150, 180, 200};
     
     private final static ClockTheme DEFAULT_THEME = THEME_CALM;
     
@@ -106,7 +109,7 @@ public class ClockWindow extends Window{
             isPaintedBefore = true;
             dimensionChanged = false;
         }
-	    
+        
 		imgBuffer = createImage(dimension.width, dimension.height);
 		graphicBuffer = imgBuffer.getGraphics();
 		
@@ -163,7 +166,7 @@ public class ClockWindow extends Window{
         return (int)((dateText.y() - periodText.y()) + dateText.height());
     }
     
-    private void bringToFront() {       
+    private void bringToFront() {
         toFront();
         setAlwaysOnTop(true);
         requestFocus();
@@ -410,5 +413,6 @@ public class ClockWindow extends Window{
             propertyChanged = true;
             repaint();
         }
+
 	}
 }
