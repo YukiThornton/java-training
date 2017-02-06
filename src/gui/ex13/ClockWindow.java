@@ -114,7 +114,6 @@ public class ClockWindow extends Window{
 		graphicBuffer = imgBuffer.getGraphics();
 		
 		paintTxt(graphicBuffer, dimension);
-		setBackground(backgroundColor);
         setBounds(getBounds().x, getBounds().y, dimension.width, dimension.height);
 		graphics.drawImage(imgBuffer, 0, 0, this);
         if(propertyChanged) {
@@ -378,6 +377,7 @@ public class ClockWindow extends Window{
         private void changeBgColor(ClockColor target){
             backgroundColor = (Color)target;
             propertyChanged = true;
+            setBackground(backgroundColor);
             repaint();
         }
         
