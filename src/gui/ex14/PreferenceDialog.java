@@ -36,7 +36,7 @@ public class PreferenceDialog extends Dialog {
     Button cancelBtn;
 	
 	private final Font PREFERENCE_FONT = new Font("Dialog", Font.PLAIN, 15);
-    private final static Dimension FIXED_DIALOG_SIZE = new Dimension(350, 500);
+    private final static Dimension FIXED_DIALOG_SIZE = new Dimension(400, 500);
 	
 	
 	public PreferenceDialog(ClockFrame owner, ClockPreference preference) {
@@ -74,7 +74,7 @@ public class PreferenceDialog extends Dialog {
                 themeChanged(themeChoice.getSelectedIndex());
             }
         });
-        addLabelAndChoiceRow("Theme:", themeChoice, 30, rowIndex++);
+        addLabelAndChoiceRow("Theme:", themeChoice, 20, rowIndex++);
  
         fontChoice = new Choice();
         fontChoice.setFont(PREFERENCE_FONT);

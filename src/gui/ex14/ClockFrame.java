@@ -137,7 +137,6 @@ public class ClockFrame extends Frame {
         graphicBuffer = imgBuffer.getGraphics();
         
         graphicBuffer.setColor(backgroundColor);
-        setBackground(backgroundColor);
         graphicBuffer.fillRect(0, 0, dimension.width, dimension.height);
         
         now = LocalDateTime.now();
