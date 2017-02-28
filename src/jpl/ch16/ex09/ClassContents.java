@@ -13,11 +13,13 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 public class ClassContents {
 
     public static void main(String[] args) {
-        Class<?> cls = HashMap.class;
+        Class<?> cls = Map.class;
         System.out.println(cls);
         printClassDeclaration(cls, 0);
 
@@ -27,7 +29,11 @@ public class ClassContents {
     
     public static void printClassDeclaration(Class<?> cls, int indent) {
         printModifiers(cls, indent);
-        System.out.print("class ");
+        if (cls.isInterface()) {
+            System.out.print("interface ");
+        } else {
+            System.out.print("class ");
+        }
         System.out.print(getSimpleName(cls) + " ");
         if (cls.getTypeParameters().length != 0) {
             StringBuffer stringBuffer = new StringBuffer();
@@ -49,7 +55,13 @@ public class ClassContents {
         printConstructors(cls.getDeclaredConstructors(), indent + 1);
         printMethods(cls.getDeclaredMethods(), indent + 1);
         printIndent(indent);
+
+        Class<?>[] nestedClasses = cls.getDeclaredClasses();
+        for (Class<?> nestedClass : nestedClasses) {
+            printClassDeclaration(nestedClass, indent + 1);
+        }
         System.out.println("}");
+        
     }
     
     public static void printModifiers(AnnotatedElement element, int indent) {
@@ -152,7 +164,7 @@ public class ClassContents {
         stringBuffer.append(getSimpleName(parameterizedType.getRawType()));
         stringBuffer.append("<");
         for (Type actualType : parameterizedType.getActualTypeArguments()) {
-            stringBuffer.append(getSimpleName(actualType));
+            stringBuffer.append(actualType);
             stringBuffer.append(", ");
         }
         stringBuffer.delete(stringBuffer.length() - 2, stringBuffer.length());
