@@ -2,21 +2,31 @@ package interpret;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-
-import interpret.TabbedPane.Tab;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class Interpret {
 
     private static final Dimension MIN_FRAME_SIZE = new Dimension(500, 300);
     private static final Dimension DEFAULT_FRAME_SIZE = new Dimension(1000, 800);
+    private static JTree classTree;
+    private static JPanel memberPane;
+    private static JPanel leftPane;
+    private static JTable fieldTable;
+    private static JTable methodTable;
 
     public static void main(String[] args) {
         //Schedule a job for the event dispatch thread:
@@ -44,10 +54,10 @@ public class Interpret {
         frame.setMinimumSize(MIN_FRAME_SIZE);
          
         //Add contents to the frame.
-        JPanel leftPane = new JPanel();
+        leftPane = new JPanel();
         leftPane.setLayout(new BoxLayout(leftPane, BoxLayout.PAGE_AXIS));
-        leftPane.add(createExplorerPane());
-        leftPane.add(makeTextPanel("Details"));
+        leftPane.add(setExplorerPane());
+        setMemberPane(Object.class, new Object());
         leftPane.setMaximumSize(new Dimension(300, 1000));
         frame.add(leftPane);
         
@@ -62,7 +72,6 @@ public class Interpret {
         frame.setVisible(true);
     }
     
-    
     private static JPanel makeTextPanel(String text) {
         JPanel panel = new JPanel(false);
         JLabel filler = new JLabel(text);
@@ -73,27 +82,81 @@ public class Interpret {
         return panel;
     }
      
-    private static TabbedPane createExplorerPane() {
-        // All icons are drawn in rgb(4, 33, 81).
-        ImageIcon documentIcon = createImageIcon("images/icon_document.png");
-        ImageIcon cubeIcon = createImageIcon("images/icon_cube.png");
-        Tab classTab = new Tab(makeTextPanel("Class tree comes here"), documentIcon, "Class Explorer", "Classes available here.");
-        Tab instanceTab = new Tab(makeTextPanel("Instance tree comes here"), cubeIcon, "Instance Explorer", "Instances available here.");
-        Tab[] tabs = {classTab, instanceTab};
-        return new TabbedPane(tabs);
+    private static JPanel setExplorerPane() {
+        setClassTree();
+        JScrollPane classScrollPane = ComponentFactory.createJScrollPane(classTree);
+        JPanel instanceScrollPane = makeTextPanel("Instance tree comes here");
+        return ComponentFactory.createClassExplorerPane(classScrollPane, instanceScrollPane);
     }
-     
-    /** Returns an ImageIcon, or null if the path was invalid. */
-    private static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = TabbedPane.class.getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
+
+    /**
+     * Set a new member panel of the specified class.
+     */
+    private static void setMemberPane(Class<?> cls, Object instance) {
+        if (memberPane != null) {
+            leftPane.remove(memberPane);
         }
+
+        // All icons are drawn in rgb(4, 33, 81).
+        try {
+            setFieldTable(cls, instance);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        setMethodTable(cls);
+        memberPane = ComponentFactory.createMemberPane(makeTextPanel("general"), makeTextPanel("nested"), ComponentFactory.createJScrollPane(fieldTable), makeTextPanel("constructor"), ComponentFactory.createJScrollPane(methodTable));
+        leftPane.add(memberPane);
+        leftPane.validate();
+        leftPane.repaint();
     }
     
-     
+    /**
+     * Set a new class tree of all the classes,
+     * and add function on it.
+     */
+    private static void setClassTree() {
+        classTree = ComponentFactory.createPackageTree();
+        classTree.addTreeSelectionListener(new TreeSelectionListener() {
+            
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)classTree.getLastSelectedPathComponent();
+                if (node == null) {
+                    return;
+                }
+                if (!node.isLeaf()) {
+                    return;
+                }
+                setMemberPane((Class<?>)node.getUserObject(), null);
+            }
+        });
+    }
 
+    /**
+     * Set a new field table with specified class,
+     * and add function on it.
+     */
+    private static void setFieldTable(Class<?> cls, Object instance) throws IllegalArgumentException, IllegalAccessException {
+        fieldTable = ComponentFactory.createFieldTableScrollPane(cls, instance);
+        fieldTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                System.out.println(e);
+            }
+        });
+    }
+     
+    /**
+     * Set a new method table with specified class,
+     * and add function on it.
+     */
+    private static void setMethodTable(Class<?> cls) {
+        methodTable = ComponentFactory.createMethodTable(cls);
+        methodTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                System.out.println(e);
+            }
+        });
+    }
 }
