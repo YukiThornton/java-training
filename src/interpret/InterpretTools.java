@@ -1,10 +1,7 @@
 package interpret;
 
-import java.awt.Button;
-import java.awt.Checkbox;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
@@ -13,7 +10,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -22,99 +18,14 @@ import java.util.Set;
 
 public class InterpretTools {
 
-    /*
-    private static final char PKG_SEPARATOR = '.';
+    private static ClassFinder classFinder = new ClassFinder();
 
-    private static final char DIR_SEPARATOR = '/';
-
-    private static final String CLASS_FILE_SUFFIX = ".class";
-
-    private static final String BAD_PACKAGE_ERROR = "Unable to get resources from path '%s'. Are you sure the package '%s' exists?";
-        */
-
-    public static List<Class<?>> findClassesIn(String packageName) {
-        List<Class<?>> list = new ArrayList<>();
-        switch (packageName) {
-        case "java.awt":
-            list.add(Button.class);
-            list.add(Color.class);
-            list.add(Checkbox.class);
-            list.add(Component.class);
-            list.add(Container.class);
-            return list;
-
-        default:
-            list.add(Boolean.class);
-            list.add(Byte.class);
-            list.add(Character.class);
-            list.add(Class.class);
-            list.add(Comparable.class);
-            list.add(Double.class);
-            list.add(Enum.class);
-            list.add(String.class);
-            return list;
-        }
-    
-        /*
-        String scannedPath = packageName.replace(PKG_SEPARATOR, DIR_SEPARATOR);
-        Enumeration<URL> resources = null;
-        ArrayList<File> directories = new ArrayList<File>();
-        try {
-            resources = Thread.currentThread().getContextClassLoader().getResources("jpl.ch14.ex07");
-            System.out.println(resources);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        while (resources.hasMoreElements()) {
-            System.out.println("in");
-            try {
-                directories.add(new File(URLDecoder.decode(resources.nextElement().getPath(), "UTF-8")));
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        for (File file : directories) {
-            System.out.println(file);
-        }
-        /*
-        if (scannedUrl == null) {
-            throw new IllegalArgumentException(String.format(BAD_PACKAGE_ERROR, scannedPath, packageName));
-        }
-        File scannedDir = new File(scannedUrl.getFile());
-        List<Class<?>> classes = new ArrayList<Class<?>>();
-        for (File file : scannedDir.listFiles()) {
-            classes.addAll(findClassesIn(file, packageName));
-        }
-        return classes;
-        return null;
-        */
+    public static List<Class<?>> findClassesIn(Package pack) throws ClassNotFoundException, IOException {
+        return classFinder.getClasses(pack);
     }
-
-/*
-    private static List<Class<?>> findClassesIn(File file, String scannedPackage) {
-        List<Class<?>> classes = new ArrayList<Class<?>>();
-        String resource = scannedPackage + PKG_SEPARATOR + file.getName();
-        if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
-                classes.addAll(findClassesIn(child, resource));
-            }
-        } else if (resource.endsWith(CLASS_FILE_SUFFIX)) {
-            int endIndex = resource.length() - CLASS_FILE_SUFFIX.length();
-            String className = resource.substring(0, endIndex);
-            try {
-                classes.add(Class.forName(className));
-            } catch (ClassNotFoundException ignore) {
-            }
-        }
-        return classes;
-    }
-        */
-    
     
     public static Package[] getSortedPackages() {
-        Package[] packages = Package.getPackages();
+        Package[] packages = classFinder.getPackages();
         Arrays.sort(packages, new Comparator<Package>() {
             @Override
             public int compare(Package pack1, Package pack2) {
@@ -160,6 +71,19 @@ public class InterpretTools {
         set.addAll(Arrays.asList(declaredMethods));
         set.addAll(Arrays.asList(methods));
         return set.toArray(new Method[set.size()]);
+    }
+    
+    /*
+     * Returns constructors below. 
+     * 1. public, protected, default (package) access, and private constructors on the object's class
+     */
+    public static Constructor<?>[] getDeclaredConstructors(Class<?> cls) {
+        
+        if (cls == null) {
+            throw new NullPointerException("class is null.");
+        }
+        
+        return cls.getDeclaredConstructors();
     }
     
     /*
