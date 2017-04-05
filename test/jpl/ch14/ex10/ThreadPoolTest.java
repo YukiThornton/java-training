@@ -85,10 +85,23 @@ public class ThreadPoolTest {
     }
 
     /**
-     * Returns the number of active threads.
+     * Returns the number of active threads excluding "ReaderThread" which was
+     * created by the Eclipse.
      */
-    private final int activeThreadCount() {
-        return Thread.currentThread().getThreadGroup().activeCount();
+    private int activeThreadCount() {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        int activeCount = tg.activeCount();
+        if (activeCount >= 2) {
+            Thread[] threads = new Thread[activeCount];
+            tg.enumerate(threads);
+            for (Thread t : threads) {
+                if ("ReaderThread".equals(t.getName())) {
+                    activeCount--;
+                    break;
+                }
+            }
+        }
+        return activeCount;
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -106,6 +119,116 @@ public class ThreadPoolTest {
         ThreadPool tp = new ThreadPool(1, 1);
         tp.start();
         tp.stop();
+    }
+
+    private static class Invoker extends Thread {
+
+        enum Action {
+            START, STOP
+        };
+
+        volatile boolean ok = false;
+        private final ThreadPool tp;
+        private final Action action;
+
+        Invoker(ThreadPool tp, Action action) {
+            this.tp = tp;
+            this.action = action;
+        }
+
+        public void run() {
+            try {
+                switch (action) {
+                    case START:
+                        tp.start();
+                        break;
+                    case STOP:
+                        tp.stop();
+                        break;
+                    default:
+                        throw new AssertionError("unknown action: " + action);
+                }
+                ok = true;
+            } catch (IllegalStateException e) {
+                // This is the expected behavior: Do nothing.
+            } catch (IllegalThreadStateException e) {
+                // This means that an illegal operation occurred, 
+                // because either start() or stop() method couldn't 
+                // detect a illegal state.
+                e.printStackTrace();
+                ok = true;
+            }
+        }
+    }
+
+    @Test
+    public void testRepeatSimultaneousStarts() {
+        for (int i = 0; i < 5000; i++) {
+            testSimultaneousStarts();
+        }
+    }
+
+    @Test
+    public void testRepeatSimultaneousStop() {
+        for (int i = 0; i < 5000; i++) {
+            testSimultaneousStops();
+        }
+    }
+
+    public void testSimultaneousStarts() {
+        final ThreadPool tp = new ThreadPool(1, 1);
+
+        Invoker[] invokers = createInvokers(tp, Invoker.Action.START);
+
+        invokeAndWait(invokers);
+
+        tp.stop();
+
+        assertEquals(1, countOks(invokers));
+    }
+
+    public void testSimultaneousStops() {
+        final ThreadPool tp = new ThreadPool(1, 1);
+
+        tp.start();
+
+        Invoker[] invokers = createInvokers(tp, Invoker.Action.STOP);
+
+        invokeAndWait(invokers);
+
+        assertEquals(1, countOks(invokers));
+    }
+
+    private Invoker[] createInvokers(ThreadPool tp, Invoker.Action action) {
+        Invoker[] invokers = new Invoker[2];
+        for (int i = 0; i < invokers.length; i++) {
+            invokers[i] = new Invoker(tp, action);
+        }
+        return invokers;
+    }
+
+    private void invokeAndWait(Invoker[] invokers) {
+        for (int i = 0; i < invokers.length; i++) {
+            invokers[i].start();
+        }
+
+        for (int i = 0; i < invokers.length; i++) {
+            try {
+                invokers[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private int countOks(Invoker[] invokers) {
+        int okCount = 0;
+        for (int i = 0; i < invokers.length; i++) {
+            if (invokers[i].ok) {
+                okCount++;
+            }
+        }
+        return okCount;
     }
 
     @Test
@@ -348,9 +471,9 @@ public class ThreadPoolTest {
         ThreadGroup tg = Thread.currentThread().getThreadGroup();
         Thread[] threads = new Thread[tg.activeCount()];
         tg.enumerate(threads);
-        
+
         Thread current = Thread.currentThread();
-        
+
         try {
             Thread.sleep(100); // 100 ms
         } catch (InterruptedException e) {
@@ -361,6 +484,11 @@ public class ThreadPoolTest {
         for (int i = 0; i < 100000; i++) {
             for (Thread t : threads) {
                 if (t == null || t == current) {
+                    continue;
+                }
+
+                // Excludes the ReaderThread of Eclipse.
+                if ("ReaderThread".equals(t.getName())) {
                     continue;
                 }
 
