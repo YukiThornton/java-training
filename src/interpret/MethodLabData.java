@@ -106,7 +106,7 @@ public class MethodLabData extends LabData {
         }
         Object value;
         try {
-            value = methodToInvoke.invoke(variable, params);
+            value = methodToInvoke.invoke(variable.getValue(), params);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new InterpretException("Failed to invoke " + getMethodName() + ".", e);
         }

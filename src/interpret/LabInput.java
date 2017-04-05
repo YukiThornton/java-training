@@ -199,6 +199,7 @@ public class LabInput {
             return validateDouble();
         case STRING:
             return validateString();
+        case COLOR:
         case OTHER_OBJECTS:
             return validateOtherObject();
         default:
