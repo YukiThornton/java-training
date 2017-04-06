@@ -1,6 +1,5 @@
 package interpret;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -14,7 +13,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 public class ReflectionTools {
@@ -30,14 +28,25 @@ public class ReflectionTools {
                 i.remove();
             }
         }
-        return set.toArray(new Field[set.size()]);
+        return getSortedFieldArray(set);
     }
     public static Field[] getFields(Class<?> cls) {
         if (cls == null) {
             throw new NullPointerException("class is null.");
         }
         Set<Field> set = getAllFields(cls);
-        return set.toArray(new Field[set.size()]);
+        return getSortedFieldArray(set);
+    }
+    private static Field[] getSortedFieldArray(Set<Field> set) {
+        Field[] array = set.toArray(new Field[set.size()]);
+        Arrays.sort(array, new Comparator<Field>() {
+
+            @Override
+            public int compare(Field o1, Field o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return array;
     }
     public static Method[] getStaticMethods(Class<?> cls) {
         if (cls == null) {
@@ -50,14 +59,25 @@ public class ReflectionTools {
                 i.remove();
             }
         }
-        return set.toArray(new Method[set.size()]);
+        return getSortedMethodArray(set);
     }
     public static Method[] getMethods(Class<?> cls) {
         if (cls == null) {
             throw new NullPointerException("class is null.");
         }
         Set<Method> set = getAllMethods(cls);
-        return set.toArray(new Method[set.size()]);
+        return getSortedMethodArray(set);
+    }
+    private static Method[] getSortedMethodArray(Set<Method> set) {
+        Method[] array = set.toArray(new Method[set.size()]);
+        Arrays.sort(array, new Comparator<Method>() {
+
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return array;
     }
     /*
      * Returns constructors below. 

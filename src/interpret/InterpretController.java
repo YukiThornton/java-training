@@ -185,6 +185,7 @@ public class InterpretController {
     private void changeRightPaneForField(int tableIndex) {
         Field field = fieldsOnCenterPane[tableIndex];
         outputUserChoiceOnHistory(field.getName());
+        JOptionPane.showMessageDialog(view.getFrame(), "Not implemented yet.", "Sorry", JOptionPane.INFORMATION_MESSAGE);
         view.changeRightPane("Field lab.");
     }
     private void changeRightPaneForConstructor(int tableIndex) {
@@ -270,6 +271,7 @@ public class InterpretController {
         System.out.println("Added variable " + variable.getName() + " to Variable Tree.");
         JOptionPane.showMessageDialog(view.getFrame(), message, "Success", JOptionPane.PLAIN_MESSAGE);
         labDataOnRightPane = null;
+        view.clearCenterPane();
         view.changeRightPane(MSG_RIGHT_PANE);
     }
     private void onInvokeSuccess(){
@@ -277,6 +279,7 @@ public class InterpretController {
         System.out.println("Added no variable to Variable Tree.");
         JOptionPane.showMessageDialog(view.getFrame(), message, "Success", JOptionPane.PLAIN_MESSAGE);
         labDataOnRightPane = null;
+        view.clearCenterPane();
         view.changeRightPane(MSG_RIGHT_PANE);
     }
     

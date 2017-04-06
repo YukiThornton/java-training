@@ -53,6 +53,7 @@ public class InterpretView {
     private static final String[] FIELD_COLUMNS = {"Modifier", "Type", "Field", "Value"};
     private static final String[] CONST_COLUMNS = {"Modifier", "Method", "Parameter"};
     private static final String[] METHOD_COLUMNS = {"Modifier", "Type", "Method", "Parameter"};
+    private static final String DEFAULT_MESSAGE_CENTER_PANE = "Double click on a class!";
     
     
     private JFrame frame;
@@ -194,7 +195,7 @@ public class InterpretView {
         centerPane.setLayout(new BoxLayout(centerPane, BoxLayout.X_AXIS));
         centerPane.setBackground(FRAME_BG_COLOR);
         
-        Tab infoTab = createInfoTab(null);
+        Tab infoTab = createInfoTab(DEFAULT_MESSAGE_CENTER_PANE);
         Tab[] tabs = {infoTab};
         centerTabbedPane = ComponentTools.createTabbedPane(tabs, false);
         
@@ -218,6 +219,15 @@ public class InterpretView {
         }
         centerPane.remove(centerTabbedPane);
         centerTabbedPane = ComponentTools.createTabbedPane(tabList.toArray(new Tab[tabList.size()]), false);
+        centerPane.add(centerTabbedPane);
+        centerPane.validate();
+        centerPane.repaint();
+    }
+    public void clearCenterPane() {
+        Tab infoTab = createInfoTab(DEFAULT_MESSAGE_CENTER_PANE);
+        Tab[] tabs = {infoTab};
+        centerPane.remove(centerTabbedPane);
+        centerTabbedPane = ComponentTools.createTabbedPane(tabs, false);
         centerPane.add(centerTabbedPane);
         centerPane.validate();
         centerPane.repaint();
@@ -280,13 +290,17 @@ public class InterpretView {
     }
     
     private Tab createInfoTab(Info info) {
-        Component component = null;
         if (info == null) {
-            component = ComponentTools.createTextPanel("Double click on a class!", DEFAULT_COLUMN_PANE_SIZE);
-        } else {
-            component = ComponentTools.createTextPanel(info.getInfoTitle(), DEFAULT_COLUMN_PANE_SIZE);
-            
+            throw new IllegalArgumentException("Something wrong happened!");
         }
+        Component component = ComponentTools.createTextPanel(info.getInfoTitle(), DEFAULT_COLUMN_PANE_SIZE);
+        return new Tab(component, ICON_INFO, "Info", "Information");
+    }
+    private Tab createInfoTab(String message) {
+        if (message == null) {
+            throw new IllegalArgumentException("Something wrong happened!");
+        }
+        Component component = ComponentTools.createTextPanel(message, DEFAULT_COLUMN_PANE_SIZE);
         return new Tab(component, ICON_INFO, "Info", "Information");
     }
     private Tab createFieldTab(Field[] fields, Object object) throws IllegalArgumentException, IllegalAccessException {
