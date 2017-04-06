@@ -17,7 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ClassCollector {
-    private ClassLoader classCollector;
+    private ClassLoader classLoader;
     private Map<String, List<Class<?>>> map;
     private boolean classLoaded = false;
     
@@ -58,7 +58,7 @@ public class ClassCollector {
     }
 
     public ClassCollector() {
-        classCollector = Thread.currentThread().getContextClassLoader();
+        classLoader = Thread.currentThread().getContextClassLoader();
         loadClasses();
     }
     
@@ -125,8 +125,14 @@ public class ClassCollector {
                 long.class, float.class, double.class, boolean.class
                 };
         map.put("primitive", Arrays.asList(primitiveArray));
-        
-        
+        List<Class<?>> list = null;
+        String interpretPackage = "interpret";
+        try {
+            list = findClasses(interpretPackage);
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
+        map.put(interpretPackage, list);
     }
 /*
     private void loadClasses2() {
@@ -209,7 +215,7 @@ public class ClassCollector {
 
     public List<Class<?>> findClasses(String rootPackageName) throws ClassNotFoundException, IOException {
         String resourceName = packageNameToResourceName(rootPackageName);
-        URL url = classCollector.getResource(resourceName);
+        URL url = classLoader.getResource(resourceName);
 
         if (url == null) {
             System.out.println(url);
@@ -232,7 +238,7 @@ public class ClassCollector {
         for (String path : dir.list()) {
             File entry = new File(dir, path);
             if (entry.isFile() && isClassFile(entry.getName())) {
-                classes.add(classCollector.loadClass(packageName + "." + fileNameToClassName(entry.getName())));
+                classes.add(classLoader.loadClass(packageName + "." + fileNameToClassName(entry.getName())));
             } else if (entry.isDirectory()) {
                 classes.addAll(findClassesWithFile(packageName + "." + entry.getName(), entry));
             }
@@ -256,7 +262,7 @@ public class ClassCollector {
             while (jarEnum.hasMoreElements()) {
                 JarEntry jarEntry = jarEnum.nextElement();
                 if (jarEntry.getName().startsWith(packageNameAsResourceName) && isClassFile(jarEntry.getName())) {
-                    classes.add(classCollector.loadClass(resourceNameToClassName(jarEntry.getName())));
+                    classes.add(classLoader.loadClass(resourceNameToClassName(jarEntry.getName())));
                 }
             }
         } finally {
