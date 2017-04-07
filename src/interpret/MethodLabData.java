@@ -108,7 +108,7 @@ public class MethodLabData extends LabData {
         try {
             value = methodToInvoke.invoke(variable == null ? null : variable.getValue(), params);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            throw new InterpretException("Failed to invoke " + getMethodName() + ".", e);
+            throw new InterpretException("Failed to invoke " + getMethodName() + ".", e.getCause());
         }
         if (hasReturnType()) {
             return new Variable(value, getReturnType(), (String)newVariableNameInput.getValidatedInput());
