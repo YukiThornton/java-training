@@ -251,7 +251,7 @@ public class InterpretController {
                 }
             } catch (InterpretException e1) {
                 String message = "Exception occurred!\nSee Console for details.";
-                e1.printStackTrace();
+                e1.getCause().printStackTrace();
                 JOptionPane.showMessageDialog(view.getFrame(), message, "Failed", JOptionPane.WARNING_MESSAGE);
             }
         } else {

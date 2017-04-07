@@ -68,7 +68,7 @@ public class ConstructorLabData extends LabData {
             value = constructorToInvoke.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
-            throw new InterpretException("Failed to create an instance.", e);
+            throw new InterpretException("Failed to create an instance.", e.getCause());
         }
         return new Variable(value, declaredClass, (String)newVariableNameInput.getValidatedInput());
     }
