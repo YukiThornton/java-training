@@ -54,7 +54,7 @@ public class Info {
             info.variableCreatable = false;
             info.arrayCreatable = false;
             info.modifieble = true;
-            info.infoTitle = infoType.value + " " + info.getSimpleTypeName() + " " + info.variable.getName();
+            info.infoTitle = infoType.value + " " + info.getSimpleTypeName() + " " + info.variable.toString();
             break;
         default:
             info.variableCreatable = false;
@@ -88,6 +88,9 @@ public class Info {
     }
     public String getSimpleTypeName() {
         return ReflectionTools.getSimpleName(type);
+    }
+    public boolean isVariable() {
+        return variable != null;
     }
     public Variable getVariable() {
         return variable;

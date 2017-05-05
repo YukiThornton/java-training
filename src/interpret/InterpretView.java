@@ -29,8 +29,6 @@ import javax.swing.JTree;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
-
 import interpret.ComponentTools.Tab;
 import interpret.LabData.LabType;
 
@@ -81,13 +79,15 @@ public class InterpretView {
     
     private MouseListener treeMouseListener;
     private MouseListener tableMouseListener;
-    private ActionListener applyBtnActionListener;
-    private ActionListener cancelBtnActionListener;
+    private ActionListener applyBtnInLabActionListener;
+    private ActionListener cancelBtnInLabActionListener;
+    private ActionListener createArrayBtnInInfoActionListener;
+    private ActionListener cancelBtnInInfoActionListener;
     
     private boolean isInitialized = false;
 
     public void init(Map<String, List<Class<?>>> classMap, MouseListener classTreeMouseListener, MouseListener tableMouseListener,
-                        ActionListener applyBtnActionListener, ActionListener cancelBtnActionListener) {
+                        ActionListener[] btnActionListeners) {
         if (frame != null) {
             throw new IllegalStateException("Use this method only once.");
         }
@@ -100,8 +100,10 @@ public class InterpretView {
         
         this.treeMouseListener = classTreeMouseListener;
         this.tableMouseListener = tableMouseListener;
-        this.applyBtnActionListener = applyBtnActionListener;
-        this.cancelBtnActionListener = cancelBtnActionListener;
+        this.createArrayBtnInInfoActionListener = btnActionListeners[0];
+        this.cancelBtnInInfoActionListener = btnActionListeners[1];
+        this.applyBtnInLabActionListener = btnActionListeners[2];
+        this.cancelBtnInLabActionListener = btnActionListeners[3];
         
         initializeMainPane(classMap);
         initializeLogPane();
@@ -295,8 +297,22 @@ public class InterpretView {
         if (info == null) {
             throw new IllegalArgumentException("Something wrong happened!");
         }
-        Component component = ComponentTools.createTextPanel(info.getInfoTitle(), DEFAULT_COLUMN_PANE_SIZE);
-        return new Tab(component, ICON_INFO, "Info", "Information");
+        return new Tab(createInfoCompo(info), ICON_INFO, "Info", "Information");
+    }
+    private Component createInfoCompo(Info info) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setPreferredSize(DEFAULT_COLUMN_PANE_SIZE);
+        panel.setBackground(PANEL_BG_COLOR);
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.BOTH;
+        addTitleToLab(panel, constraints, 0, info.getInfoTitle());
+        if (info.isVariable()) {
+            addTitleToLab(panel, constraints, 1, info.getVariable().isNull() ? "null" : info.getVariable().getValue().toString());
+        }
+        if(info.canCreateArray()) {
+            addBtnPaneToInfo(panel, constraints, 2, "cancel", "create an array");        
+        }
+        return panel;
     }
     private Tab createInfoTab(String message) {
         if (message == null) {
@@ -332,6 +348,12 @@ public class InterpretView {
         }
         return createLabTab(ComponentTools.createTextPanel(message, DEFAULT_COLUMN_PANE_SIZE));
     }
+    private Tab createLabTab(Component component) {
+        if (component == null) {
+            throw new IllegalArgumentException("component is null");
+        }
+        return new Tab(component, ICON_LAB, "Lab", "Lab");
+    }
     private Component createLabCompo(LabData labData) {
         switch (labData.labType) {
         case CONSTRUCTOR:
@@ -342,6 +364,8 @@ public class InterpretView {
         case STATIC_FIELD:
         case NON_STATIC_FIELD:
             return createLabForField(labData);
+        case NEW_ARRAY:
+            return createLabForNewArray(labData);
         default:
             return ComponentTools.createTextPanel("Not implemented", DEFAULT_COLUMN_PANE_SIZE);
         }
@@ -363,7 +387,7 @@ public class InterpretView {
             throw new IllegalStateException("Something wrong happened.");
         }
         addFieldModificationPaneToLab(panel, constraints, 2, fieldLabData.getCurrentFieldValueStr(), fieldLabData.getNewFieldValueInput());
-        addBtnPaneToLab(panel, constraints, 3);
+        addBtnPaneToLab(panel, constraints, 3, "cancel", fieldLabData.getActionVerb());
         return panel;
     }
     private Component createLabForConstructor(LabData labData) {
@@ -381,7 +405,7 @@ public class InterpretView {
         } else {
             addEmptyTitledPaneToLab(panel, constraints, 2, "Parameters", "None");
         }
-        addBtnPaneToLab(panel, constraints, 3);
+        addBtnPaneToLab(panel, constraints, 3, "cancel", constLabData.getActionVerb());
         return panel;
     }
     private Component createLabForMethod(LabData labData) {
@@ -410,7 +434,20 @@ public class InterpretView {
         } else {
             addEmptyTitledPaneToLab(panel, constraints, 3, "Parameters", "None");
         }
-        addBtnPaneToLab(panel, constraints, 4);
+        addBtnPaneToLab(panel, constraints, 4, "cancel", methodLabData.getActionVerb());
+        return panel;
+    }
+    private Component createLabForNewArray(LabData labData) {
+        ArrayLabData arrayLabData = (ArrayLabData)labData;
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setPreferredSize(DEFAULT_COLUMN_PANE_SIZE);
+        panel.setBackground(PANEL_BG_COLOR);
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.BOTH;
+        
+        addTitleToLab(panel, constraints, 0, "Create a new \'" + arrayLabData.getSimpleArrayTypeName() + "\' array.");
+        addNewArrayInfoPaneToLab(panel, constraints, 1, arrayLabData.getSimpleArrayTypeName(), arrayLabData.getNewVariableNameInput().getInputComponents()[0], arrayLabData.getArrayLengthInput().getInputComponents()[0]);
+        addBtnPaneToLab(panel, constraints, 2, "cancel", arrayLabData.getActionVerb());
         return panel;
     }
     private void addTitleToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String title) {
@@ -468,6 +505,11 @@ public class InterpretView {
         Component[] components = {new JLabel(currentValueStr), createLinedInput(newFieldValueInput.getInputComponents())};
         addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Values", strLabels, components);
     }
+    private void addNewArrayInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String arrayTypeName, Component newVariableNameComponent, Component arrayLengthComponent) {
+        String[] strLabels = {"Array type", "New variable name", "Array length"};
+        Component[] components = {new JLabel(arrayTypeName + "[]"), newVariableNameComponent, arrayLengthComponent};
+        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "New Array Info", strLabels, components);
+    }
     private void addDoubleColumnTitledPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String title, String[] left, Component[] right) {
         JPanel paramInfo = ComponentTools.createDoubleColumnTitledPane(title, left, right, PANEL_BG_COLOR);
         constraints.fill = GridBagConstraints.BOTH;
@@ -477,7 +519,7 @@ public class InterpretView {
         constraints.weighty = 1.0;
         labPane.add(paramInfo, constraints);    
     }
-    private void addBtnPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy) {
+    private void addBtnPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String cancelTxt, String proceedTxt) {
         JPanel buttonPane = createLabButtonPane();
         buttonPane.setBackground(PANEL_BG_COLOR);
         constraints.gridx = 2;
@@ -487,29 +529,51 @@ public class InterpretView {
         GridBagConstraints btnConstraints = new GridBagConstraints();
         btnConstraints.fill = GridBagConstraints.HORIZONTAL;
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(cancelTxt);
         btnConstraints.fill = GridBagConstraints.NONE;
         btnConstraints.gridx = 0;       //aligned with button 2
         btnConstraints.gridwidth = 1;   //2 columns wide
         btnConstraints.gridy = 0;       //third row
         buttonPane.add(cancelBtn, btnConstraints);
-        cancelBtn.addActionListener(cancelBtnActionListener);
+        cancelBtn.addActionListener(cancelBtnInLabActionListener);
         
-        Button applyBtn = new Button("Invoke");
+        Button applyBtn = new Button(proceedTxt);
         btnConstraints.fill = GridBagConstraints.NONE;
         btnConstraints.gridx = 1;       //aligned with button 2
         btnConstraints.gridwidth = 1;   //2 columns wide
         btnConstraints.gridy = 0;       //third row
         buttonPane.add(applyBtn, btnConstraints);
-        applyBtn.addActionListener(applyBtnActionListener);
+        applyBtn.addActionListener(applyBtnInLabActionListener);
 
         labPane.add(buttonPane, constraints);
     }
-    private Tab createLabTab(Component component) {
-        if (component == null) {
-            throw new IllegalArgumentException("component is null");
-        }
-        return new Tab(component, ICON_LAB, "Lab", "Lab");
+    private void addBtnPaneToInfo(JPanel infoPane, GridBagConstraints constraints, int gridy, String cancelTxt, String createArrayTxt) {
+        JPanel buttonPane = createLabButtonPane();
+        buttonPane.setBackground(PANEL_BG_COLOR);
+        constraints.gridx = 2;
+        constraints.gridwidth = 1;
+        constraints.gridy = gridy;
+        constraints.anchor = GridBagConstraints.PAGE_END;
+        GridBagConstraints btnConstraints = new GridBagConstraints();
+        btnConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+        Button cancelBtn = new Button(cancelTxt);
+        btnConstraints.fill = GridBagConstraints.NONE;
+        btnConstraints.gridx = 0;       //aligned with button 2
+        btnConstraints.gridwidth = 1;   //2 columns wide
+        btnConstraints.gridy = 0;       //third row
+        buttonPane.add(cancelBtn, btnConstraints);
+        cancelBtn.addActionListener(cancelBtnInInfoActionListener);
+        
+        Button createArrayBtn = new Button(createArrayTxt);
+        btnConstraints.fill = GridBagConstraints.NONE;
+        btnConstraints.gridx = 1;       //aligned with button 2
+        btnConstraints.gridwidth = 1;   //2 columns wide
+        btnConstraints.gridy = 0;       //third row
+        buttonPane.add(createArrayBtn, btnConstraints);
+        createArrayBtn.addActionListener(createArrayBtnInInfoActionListener);
+
+        infoPane.add(buttonPane, constraints);
     }
     private JPanel createLabButtonPane() {
         JPanel panel = new JPanel(new GridBagLayout());
@@ -556,7 +620,16 @@ public class InterpretView {
             root.add(keyNode);
      
             for (Variable variable : map.get(key)) {
-                keyNode.add(new DefaultMutableTreeNode(variable));
+                if (variable.isArray()) {
+                    DefaultMutableTreeNode arrayNode = new DefaultMutableTreeNode(variable);
+                    keyNode.add(arrayNode);
+                    
+                    for (Variable element : variable.getArrayElements()) {
+                        arrayNode.add(new DefaultMutableTreeNode(element));
+                    }
+                } else {
+                    keyNode.add(new DefaultMutableTreeNode(variable));
+                }
             }
         }
         JTree tree = ComponentTools.initializeTree(root);

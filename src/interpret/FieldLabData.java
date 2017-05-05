@@ -10,6 +10,7 @@ public class FieldLabData extends LabData {
     
     public FieldLabData(Field fieldToInvoke, LabInput newFieldValueInput) {
         this.labType = LabType.STATIC_FIELD;
+        this.actionVerb = "change the value";
         this.declaredClass = fieldToInvoke.getDeclaringClass();
         this.variable = null;
         this.fieldToInvoke = fieldToInvoke;
@@ -18,6 +19,7 @@ public class FieldLabData extends LabData {
 
     public FieldLabData(Variable variable, Field fieldToInvoke, LabInput newFieldValueInput) {
         this.labType = LabType.NON_STATIC_FIELD;
+        this.actionVerb = "change the value";
         this.declaredClass = variable.getType();
         this.variable = variable;
         this.fieldToInvoke = fieldToInvoke;

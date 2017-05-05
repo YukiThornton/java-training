@@ -47,9 +47,8 @@ public class InterpretController {
         }
         TreeMouseListener treeMouseListener = new TreeMouseListener();
         TableMouseListener tableMouseListener = new TableMouseListener();
-        ApplyBtnActionListener applyBtnActionListener = new ApplyBtnActionListener();
-        CancelBtnActionListener cancelBtnActionListener = new CancelBtnActionListener();
-        view.init(classCollector.map(), treeMouseListener, tableMouseListener, applyBtnActionListener, cancelBtnActionListener);
+        ActionListener[] btnActionListeners = {new CreateArrayBtnInInfoActionListener(), new CancelBtnInInfoActionListener(), new ApplyBtnInLabActionListener(), new CancelBtnInLabActionListener()};
+        view.init(classCollector.map(), treeMouseListener, tableMouseListener, btnActionListeners);
         setStream();
         view.show();
     }
@@ -101,7 +100,7 @@ public class InterpretController {
         }    
     }
     private void onVariableSelected(Variable variable) {
-        outputUserChoiceOnHistory(variable.getName());
+        outputUserChoiceOnHistory(variable.toString());
         clearDataOnCenterPane();
         variableOnCenterPane = variable;
         if (variable.getType().isPrimitive()) {
@@ -163,6 +162,21 @@ public class InterpretController {
         methodsOnCenterPane = null;
     }
 
+    public class CreateArrayBtnInInfoActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            onCreateArrayBtnPressed(clsOnCenterPane);
+        }
+    }
+    private void onCreateArrayBtnPressed(Class<?> cls) {
+        changeRightPaneForNewArray(cls);
+    }
+    public class CancelBtnInInfoActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            System.out.println("cancel!!!!!");
+        }
+    }
     public class TableMouseListener extends MouseAdapter {
         public void mousePressed(MouseEvent e) {
             if (e.getClickCount() != 2) {
@@ -189,6 +203,11 @@ public class InterpretController {
             String message = "You cannot change this field.";
             JOptionPane.showMessageDialog(view.getFrame(), message, "Alert", JOptionPane.WARNING_MESSAGE);
         }
+    }
+    private void changeRightPaneForNewArray(Class<?> cls) {
+        outputUserChoiceOnHistory("to create an array of " + ReflectionTools.getSimpleName(cls) + ".");
+        labDataOnRightPane = new ArrayLabData(cls);
+        view.changeRightPane(labDataOnRightPane);
     }
     private boolean canChangeRightPaneForField(Field field) {
         int modifierType = field.getModifiers();
@@ -241,13 +260,13 @@ public class InterpretController {
         System.out.println("You chose " + choice + ".");
     }
     
-    public class ApplyBtnActionListener implements ActionListener {
+    public class ApplyBtnInLabActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             invokeLabData();
         }
     }
-    public class CancelBtnActionListener implements ActionListener {
+    public class CancelBtnInLabActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             System.out.println("cancel");
@@ -260,7 +279,7 @@ public class InterpretController {
             try {
                 Variable variable = labDataOnRightPane.invoke();
                 if (variable == null) {
-                    onInvokeSuccess();
+                    onInvokeSuccess(labDataOnRightPane.getActionVerb());
                 } else {
                     onInvokeSuccess(variable);
                 }
@@ -289,8 +308,8 @@ public class InterpretController {
         view.clearCenterPane();
         view.changeRightPane(MSG_RIGHT_PANE);
     }
-    private void onInvokeSuccess(){
-        String message = "Invoke success!";
+    private void onInvokeSuccess(String actionVerb){
+        String message = "Succeeded to " + actionVerb + "!";
         System.out.println("Added no new variable to Variable Tree.");
         JOptionPane.showMessageDialog(view.getFrame(), message, "Success", JOptionPane.PLAIN_MESSAGE);
         labDataOnRightPane = null;

@@ -1,5 +1,6 @@
 package interpret;
 
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 
 public class Variable {
@@ -10,6 +11,7 @@ public class Variable {
     private String pathName;
     private Variable[] arrayElements;
     private Variable parentArray;
+    private int indexInParentArray;
     private LocalDateTime createdAt;
     private LocalDateTime lastModifiedAt;
     
@@ -18,25 +20,35 @@ public class Variable {
         this.type = type;
         this.name = name;
         this.pathName = type.getCanonicalName();
+        if (type.isArray()) {
+            this.arrayElements = new Variable[Array.getLength(value)];
+            for (int i = 0; i < Array.getLength(value); i++) {
+                arrayElements[i] = new Variable(this, i, Array.get(value, i), type.getComponentType());
+            }
+        }
+        this.indexInParentArray = -1;
         this.createdAt = LocalDateTime.now();
         this.lastModifiedAt = LocalDateTime.now();
     }
     
-    public Variable(Object value, Class<?> type, String name, Variable[] arrayElements) {
+    private Variable(Variable parent, int indexInParentArray, Object value, Class<?> type) {
         this.value = value;
         this.type = type;
-        this.name = name;
+        this.name = null;
         this.pathName = type.getCanonicalName();
-        this.arrayElements = arrayElements;
-        for (Variable element : arrayElements) {
-            element.parentArray = this;
-        }
+        this.parentArray = parent;
+        this.indexInParentArray = indexInParentArray;
         this.createdAt = LocalDateTime.now();
         this.lastModifiedAt = LocalDateTime.now();
+    
     }
     
     public String toString() {
-        return name;
+        if (isArrayElement()) {
+            return parentArray.getName() + "[" + indexInParentArray + "]";
+        } else {
+            return name;
+        }
     }
 
     public boolean isArray() {
@@ -45,6 +57,10 @@ public class Variable {
     
     public boolean isArrayElement() {
         return parentArray != null;
+    }
+    
+    public boolean isNull() {
+        return value == null;
     }
 
     public Object getValue() {
@@ -78,6 +94,10 @@ public class Variable {
 
     public Variable getParentArray() {
         return parentArray;
+    }
+
+    public int getIndexInParentArray() {
+        return indexInParentArray;
     }
 
     public LocalDateTime getCreatedAt() {
