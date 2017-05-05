@@ -99,32 +99,32 @@ public class Calculator {
     
     private static double add(Deque<Double> stack) {
         Double[] vals = pollElements(stack, 2);
-        return vals[1] + vals[0];
+        return vals[0] + vals[1];
     }
     
     private static double subtract(Deque<Double> stack) {
         Double[] vals = pollElements(stack, 2);
-        return vals[1] - vals[0];
+        return vals[0] - vals[1];
     }
     
     private static double multiply(Deque<Double> stack) {
         Double[] vals = pollElements(stack, 2);
-        return vals[1] * vals[0];
+        return vals[0] * vals[1];
     }
     
     private static double divide(Deque<Double> stack) {
         Double[] vals = pollElements(stack, 2);
-        return vals[1] / vals[0];
+        return vals[0] / vals[1];
     }
     
     private static double mod(Deque<Double> stack) {
         Double[] vals = pollElements(stack, 2);
-        return vals[1] % vals[0];
+        return vals[0] % vals[1];
     }
     
     private static Double[] pollElements(Deque<Double> stack, int amountOfElements) {
         Double[] array = new Double[amountOfElements];
-        for (int i = 1; i <= amountOfElements; i++) {
+        for (int i = amountOfElements; i >= 1; i--) {
             Double val = stack.poll();
             if (val == null) {
                 throw new IllegalArgumentException("Not enough number to calculate.");

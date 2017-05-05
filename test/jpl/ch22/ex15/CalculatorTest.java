@@ -14,7 +14,7 @@ public class CalculatorTest {
         assertTrue(Calculator.calculateLine("1 2 /", " ") == 0.5);
         assertTrue(Calculator.calculateLine("15 7 %", " ") == 1);
         assertTrue(Calculator.calculateLine("15 cos", " ") == Math.cos(15));
-        assertTrue(Calculator.calculateLine("3 5 copySign", " ") == Math.copySign(5, 3));
+        assertTrue(Calculator.calculateLine("3 5 copySign", " ") == Math.copySign(3, 5));
         assertTrue(Calculator.calculateLine("1 2 3 * +", " ") == 7);
         assertTrue(Calculator.calculateLine("1 60 3 4 * / +", " ") == 6);
     }
