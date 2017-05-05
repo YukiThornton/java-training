@@ -36,6 +36,10 @@ public class FieldLabData extends LabData {
         return ReflectionTools.getSimpleName(declaredClass);
     }
     
+    public String getSimpleFieldTypeName() {
+        return ReflectionTools.getSimpleName(getFieldType());
+    }
+    
     public String getModifiers() {
         return ReflectionTools.stringifyModifiers(fieldToInvoke.getModifiers());
     }
@@ -57,6 +61,21 @@ public class FieldLabData extends LabData {
             value = "Failed to obtain the current value.";
         }
         return value;
+    }
+    
+    public String getCurrentFieldValueStr() {
+        if (hasArrayValue()) {
+            return "an object of " + getSimpleFieldTypeName();
+        } 
+        Object value = getCurrentFieldValue();
+        if (value == null){
+            return "No value is set.";
+        } else {
+            return value.toString();
+        }
+    }
+    public boolean hasArrayValue() {
+        return getFieldType().isArray();
     }
 
     public LabInput getNewFieldValueInput() {
