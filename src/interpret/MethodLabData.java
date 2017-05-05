@@ -46,7 +46,6 @@ public class MethodLabData extends LabData {
     }
     
     public String getSimpleDeclaredClassName() {
-        System.out.println("declaredClass in getSimpleDeclaredClassName" + declaredClass);
         return ReflectionTools.getSimpleName(declaredClass);
     }
     

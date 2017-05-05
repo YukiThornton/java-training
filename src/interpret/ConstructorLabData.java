@@ -11,9 +11,9 @@ public class ConstructorLabData extends LabData {
     private LabInput newVariableNameInput;
     private LabInput[] paramInputs;
 
-    public ConstructorLabData(Class<?> declaredClass, Constructor<?> constructor, LabInput[] paramInputs) {
+    public ConstructorLabData(Constructor<?> constructor, LabInput[] paramInputs) {
         this.labType = LabType.CONSTRUCTOR;
-        this.declaredClass = declaredClass;
+        this.declaredClass = constructor.getDeclaringClass();
         this.constructorToInvoke = constructor;
         this.newVariableNameInput = LabInput.create(InputType.VARIABLE_NAME);
         this.paramInputs = paramInputs;

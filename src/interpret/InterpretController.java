@@ -171,7 +171,7 @@ public class InterpretController {
             JTable table = (JTable) e.getSource();
             int tableIndex = table.rowAtPoint(e.getPoint());
             if (table == view.getFieldTable()) {
-                changeRightPaneForField(tableIndex);
+                onFieldSelected(fieldsOnCenterPane[tableIndex]);
             } else if (table == view.getConstructorTable()) {
                 changeRightPaneForConstructor(tableIndex);
             } else if (table == view.getMethodTable()) {
@@ -182,16 +182,31 @@ public class InterpretController {
             
         }
     }
-    private void changeRightPaneForField(int tableIndex) {
-        Field field = fieldsOnCenterPane[tableIndex];
+    private void onFieldSelected(Field field) {
+        if (canChangeRightPaneForField(field)) {
+            changeRightPaneForField(field);
+        } else {
+            String message = "You cannot change this field.";
+            JOptionPane.showMessageDialog(view.getFrame(), message, "Alert", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    private boolean canChangeRightPaneForField(Field field) {
+        int modifierType = field.getModifiers();
+        return !(Modifier.isStatic(modifierType) && Modifier.isFinal(modifierType));
+    }
+    private void changeRightPaneForField(Field field) {
         outputUserChoiceOnHistory(field.getName());
-        JOptionPane.showMessageDialog(view.getFrame(), "Not implemented yet.", "Sorry", JOptionPane.INFORMATION_MESSAGE);
-        view.changeRightPane("Field lab.");
+        if (Modifier.isStatic(field.getModifiers())) {
+            labDataOnRightPane = new FieldLabData(field, LabInput.create(field.getType(), getVariableOptions(field.getType())));
+        } else {
+            labDataOnRightPane = new FieldLabData(variableOnCenterPane, field, LabInput.create(field.getType(), getVariableOptions(field.getType())));
+        }
+        view.changeRightPane(labDataOnRightPane);
     }
     private void changeRightPaneForConstructor(int tableIndex) {
         Constructor<?> constructor = constructorsOnCenterPane[tableIndex];
         outputUserChoiceOnHistory(ReflectionTools.getSimpleName(constructor.getDeclaringClass()));
-        labDataOnRightPane = new ConstructorLabData(clsOnCenterPane, constructor, createParamInputs(constructor.getParameterTypes()));
+        labDataOnRightPane = new ConstructorLabData(constructor, createParamInputs(constructor.getParameterTypes()));
         view.changeRightPane(labDataOnRightPane);
     }
     private void changeRightPaneForMethod(int tableIndex) {
@@ -276,7 +291,7 @@ public class InterpretController {
     }
     private void onInvokeSuccess(){
         String message = "Invoke success!";
-        System.out.println("Added no variable to Variable Tree.");
+        System.out.println("Added no new variable to Variable Tree.");
         JOptionPane.showMessageDialog(view.getFrame(), message, "Success", JOptionPane.PLAIN_MESSAGE);
         labDataOnRightPane = null;
         view.clearCenterPane();

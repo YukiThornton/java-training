@@ -337,9 +337,32 @@ public class InterpretView {
         case STATIC_METHOD:
         case NON_STATIC_METHOD:
             return createLabForMethod(labData);
+        case STATIC_FIELD:
+        case NON_STATIC_FIELD:
+            return createLabForField(labData);
         default:
             return ComponentTools.createTextPanel("Not implemented", DEFAULT_COLUMN_PANE_SIZE);
         }
+    }
+    private Component createLabForField(LabData labData) {
+        FieldLabData fieldLabData = (FieldLabData)labData;
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setPreferredSize(DEFAULT_COLUMN_PANE_SIZE);
+        panel.setBackground(PANEL_BG_COLOR);
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.BOTH;
+        addTitleToLab(panel, constraints, 0, "Change the " + fieldLabData.getFieldName() + "field.");
+
+        if (fieldLabData.getLabType() == LabType.STATIC_FIELD) {
+            addStaticFieldInfoPaneToLab(panel, constraints, 1, fieldLabData.getSimpleDeclaredClassName(), fieldLabData.getFieldName(), fieldLabData.getModifiers());
+        } else if (fieldLabData.getLabType() == LabType.NON_STATIC_FIELD) {
+            addNonStaticFieldInfoPaneToLab(panel, constraints, 1, fieldLabData.getVariable(), fieldLabData.getFieldName(), fieldLabData.getModifiers());
+        } else {
+            throw new IllegalStateException("Something wrong happened.");
+        }
+        addFieldModificationPaneToLab(panel, constraints, 2, fieldLabData.getCurrentFieldValue(), fieldLabData.getNewFieldValueInput());
+        addBtnPaneToLab(panel, constraints, 3);
+        return panel;
     }
     private Component createLabForConstructor(LabData labData) {
         ConstructorLabData constLabData = (ConstructorLabData)labData;
@@ -367,7 +390,7 @@ public class InterpretView {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
         
-        addTitleToLab(panel, constraints, 0, "Invoke a method.");
+        addTitleToLab(panel, constraints, 0, "Invoke the " + methodLabData.getMethodName() + " method.");
         if (methodLabData.getLabType() == LabType.STATIC_METHOD) {
             addStaticMethodInfoPaneToLab(panel, constraints, 1, methodLabData.getSimpleDeclaredClassName(), methodLabData.getMethodName(), methodLabData.getModifiers());
         } else if (methodLabData.getLabType() == LabType.NON_STATIC_METHOD) {
@@ -396,14 +419,24 @@ public class InterpretView {
         labPane.add(titleLabel, constraints);        
     }
     private void addStaticMethodInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String declaredClassName, String methodName, String modifiers) {
-        String[] strLabelsForReturnInfo = {"Declared class", "Method"};
-        Component[] componentsForReturnInfo = {new JLabel(declaredClassName), new JLabel(modifiers + " " + methodName)};
-        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Method Info", strLabelsForReturnInfo, componentsForReturnInfo);
+        String[] strLabels = {"Declared class", "Method"};
+        Component[] components = {new JLabel(declaredClassName), new JLabel(modifiers + " " + methodName)};
+        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Method Info", strLabels, components);
     }
     private void addNonStaticMethodInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, Variable variable, String methodName, String modifiers) {
-        String[] strLabelsForReturnInfo = {"Variable", "Method"};
-        Component[] componentsForReturnInfo = {new JLabel(variable.getSimpleTypeName() + " " + variable.getName()), new JLabel(modifiers + " " + methodName)};
-        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Method Info", strLabelsForReturnInfo, componentsForReturnInfo);
+        String[] strLabels = {"Variable", "Method"};
+        Component[] components = {new JLabel(variable.getSimpleTypeName() + " " + variable.getName()), new JLabel(modifiers + " " + methodName)};
+        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Method Info", strLabels, components);
+    }
+    private void addStaticFieldInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String declaredClassName, String fieldName, String modifiers) {
+        String[] strLabels = {"Declared class", "Field"};
+        Component[] components = {new JLabel(declaredClassName), new JLabel(modifiers + " " + fieldName)};
+        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Field Info", strLabels, components);
+    }
+    private void addNonStaticFieldInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, Variable variable, String fieldName, String modifiers) {
+        String[] strLabels = {"Variable", "Field"};
+        Component[] components = {new JLabel(variable.getSimpleTypeName() + " " + variable.getName()), new JLabel(modifiers + " " + fieldName)};
+        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Field Info", strLabels, components);
     }
     private void addReturnInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String typeName, Component newVariableNameComponent) {
         String[] strLabelsForReturnInfo = {"Type", "New variable name"};
@@ -427,6 +460,11 @@ public class InterpretView {
             componentsForParameters[i] = createLinedInput(paramInputs[i].getInputComponents());
         }
         addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Parameters", strLabelsForParameters, componentsForParameters);
+    }
+    private void addFieldModificationPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, Object currentValue, LabInput newFieldValueInput) {
+        String[] strLabels = {"Before", "After"};
+        Component[] components = {new JLabel(currentValue.toString()), createLinedInput(newFieldValueInput.getInputComponents())};
+        addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Values", strLabels, components);
     }
     private void addDoubleColumnTitledPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String title, String[] left, Component[] right) {
         JPanel paramInfo = ComponentTools.createDoubleColumnTitledPane(title, left, right, PANEL_BG_COLOR);

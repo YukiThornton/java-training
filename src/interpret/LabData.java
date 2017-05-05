@@ -1,7 +1,7 @@
 package interpret;
 
 public abstract class LabData {
-    enum LabType{CONSTRUCTOR, STATIC_METHOD, NON_STATIC_METHOD, NEW_ARRAY, ARRAY_ELEMENT, MODIFY_VARIABLE}
+    enum LabType{CONSTRUCTOR, STATIC_METHOD, NON_STATIC_METHOD, NEW_ARRAY, ARRAY_ELEMENT, STATIC_FIELD, NON_STATIC_FIELD}
     
     protected LabType labType;
     
