@@ -11,7 +11,7 @@ public class ArrayLabData extends LabData {
     
     public ArrayLabData(Class<?> arrayType) {
         this.labType = LabType.NEW_ARRAY;
-        this.actionVerb = "create a new array.";
+        this.actionVerb = "Create a new array.";
         this.arrayType = arrayType;
         this.newVariableNameInput = LabInput.create(InputType.VARIABLE_NAME);
         this.arrayLengthInput = LabInput.create(InputType.INDEX);

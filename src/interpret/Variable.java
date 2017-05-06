@@ -2,8 +2,11 @@ package interpret;
 
 import java.lang.reflect.Array;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Variable {
+
+    private final static DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private Object value;
     private Class<?> type;
@@ -72,6 +75,14 @@ public class Variable {
         this.lastModifiedAt = LocalDateTime.now();
     }
 
+    public String getSimpleValueName() {
+        if (isNull()) {
+            return "null";
+        } else {
+            return value.toString();
+        }
+    }
+
     public Class<?> getType() {
         return type;
     }
@@ -104,8 +115,20 @@ public class Variable {
         return createdAt;
     }
 
+    public String getCreatedAtStr() {
+        return createdAt.format(DATETIME_FORMAT);
+    }
+
     public LocalDateTime getLastModifiedAt() {
         return lastModifiedAt;
+    }
+    
+    public void updateLastModifiedAt() {
+        lastModifiedAt = LocalDateTime.now();
+    }
+    
+    public String getLastModifiedAtStr() {
+        return lastModifiedAt.format(DATETIME_FORMAT);
     }
     
     

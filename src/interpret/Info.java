@@ -5,7 +5,8 @@ public class Info {
         CLASS("Class", false, true, true, true), 
         PRIMITIVE_TYPE("Primitive Type", false, false, false, false),
         OBJECT_VARIABLE("Variable", true, true, false, true),
-        PRIMITIVE_VARIABLE("Primitive Variable", true, false, false, false);
+        PRIMITIVE_VARIABLE("Primitive Variable", true, false, false, false),
+        NULL("Null", false, false, false, false);
         
         private String value;
         private boolean canHaveVariable;
@@ -23,20 +24,16 @@ public class Info {
     }
     
     private InfoType infoType;
-    private String infoTitle;
     private Class<?> type;
     private Variable variable;
     private boolean variableCreatable;
     private boolean arrayCreatable;
     private boolean modifieble;
     
-    private Info() {
+    protected Info() {
     }
     
     public static Info create(InfoType infoType, Class<?> type, Variable variable) {
-        if (!(infoType.canHaveVariable ^ variable == null)) {
-            throw new IllegalArgumentException();
-        }
         Info info = new Info();
         info.infoType = infoType;
         info.type = type;
@@ -47,14 +44,13 @@ public class Info {
             info.variableCreatable = true;
             info.arrayCreatable = true;
             info.modifieble = false;
-            info.infoTitle = infoType.value + " " + info.getTypeName();
             break;
         case OBJECT_VARIABLE:
         case PRIMITIVE_VARIABLE:
+        case NULL:
             info.variableCreatable = false;
             info.arrayCreatable = false;
             info.modifieble = true;
-            info.infoTitle = infoType.value + " " + info.getSimpleTypeName() + " " + info.variable.toString();
             break;
         default:
             info.variableCreatable = false;
@@ -69,7 +65,7 @@ public class Info {
         return infoType;
     }
     public String getInfoTitle() {
-        return infoTitle;
+        return infoType.value;
     }
     public Class<?> getType() {
         return type;

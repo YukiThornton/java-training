@@ -14,7 +14,7 @@ public class MethodLabData extends LabData {
 
     public MethodLabData(Class<?> declaredClass, Method method, LabInput[] paramInputs) {
         this.labType = LabType.STATIC_METHOD;
-        this.actionVerb = "invoke";
+        this.actionVerb = "Invoke";
         this.declaredClass = declaredClass;
         this.methodToInvoke = method;
         if (method.getReturnType() != void.class) {

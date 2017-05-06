@@ -10,7 +10,7 @@ public class FieldLabData extends LabData {
     
     public FieldLabData(Field fieldToInvoke, LabInput newFieldValueInput) {
         this.labType = LabType.STATIC_FIELD;
-        this.actionVerb = "change the value";
+        this.actionVerb = "Change the value";
         this.declaredClass = fieldToInvoke.getDeclaringClass();
         this.variable = null;
         this.fieldToInvoke = fieldToInvoke;
@@ -98,6 +98,7 @@ public class FieldLabData extends LabData {
         try {
             fieldToInvoke.setAccessible(true);
             fieldToInvoke.set(labType == LabType.STATIC_FIELD ? null : variable.getValue(), newFieldValueInput.getValidatedInput());
+            variable.updateLastModifiedAt();
         } catch (IllegalArgumentException | IllegalAccessException e) {
             throw new InterpretException("Failed to change the value of " + getFieldName() + ".", e);
         }
