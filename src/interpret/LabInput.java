@@ -42,7 +42,7 @@ public class LabInput {
     
     public static LabInput create(InputType inputType) {
         if (inputType != InputType.VARIABLE_NAME && inputType != InputType.INDEX) {
-            throw new IllegalArgumentException("Use this method onlu for InputType.VARIABLE_NAME or InputType.INDEX.");
+            throw new IllegalArgumentException("Use this method only for InputType.VARIABLE_NAME or InputType.INDEX.");
         }
         LabInput labInput = new LabInput();
         labInput.inputType = inputType;
@@ -100,7 +100,7 @@ public class LabInput {
             Component[] indexCompos = {new JTextField(DEFAULT_TEXT_FIELD_COLUMN)};
             return indexCompos;
         default:
-            throw new IllegalArgumentException("Use this method onlu for InputType.VARIABLE_NAME or InputType.INDEX.");
+            throw new IllegalArgumentException("Use this method only for InputType.VARIABLE_NAME or InputType.INDEX.");
         }
     }
     private static Component[] createBooleanComponents(Variable[] variableOptions) {

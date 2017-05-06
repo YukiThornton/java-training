@@ -33,6 +33,7 @@ public class InterpretController {
     private Field[] fieldsOnCenterPane;
     private Constructor<?>[] constructorsOnCenterPane;
     private Method[] methodsOnCenterPane;
+    private Variable destObjectVariable;
     
     private LabData labDataOnRightPane;
     
@@ -172,6 +173,7 @@ public class InterpretController {
         fieldsOnCenterPane = null;
         constructorsOnCenterPane = null;
         methodsOnCenterPane = null;
+        destObjectVariable = null;
     }
 
     public class CreateVariableBtnInInfoActionListener implements ActionListener {
@@ -204,7 +206,14 @@ public class InterpretController {
         }
     }
     private void onChangeValueBtnPressed(Variable variable) {
-        changeRightPaneToChangePrimitiveValue(variable);
+        if (variable.getType().isPrimitive()) {
+            changeRightPaneToChangePrimitiveValue(variable);
+        } else {
+            destObjectVariable = variable;
+            changeCenterPaneForClass(variable.getType());
+            view.changeCenterPanePage(2);
+            JOptionPane.showMessageDialog(view.getFrame(), "Choose a constructor.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
     public class TableMouseListener extends MouseAdapter {
         public void mousePressed(MouseEvent e) {
@@ -234,12 +243,12 @@ public class InterpretController {
         }
     }
     private void changeRightPaneForNewArray(Class<?> cls) {
-        outputUserChoiceOnHistory("to create an array of " + ReflectionTools.getSimpleName(cls) + ".");
+        outputUserChoiceOnHistory("to create array of " + ReflectionTools.getSimpleName(cls) + ".");
         labDataOnRightPane = new ArrayLabData(cls);
         view.changeRightPane(labDataOnRightPane);
     }
     private void changeRightPaneToCreatePrimitiveValue(Class<?> cls) {
-        outputUserChoiceOnHistory("to create a new " + ReflectionTools.getSimpleName(cls) + " variable.");
+        outputUserChoiceOnHistory("to create new " + ReflectionTools.getSimpleName(cls) + " variable.");
         labDataOnRightPane = new VariableLabData(cls, LabInput.create(cls, getVariableOptions(cls)));
         view.changeRightPane(labDataOnRightPane);
     }
@@ -263,8 +272,13 @@ public class InterpretController {
     }
     private void changeRightPaneForConstructor(int tableIndex) {
         Constructor<?> constructor = constructorsOnCenterPane[tableIndex];
-        outputUserChoiceOnHistory(ReflectionTools.getSimpleName(constructor.getDeclaringClass()));
-        labDataOnRightPane = new ConstructorLabData(constructor, createParamInputs(constructor.getParameterTypes()));
+        if (destObjectVariable == null) {
+            outputUserChoiceOnHistory(ReflectionTools.getSimpleName(constructor.getDeclaringClass()));
+            labDataOnRightPane = new ConstructorLabData(constructor, createParamInputs(constructor.getParameterTypes()));
+        } else {
+            outputUserChoiceOnHistory(ReflectionTools.getSimpleName(constructor.getDeclaringClass()) + "to change " + destObjectVariable.toString());
+            labDataOnRightPane = new ConstructorLabData(constructor, destObjectVariable, createParamInputs(constructor.getParameterTypes()));
+        }
         view.changeRightPane(labDataOnRightPane);
     }
     private void changeRightPaneForMethod(int tableIndex) {
@@ -302,6 +316,7 @@ public class InterpretController {
     public class ApplyBtnInLabActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            destObjectVariable = null;
             invokeLabData();
         }
     }
@@ -337,19 +352,19 @@ public class InterpretController {
     }
     private void onInvokeSuccess(Variable variable){
         addVariable(variable);
-        String message = "You created a new variable!" + 
+        String message = "You created new variable!" + 
                 "\nType: " + variable.getSimpleTypeName() + 
                 "\nVariable name: " + variable.getName() + 
                 "\ntoString: " + variable.getValue().toString();
-        System.out.println("Added variable " + variable.getName() + " to Variable Tree.");
+        System.out.println("Added the variable " + variable.getName() + " to Variable Tree.");
         JOptionPane.showMessageDialog(view.getFrame(), message, "Success", JOptionPane.PLAIN_MESSAGE);
         labDataOnRightPane = null;
         view.clearCenterPane();
         view.changeRightPane(MSG_RIGHT_PANE);
     }
     private void onInvokeSuccess(String actionVerb){
-        String message = "Succeeded to " + actionVerb + "!";
-        System.out.println("Added no new variable to Variable Tree.");
+        String message = "Succeeded to " + actionVerb.toLowerCase() + "!";
+        System.out.println(message);
         JOptionPane.showMessageDialog(view.getFrame(), message, "Success", JOptionPane.PLAIN_MESSAGE);
         labDataOnRightPane = null;
         view.clearCenterPane();

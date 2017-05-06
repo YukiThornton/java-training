@@ -169,9 +169,6 @@ public class InterpretView {
         mainPane.add(centerPane);
         mainPane.add(createPillar());
         mainPane.add(rightPane);
-        
-        // DEBUG
-        //mainPane.setBackground(Color.RED);
     }
     private void initializeLogPane() {
         logPane = new JPanel();
@@ -288,7 +285,7 @@ public class InterpretView {
     }
     
     private Tab createVariableTreeTab() {
-        return new Tab(ComponentTools.createTextPanel("Make a variable and come back here!", DEFAULT_COLUMN_PANE_SIZE), ICON_CUBE, "Variable Tree", "Variables available here.");
+        return new Tab(ComponentTools.createTextPanel("Make variables and come back here!", DEFAULT_COLUMN_PANE_SIZE), ICON_CUBE, "Variable Tree", "Variables available here.");
     }
     
     public void changeVariableTreeTab(Map<String, List<Variable>> map) {
@@ -353,7 +350,7 @@ public class InterpretView {
         addBtnPaneToInfo(panel, constraints, 1, info);        
     }
     private void decorateInfoPaneForNull(Info info, JPanel panel, GridBagConstraints constraints) {
-        addVariableInfoPaneToInfo(panel, constraints, 1, info);
+        addVariableInfoPaneToInfo(panel, constraints, 0, info);
         addBtnPaneToInfo(panel, constraints, 1, info);        
     }
     private void addTypeInfoPaneToInfo(JPanel pane, GridBagConstraints constraints, int gridy, Info info) {
@@ -450,8 +447,13 @@ public class InterpretView {
     private Component createLabForConstructor(LabData labData, JPanel panel, GridBagConstraints constraints) {
         ConstructorLabData constLabData = (ConstructorLabData)labData;
         
-        addTitleToPane(panel, constraints, 0, "Create a new \'" + constLabData.getSimpleDeclaredClassName() + "\' variable.");
-        addNewVariableInfoPaneToLab(panel, constraints, 1, constLabData.getSimpleDeclaredClassName(), constLabData.getNewVariableNameInput().getInputComponents()[0]);
+        if (constLabData.updatesExistingVariable()) {
+            addTitleToPane(panel, constraints, 0, "Set new value on \'" + constLabData.getDestObjectVariable().toString() + "\'.");
+            addExistingVariableInfoPaneToLab(panel, constraints, 1, constLabData.getSimpleDeclaredClassName(), constLabData.getDestObjectVariable().toString(), constLabData.getDestObjectVariable().getSimpleValueName());
+        } else {
+            addTitleToPane(panel, constraints, 0, "Create new \'" + constLabData.getSimpleDeclaredClassName() + "\' variable.");
+            addNewVariableInfoPaneToLab(panel, constraints, 1, constLabData.getSimpleDeclaredClassName(), constLabData.getNewVariableNameInput().getInputComponents()[0]);
+        }
         if (constLabData.hasParameters()) {
             addParamInfoPaneToLab(panel, constraints, 2, constLabData.getParamInputs());
         } else {
@@ -485,7 +487,7 @@ public class InterpretView {
     }
     private Component createLabForNewArray(LabData labData, JPanel panel, GridBagConstraints constraints) {
         ArrayLabData arrayLabData = (ArrayLabData)labData;
-        addTitleToPane(panel, constraints, 0, "Create a new \'" + arrayLabData.getSimpleArrayTypeName() + "\' array.");
+        addTitleToPane(panel, constraints, 0, "Create new \'" + arrayLabData.getSimpleArrayTypeName() + "\' array.");
         addNewArrayInfoPaneToLab(panel, constraints, 1, arrayLabData.getSimpleArrayTypeName(), arrayLabData.getNewVariableNameInput().getInputComponents()[0], arrayLabData.getArrayLengthInput().getInputComponents()[0]);
         addBtnPaneToLab(panel, constraints, 2, "Cancel", arrayLabData.getActionVerb());
         return panel;
@@ -635,10 +637,10 @@ public class InterpretView {
         case CLASS:
         case PRIMITIVE_TYPE:
             buttons = new Button[2];
-            Button variableBtn = new Button("Create a variable");
+            Button variableBtn = new Button("Create variable");
             variableBtn.addActionListener(createVariableBtnInInfoActionListener);
             buttons[0] = variableBtn;
-            Button arrayBtn = new Button("Create an array");
+            Button arrayBtn = new Button("Create array");
             arrayBtn.addActionListener(createArrayBtnInInfoActionListener);
             buttons[1] = arrayBtn;
             break;

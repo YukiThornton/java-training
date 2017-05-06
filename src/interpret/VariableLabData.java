@@ -7,13 +7,10 @@ public class VariableLabData extends LabData {
     private LabInput newVariableNameInput;
     private Variable variable;
     private LabInput newValueInput;
-    private ACTION action;
-    private enum ACTION {CREATE_PRIMITIVE, CREATE_NON_PRIMITIVE, UPDATE_PRIMITIVE, UPDATE_NON_PRIMITIVE};
 
     public VariableLabData(Class<?> cls, LabInput newValueInput) {
         this.labType = LabType.VARIABLE;
-        this.actionVerb = "Create a new variable";
-        this.action = cls.isPrimitive() ? ACTION.CREATE_PRIMITIVE : ACTION.CREATE_NON_PRIMITIVE;
+        this.actionVerb = "Create new variable";
         this.variableType = cls;
         this.variable = null;
         this.newVariableNameInput = LabInput.create(InputType.VARIABLE_NAME);
@@ -22,8 +19,7 @@ public class VariableLabData extends LabData {
 
     public VariableLabData(Variable variable, LabInput newValueInput) {
         this.labType = LabType.VARIABLE;
-        this.actionVerb = "Set a new value";
-        this.action = variable.getType().isPrimitive() ? ACTION.UPDATE_PRIMITIVE : ACTION.UPDATE_NON_PRIMITIVE;
+        this.actionVerb = "Set new value";
         this.variableType = variable.getType();
         this.variable = variable;
         this.newVariableNameInput = null;
@@ -31,11 +27,7 @@ public class VariableLabData extends LabData {
     }
     
     public boolean createsNewValue() {
-        return action == ACTION.CREATE_PRIMITIVE || action == ACTION.CREATE_NON_PRIMITIVE;
-    }
-    
-    public boolean isPrimitive() {
-        return action == ACTION.CREATE_PRIMITIVE || action == ACTION.UPDATE_PRIMITIVE;
+        return variable == null;
     }
 
     public Class<?> getVariableType() {
@@ -71,17 +63,10 @@ public class VariableLabData extends LabData {
 
     @Override
     public Variable invoke() throws InterpretException {
-        switch (action) {
-        case CREATE_PRIMITIVE:
+        if (createsNewValue()) {
             return invokeToCreatePrimitive();
-        case UPDATE_PRIMITIVE:
+        } else {
             return invokeToUpdatePrimitive();
-        case CREATE_NON_PRIMITIVE:
-            return null;
-        case UPDATE_NON_PRIMITIVE:
-            return null;
-        default:
-            throw new IllegalStateException("Something wrong happened!");
         }
     }
     
