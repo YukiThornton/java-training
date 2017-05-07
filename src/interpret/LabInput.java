@@ -255,22 +255,12 @@ public class LabInput {
         }
         
         String input = ((JTextField)inputComponents[1]).getText();
-        // Single quoted input
-        if (Pattern.matches(REGEX_SINGLE_QUOTED, input)) {
-            if (input.length() == 3) {
-                validatedInput = input.charAt(1);                
-            } else if (input.length() == 8 && input.charAt(1) == '\\' && input.charAt(2) == 'u') {
-                validatedInput = (char)Integer.parseInt(input.substring(3, 7), 16);                
-            } else {
-                return false;
-            }
-        // Plain number literal
+        if (input.length() == 1) {
+            validatedInput = input.charAt(0);                
+        } else if (input.length() == 6 && input.charAt(0) == '\\' && input.charAt(1) == 'u') {
+            validatedInput = (char)Integer.parseInt(input.substring(2, 6), 16);
         } else {
-            try {
-                validatedInput = (char)Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                return false;
-            }
+            return false;
         }
         return true;
     }
@@ -371,13 +361,8 @@ public class LabInput {
             validatedInput = ((Variable)variableComboBox.getSelectedItem()).getValue();
             return true;
         }
-        String input = ((JTextField)inputComponents[1]).getText();
-        if (Pattern.matches(REGEX_DOUBLE_QUOTED, input)) {
-            validatedInput = input.substring(1, input.length() - 1);
-            return true;
-        } else {
-            return false;
-        }
+        validatedInput = ((JTextField)inputComponents[1]).getText();
+        return true;
     }
     private boolean validateOtherObject() {
         @SuppressWarnings("unchecked")
