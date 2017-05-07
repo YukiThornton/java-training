@@ -207,17 +207,17 @@ public class InterpretView {
     public void changeCenterPane(Info info, Field[] fields, Constructor<?>[] constructors, Method[] methods) throws IllegalArgumentException, IllegalAccessException {
         List<Tab> tabList = new ArrayList<>();
         tabList.add(createInfoTab(info));
-        if (info.hasFields()) {
+        if (info.hasFields() && fields != null) {
             Object object = null;
             if (info.getVariable() != null) {
                 object = info.getVariable().getValue();
             }
             tabList.add(createFieldTab(fields, object));
         }
-        if (info.hasConstructors()) {
+        if (info.hasConstructors() && constructors != null) {
             tabList.add(createConstructorTab(constructors));        
         }
-        if (info.hasMethods()) {
+        if (info.hasMethods() && methods != null) {
             tabList.add(createMethodTab(methods));
         }
         centerPane.remove(centerTabbedPane);
@@ -647,6 +647,10 @@ public class InterpretView {
         case OBJECT_VARIABLE:
         case PRIMITIVE_VARIABLE:
         case NULL:
+            if (info.getType().isArray()) {
+                buttons = new Button[0];
+                break;
+            }
             buttons = new Button[1];
             Button changeValueBtn = new Button("Change the value");
             changeValueBtn.addActionListener(changeValueBtnInInfoActionListener);

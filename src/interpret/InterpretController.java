@@ -157,8 +157,13 @@ public class InterpretController {
     }
     private void changeCenterPaneForObjectVariable(Variable variable){
         infoOnCenterPane = Info.create(InfoType.OBJECT_VARIABLE, variable.getType(), variable);
-        fieldsOnCenterPane = ReflectionTools.getFields(variable.getType());
-        methodsOnCenterPane = ReflectionTools.getMethods(variable.getType());
+        if (variable.getType().isArray()) {
+            fieldsOnCenterPane = null;
+            methodsOnCenterPane = null;
+        } else {
+            fieldsOnCenterPane = ReflectionTools.getFields(variable.getType());
+            methodsOnCenterPane = ReflectionTools.getMethods(variable.getType());
+        }
         try {
             view.changeCenterPane(infoOnCenterPane, fieldsOnCenterPane, constructorsOnCenterPane, methodsOnCenterPane);
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -301,7 +306,7 @@ public class InterpretController {
     }
     
     private Variable[] getVariableOptions(Class<?> cls) {
-        List<Variable> list = variableMap.get(cls.getCanonicalName());
+        List<Variable> list = variableMap.get(cls.isPrimitive() ? Variable.PATH_NAME_FOR_PRIMITIVE_TYPES : cls.getCanonicalName());
         if (list == null) {
             return new Variable[0];
         } else {
@@ -372,12 +377,7 @@ public class InterpretController {
     }
     
     private void addVariable(Variable variable) {
-        String pathName = null;
-        if (variable.getType().isPrimitive()) {
-            pathName = "primitive";
-        } else {
-            pathName = variable.getPathName();
-        }
+        String pathName = variable.getPathName();
         List<Variable> list = variableMap.get(pathName);
         if (list == null) {
             List<Variable> newList = new ArrayList<>();

@@ -6,7 +6,8 @@ import java.time.format.DateTimeFormatter;
 
 public class Variable {
 
-    private final static DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final String PATH_NAME_FOR_PRIMITIVE_TYPES = "primitive";
+    private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private Object value;
     private Class<?> type;
@@ -22,7 +23,7 @@ public class Variable {
         this.value = value;
         this.type = type;
         this.name = name;
-        this.pathName = type.getCanonicalName();
+        this.pathName = type.isPrimitive() ? PATH_NAME_FOR_PRIMITIVE_TYPES : type.getCanonicalName();
         if (type.isArray()) {
             this.arrayElements = new Variable[Array.getLength(value)];
             for (int i = 0; i < Array.getLength(value); i++) {
@@ -38,7 +39,7 @@ public class Variable {
         this.value = value;
         this.type = type;
         this.name = null;
-        this.pathName = type.getCanonicalName();
+        this.pathName = type.isPrimitive() ? PATH_NAME_FOR_PRIMITIVE_TYPES : type.getCanonicalName();
         this.parentArray = parent;
         this.indexInParentArray = indexInParentArray;
         this.createdAt = LocalDateTime.now();
@@ -130,6 +131,4 @@ public class Variable {
     public String getLastModifiedAtStr() {
         return lastModifiedAt.format(DATETIME_FORMAT);
     }
-    
-    
 }
