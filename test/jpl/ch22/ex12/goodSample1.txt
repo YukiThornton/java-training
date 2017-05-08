@@ -1,0 +1,4 @@
+apple=0
+banana=2
+#grape=3
+orange=90
