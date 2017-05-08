@@ -5,8 +5,6 @@ import java.io.Reader;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import jpl.ch03.ex07.Attr;
 import jpl.ch22.ex04.Attributed;
 

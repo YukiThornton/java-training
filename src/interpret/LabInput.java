@@ -24,8 +24,6 @@ public class LabInput {
             "return", "short", "static", "strictfp", "super", "switch",
             "synchronized", "this", "throw", "throws", "transient", "true",
             "try", "void", "volatile", "while" };
-    private static final String REGEX_SINGLE_QUOTED = "\'([^\']*)\'";
-    private static final String REGEX_DOUBLE_QUOTED = "\"([^\"]*)\"";
 
     enum InputType{ 
         VARIABLE_NAME, INDEX, BOOLEAN, CHAR, BYTE, SHORT, INT, 
@@ -83,10 +81,10 @@ public class LabInput {
             labInput.inputComponents = createTextFieldAndComboBox(variableOptions);
         } else if (type == Color.class) {
             labInput.inputType = InputType.COLOR;
-            labInput.inputComponents = createTextFieldAndComboBox(variableOptions);
+            labInput.inputComponents = createVariableComboBoxInArray(variableOptions);
         } else {
             labInput.inputType = InputType.OTHER_OBJECTS;
-            labInput.inputComponents = createTextFieldAndComboBox(variableOptions);
+            labInput.inputComponents = createVariableComboBoxInArray(variableOptions);
         }
         return labInput;
     }
@@ -105,22 +103,32 @@ public class LabInput {
     }
     private static Component[] createBooleanComponents(Variable[] variableOptions) {
         JComboBox<Boolean> literalComboBox = new JComboBox<>(BOOLEAN_OPTIONS);
-        JComboBox<Object> variableComboBox = createVariableComboBox(variableOptions);
+        JComboBox<Object> variableComboBox = createVariableComboBox(variableOptions, true);
         setVariableComboBoxActionListener(variableComboBox, literalComboBox);
         Component[] booleanCompos = {variableComboBox, literalComboBox};
         return booleanCompos;
     }
     private static Component[] createTextFieldAndComboBox(Variable[] variableOptions) {
         JTextField textField = new JTextField(DEFAULT_TEXT_FIELD_COLUMN);
-        JComboBox<Object> variableComboBox = createVariableComboBox(variableOptions);
+        JComboBox<Object> variableComboBox = createVariableComboBox(variableOptions, true);
         setVariableComboBoxActionListener(variableComboBox, textField);
         Component[] compos = {variableComboBox, textField};
         return compos;
     }
-    private static JComboBox<Object> createVariableComboBox(Variable[] variableOptions) {
-        Object[] objects = new Object[variableOptions.length + 1];
-        objects[0] = USE_LITERAL_OPTION;
-        System.arraycopy(variableOptions, 0, objects, 1, variableOptions.length);
+    private static Component[] createVariableComboBoxInArray(Variable[] variableOptions) {
+        Component[] array = {createVariableComboBox(variableOptions, false)};
+        return array;
+    }
+    private static JComboBox<Object> createVariableComboBox(Variable[] variableOptions, boolean withLiteralOption) {
+        Object[] objects = null;
+	if (withLiteralOption) {
+	        objects = new Object[variableOptions.length + 1];
+	        objects[0] = USE_LITERAL_OPTION;
+	        System.arraycopy(variableOptions, 0, objects, 1, variableOptions.length);	    
+	} else {
+	        objects = new Object[variableOptions.length];
+	        System.arraycopy(variableOptions, 0, objects, 0, variableOptions.length);	    
+	}
         JComboBox<Object> variableComboBox = new JComboBox<>(objects);
         return variableComboBox;
     }
