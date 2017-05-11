@@ -360,8 +360,9 @@ public class InterpretView {
     }
     private void addVariableInfoPaneToInfo(JPanel pane, GridBagConstraints constraints, int gridy, Info info) {
         String[] strLabels = {"Type", "Name", "Value", "Created at", "Last modified at"};
+        String valueStr = info.getVariable().getSimpleValueName();
         Component[] components = {new JLabel(info.getVariable().getSimpleTypeName()), new JLabel(info.getVariable().toString()),
-                new JLabel(info.getVariable().getSimpleValueName()), new JLabel(info.getVariable().getCreatedAtStr()),
+                new JLabel(valueStr.length() > 30 ? valueStr.substring(0, 30) + "..." : valueStr), new JLabel(info.getVariable().getCreatedAtStr()),
                 new JLabel(info.getVariable().getLastModifiedAtStr())};
         addDoubleColumnTitledPaneToLab(pane, constraints, gridy, info.getInfoTitle(), strLabels, components);
     }
@@ -538,7 +539,8 @@ public class InterpretView {
     }
     private void addExistingVariableInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, String typeName, String variableName, String currentValueStr) {
         String[] strLabels = {"Type", "Variable name", "Current value"};
-        Component[] components = {new JLabel(typeName), new JLabel(variableName), new JLabel(currentValueStr)};
+        String shortCurrentValueStr = currentValueStr.length() > 30 ? currentValueStr.substring(0, 30) + "..." : currentValueStr;
+        Component[] components = {new JLabel(typeName), new JLabel(variableName), new JLabel(shortCurrentValueStr)};
         addDoubleColumnTitledPaneToLab(labPane, constraints, gridy, "Current Variable Info", strLabels, components);
     }
     private void addNewValueInfoPaneToLab(JPanel labPane, GridBagConstraints constraints, int gridy, LabInput newValueInput) {
