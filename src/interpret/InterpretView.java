@@ -54,6 +54,7 @@ public class InterpretView {
     private static final String[] CONST_COLUMNS = {"Modifier", "Method", "Parameter"};
     private static final String[] METHOD_COLUMNS = {"Modifier", "Type", "Method", "Parameter"};
     private static final String DEFAULT_MESSAGE_CENTER_PANE = "Double click on a class!";
+    public static final String PATH_NAME_FOR_PRIMITIVE_TYPES = "primitive";
     
     
     private JFrame frame;
@@ -288,7 +289,7 @@ public class InterpretView {
         return new Tab(ComponentTools.createTextPanel("Make variables and come back here!", DEFAULT_COLUMN_PANE_SIZE), ICON_CUBE, "Variable Tree", "Variables available here.");
     }
     
-    public void changeVariableTreeTab(Map<String, List<Variable>> map) {
+    public void changeVariableTreeTab(Map<Class<?>, List<Variable>> map) {
         variableTree = createVariableTreeWithMap(map);
         JScrollPane pane = ComponentTools.createJScrollPane(variableTree, DEFAULT_COLUMN_PANE_SIZE);
         leftTabbedPane.remove(1);
@@ -701,10 +702,10 @@ public class InterpretView {
     /**
      * Return a tree with only one node.
      */
-    private JTree createVariableTreeWithMap(Map<String, List<Variable>> map) {
+    private JTree createVariableTreeWithMap(Map<Class<?>, List<Variable>> map) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        for (String key : map.keySet()) {
-            DefaultMutableTreeNode keyNode = new DefaultMutableTreeNode(key);
+        for (Class<?> key : map.keySet()) {
+            DefaultMutableTreeNode keyNode = new DefaultMutableTreeNode(key.getCanonicalName());
             root.add(keyNode);
      
             for (Variable variable : map.get(key)) {

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -25,7 +26,7 @@ public class InterpretController {
     private InterpretView view;
     private ClassCollector classCollector;
     
-    private Map<String, List<Variable>> variableMap = new HashMap<>();
+    private Map<Class<?>, List<Variable>> variableMap = new HashMap<>();
     
     private Class<?> clsOnCenterPane;
     private Variable variableOnCenterPane;
@@ -307,12 +308,20 @@ public class InterpretController {
     }
     
     private Variable[] getVariableOptions(Class<?> cls) {
-        List<Variable> list = variableMap.get(cls.isPrimitive() ? Variable.PATH_NAME_FOR_PRIMITIVE_TYPES : cls.getCanonicalName());
-        if (list == null) {
-            return new Variable[0];
-        } else {
-            return list.toArray(new Variable[list.size()]);
-        }
+	Set<Class<?>> keySet = variableMap.keySet();
+        List<Variable> list = new ArrayList<>();
+	for (Class<?> keyClass : keySet) {
+	    if (!cls.isAssignableFrom(keyClass)) {
+		continue;
+	    }
+            List<Variable> smallList = variableMap.get(keyClass);
+            if (smallList == null) {
+                return list.toArray(new Variable[list.size()]);
+            } else {
+                list.addAll(smallList);
+            }
+	}
+        return list.toArray(new Variable[list.size()]);
     }
 
     private void outputUserChoiceOnHistory(String choice) {
@@ -378,12 +387,11 @@ public class InterpretController {
     }
     
     private void addVariable(Variable variable) {
-        String pathName = variable.getPathName();
-        List<Variable> list = variableMap.get(pathName);
+        List<Variable> list = variableMap.get(variable.getType());
         if (list == null) {
             List<Variable> newList = new ArrayList<>();
             newList.add(variable);
-            variableMap.put(pathName, newList);
+            variableMap.put(variable.getType(), newList);
         } else {
             list.add(variable);
         }
