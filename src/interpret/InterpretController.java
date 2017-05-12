@@ -263,8 +263,9 @@ public class InterpretController {
         view.changeRightPane(labDataOnRightPane);
     }
     private boolean canChangeRightPaneForField(Field field) {
-        int modifierType = field.getModifiers();
-        return !(Modifier.isStatic(modifierType) && Modifier.isFinal(modifierType));
+          return true;
+  //      int modifierType = field.getModifiers();
+  //      return !(Modifier.isStatic(modifierType) && Modifier.isFinal(modifierType));
     }
     private void changeRightPaneForField(Field field) {
         outputUserChoiceOnHistory(field.getName());
