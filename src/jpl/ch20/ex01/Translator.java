@@ -22,7 +22,8 @@ public class Translator {
         }
         int b;
         while((b = in.read()) != -1) {
-            out.write(b == from ? to : b);
+            // bに負の値があった場合に動かなくなってしまうことを防ぐためにbyteにキャストする
+            out.write((byte)b == from ? to : b);
         }
     }
 

@@ -45,7 +45,7 @@ public class Translator extends FilterInputStream{
         int b = super.read();
         if (b == -1) {
             return -1;
-        } else if (b == from){
+        } else if ((byte)b == from){
             return to & TO_POSITIVE_INT;
         } else {
             return b & TO_POSITIVE_INT;
