@@ -74,7 +74,7 @@ public class ClockView {
         LocalDateTime time = LocalDateTime.now();
         frame = new JFrame(time.format(DateTimeFormatter.ofPattern("EEEE, MMM d, yyyy")));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setPreferredSize(ClockValues.DEFAULT_FRAME_SIZE);
+        frame.getContentPane().setPreferredSize(ClockValues.DEFAULT_FRAME_SIZE);
         frame.setMinimumSize(ClockValues.MIN_FRAME_SIZE);
         frame.setBackground(values.bgColor());
     }

@@ -64,20 +64,17 @@ public class ClockPanel extends JPanel {
     }
 
     private void paintComponentBasedOnWindowSize(Graphics2D g2) {
-        Rectangle rectangle = this.getBounds();
-        Point centerOfPanel = new Point(rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
+        Rectangle rectangle = parent.getContentPane().getBounds();
+        Point centerOfPanel = getCenterPoint(rectangle);
         int ovalDiameter = (int) (values.fontSize(rectangle.width) * 8);
-        int centerOfOvalY = (int)(rectangle.y + rectangle.height - ovalDiameter / 9 * 2);
-        Point centerOfOval;
-        if (centerOfPanel.y > centerOfOvalY) {
-            centerOfOval = new Point(centerOfPanel.x, centerOfPanel.y);
-        } else {
-            centerOfOval = new Point(centerOfPanel.x, centerOfOvalY);
-        }
         if (values.decoration() != DecorativeFrame.NONE) {
-            drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfOval);
+            drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfPanel);
         }
-        drawTime(g2, rectangle.width, centerOfOval);
+        drawTime(g2, rectangle.width, centerOfPanel);
+    }
+
+    private Point getCenterPoint(Rectangle rectangle) {
+        return new Point(rectangle.x + rectangle.width / 2, rectangle.height / 2);
     }
 
     private void paintComponentBasedOnFontSize(Graphics2D g2) {
@@ -88,20 +85,13 @@ public class ClockPanel extends JPanel {
             currentFontSize = fontSize;
             currentDecoration = values.decoration();
         }
-        Rectangle rectangle = this.getBounds();
-        Point centerOfPanel = new Point(rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
+        Rectangle rectangle = parent.getContentPane().getBounds();
+        Point centerOfPanel = getCenterPoint(rectangle);
         int ovalDiameter = (int) (fontSize * 8);
-        int centerOfOvalY = (int)(rectangle.y + rectangle.height - ovalDiameter / 9 * 2);
-        Point centerOfOval;
-        if (centerOfPanel.y > centerOfOvalY) {
-            centerOfOval = new Point(centerOfPanel.x, centerOfPanel.y);
-        } else {
-            centerOfOval = new Point(centerOfPanel.x, centerOfOvalY);
-        }
         if (values.decoration() != DecorativeFrame.NONE) {
-            drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfOval);
+            drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfPanel);
         }
-        drawTime(g2, rectangle.width, centerOfOval);
+        drawTime(g2, rectangle.width, centerOfPanel);
     }
 
     public void setValues(ClockValues newValues) {
@@ -130,7 +120,7 @@ public class ClockPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                parent.setPreferredSize(new Dimension(width, height));
+                parent.getContentPane().setPreferredSize(new Dimension(width, height));
                 dimension = new Dimension(width, height);
                 parent.pack();
             }
@@ -138,8 +128,9 @@ public class ClockPanel extends JPanel {
     }
     private void drawOval(Graphics2D g2, int ovalThickness, int ovalDiameter, Point centerOfOval) {
         g2.setStroke(new BasicStroke(ovalThickness));
+        int halfOval = ovalDiameter / 2;
         g2.setColor(values.fgColor());
-        g2.drawOval(centerOfOval.x - ovalDiameter / 2, centerOfOval.y - ovalDiameter / 2, ovalDiameter, ovalDiameter);
+        g2.drawOval(centerOfOval.x - halfOval, centerOfOval.y - halfOval, ovalDiameter, ovalDiameter);
     }
 
     private void drawTime(Graphics2D g2, int paneWidth, Point center) {
@@ -149,7 +140,7 @@ public class ClockPanel extends JPanel {
         LocalDateTime time = LocalDateTime.now();
 
         TextData timeData = new TextData(time, "hh:mm", standardFont, values.fgColor(), g2);
-        timeData.locate(center.x - timeData.width() / 2, center.y);
+        timeData.locate(center.x - timeData.width() / 2, center.y + timeData.height() / 6);
         timeData.draw();
         
         TextData ampmData = new TextData(time, "a", smallerFont, values.fgColor(), g2);
