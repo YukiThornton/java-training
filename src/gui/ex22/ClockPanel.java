@@ -17,6 +17,7 @@ import javax.swing.Timer;
 
 import java.awt.Point;
 
+import gui.ex22.ClockValues.DecorativeFrame;
 import gui.ex22.ClockValues.FontSizeRatioOptions;
 
 @SuppressWarnings("serial")
@@ -24,7 +25,10 @@ public class ClockPanel extends JPanel {
 
     private JFrame parent;
     private ClockValues values;
+    private boolean shouldResizeWindowSize = false;
+    private boolean currentWindowSizeDeterminesFontSize = ClockValues.DEFAULT_WINDOW_SIZE_DETEMINES_FONT_SIZE;
     private int currentFontSize;
+    private DecorativeFrame currentDecoration;
     private Dimension dimension;
 
     public ClockPanel(JFrame parent, ClockValues values) {
@@ -63,36 +67,63 @@ public class ClockPanel extends JPanel {
         Rectangle rectangle = this.getBounds();
         Point centerOfPanel = new Point(rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
         int ovalDiameter = (int) (values.fontSize(rectangle.width) * 8);
-        Point centerOfOval = new Point(centerOfPanel.x, (int)(rectangle.y + rectangle.height - ovalDiameter / 9 * 2));
-        drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfOval);
+        int centerOfOvalY = (int)(rectangle.y + rectangle.height - ovalDiameter / 9 * 2);
+        Point centerOfOval;
+        if (centerOfPanel.y > centerOfOvalY) {
+            centerOfOval = new Point(centerOfPanel.x, centerOfPanel.y);
+        } else {
+            centerOfOval = new Point(centerOfPanel.x, centerOfOvalY);
+        }
+        if (values.decoration() != DecorativeFrame.NONE) {
+            drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfOval);
+        }
         drawTime(g2, rectangle.width, centerOfOval);
     }
 
     private void paintComponentBasedOnFontSize(Graphics2D g2) {
         int fontSize = values.fontSize();
-        if (values.fontSizeIndex() == ClockValues.DEFAULT_FONT_SIZE_INDEX) {
-            changeSize(ClockValues.DEFAULT_FRAME_SIZE.width, ClockValues.DEFAULT_FRAME_SIZE.height);
-            currentFontSize = fontSize;
-        } else if (currentFontSize != fontSize) {
+        if (shouldResizeWindowSize || currentFontSize != fontSize || currentDecoration != values.decoration()) {
             calcAndChangeSize((double)fontSize / ClockValues.FONT_SIZE_OPTIONS[ClockValues.DEFAULT_FONT_SIZE_INDEX]);
+            shouldResizeWindowSize = false;
             currentFontSize = fontSize;
+            currentDecoration = values.decoration();
         }
         Rectangle rectangle = this.getBounds();
         Point centerOfPanel = new Point(rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
         int ovalDiameter = (int) (fontSize * 8);
-        Point centerOfOval = new Point(centerOfPanel.x, (int)(rectangle.y + rectangle.height - ovalDiameter / 9 * 2));
-        drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfOval);
+        int centerOfOvalY = (int)(rectangle.y + rectangle.height - ovalDiameter / 9 * 2);
+        Point centerOfOval;
+        if (centerOfPanel.y > centerOfOvalY) {
+            centerOfOval = new Point(centerOfPanel.x, centerOfPanel.y);
+        } else {
+            centerOfOval = new Point(centerOfPanel.x, centerOfOvalY);
+        }
+        if (values.decoration() != DecorativeFrame.NONE) {
+            drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfOval);
+        }
         drawTime(g2, rectangle.width, centerOfOval);
     }
 
     public void setValues(ClockValues newValues) {
         values = newValues;
+        if (currentWindowSizeDeterminesFontSize != values.windowSizeDeterminesFontSize()) {
+            currentWindowSizeDeterminesFontSize = values.windowSizeDeterminesFontSize();
+            if (!currentWindowSizeDeterminesFontSize) {
+                shouldResizeWindowSize = true;
+                currentFontSize = ClockValues.FONT_SIZE_OPTIONS[ClockValues.DEFAULT_FONT_SIZE_INDEX];
+            }
+        }
         repaint();
     }
 
     private void calcAndChangeSize(double ratio) {
         Dimension baseSize = ClockValues.DEFAULT_FRAME_SIZE;
-        changeSize((int)(baseSize.getWidth() * ratio), (int)(baseSize.getHeight() * ratio));
+        if (values.decoration() == DecorativeFrame.NONE) {
+            ratio /= 2;
+            changeSize((int)(baseSize.getWidth() * ratio), (int)(baseSize.getHeight() * ratio));
+        } else {
+            changeSize((int)(baseSize.getWidth() * ratio), (int)(baseSize.getHeight() * ratio));
+        }
     }
 
     private void changeSize(int width, int height) {
@@ -118,7 +149,7 @@ public class ClockPanel extends JPanel {
         LocalDateTime time = LocalDateTime.now();
 
         TextData timeData = new TextData(time, "hh:mm", standardFont, values.fgColor(), g2);
-        timeData.locate(center.x - timeData.width() / 2, center.y - timeData.height() / 2);
+        timeData.locate(center.x - timeData.width() / 2, center.y);
         timeData.draw();
         
         TextData ampmData = new TextData(time, "a", smallerFont, values.fgColor(), g2);

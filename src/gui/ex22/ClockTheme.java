@@ -2,17 +2,21 @@ package gui.ex22;
 
 import java.awt.Color;
 
+import gui.ex22.ClockValues.DecorativeFrame;
+
 public class ClockTheme {
     private String label;
     private Color bgColor;
     private Color fgColor;
     private int fontIndex;
+    private DecorativeFrame decoration;
     
-    public ClockTheme(String label, Color bgColor, Color fgColor, int fontIndex) {
+    public ClockTheme(String label, Color bgColor, Color fgColor, int fontIndex, DecorativeFrame decoration) {
         this.label = label;
         this.bgColor = bgColor;
         this.fgColor = fgColor;
         this.fontIndex = fontIndex;
+        this.decoration = decoration;
     }
 
     @Override
@@ -34,6 +38,10 @@ public class ClockTheme {
 
     public int fontIndex() {
         return fontIndex;
+    }
+
+    public DecorativeFrame decoration() {
+        return decoration;
     }
 
 }

@@ -34,6 +34,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import gui.ex22.ClockValues.DecorativeFrame;
+
 public class ClockView {
     private boolean isInitialized = false;
 
@@ -118,6 +120,7 @@ public class ClockView {
         private JList<Integer> fontSizeList;
         private JButton bgColorChooserBtn;
         private JButton fgColorChooserBtn;
+        private JRadioButton[] decoRadioBtns;
         private Button applyBtn;
         private Button cancelBtn;
         
@@ -166,6 +169,7 @@ public class ClockView {
             }
             bgColorChooserBtn.setBackground(values.bgColor());
             fgColorChooserBtn.setBackground(values.fgColor());
+            decoRadioBtns[values.decoration().index].setSelected(true);
         }
 
         private void setSelectedItemOnList(JList<?> list, int selectedIndex){
@@ -186,6 +190,7 @@ public class ClockView {
             setSelectedItemOnList(fontList, tempValues.fontIndex());
             bgColorChooserBtn.setBackground(tempValues.bgColor());
             fgColorChooserBtn.setBackground(tempValues.fgColor());
+            decoRadioBtns[tempValues.decoration().index].setSelected(true);
             actionListnersOn =  true;
             changeClockPanelView(tempValues);
         }
@@ -245,6 +250,12 @@ public class ClockView {
             changeClockPanelView(tempValues);
         }
 
+        private void onDecorationBtnPressed(DecorativeFrame decoration) {
+            clearThemeSelection();
+            tempValues.setDecoration(decoration);
+            changeClockPanelView(tempValues);
+        }
+
         private void onApplyBtnPressed() {
             controller.onValuesChanged(tempValues);
             disappear();
@@ -279,6 +290,7 @@ public class ClockView {
             createAndAddFontSizeList(10, rowIndex++);
             createAndAddBgBtn(10, rowIndex++);
             createAndAddFgBtn(5, rowIndex++);
+            createAndAddDecorationOptions(10, rowIndex++);
             createAndAddBottomBtns(5, rowIndex++);
         }
 
@@ -307,12 +319,10 @@ public class ClockView {
         }
 
         private void createAndAddFontSizeList(int marginTop, int gridy) {
-            JPanel panel = new JPanel();
-            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            ButtonGroup radios = new ButtonGroup();
             windowBaseBtn = new JRadioButton("Calculate from window size");
-            radios.add(windowBaseBtn);
-            panel.add(windowBaseBtn);
+            fontBaseBtn = new JRadioButton("Select");
+            JRadioButton[] btns = {windowBaseBtn, fontBaseBtn};
+            JPanel panel = addAndPutRadioBtnsTogether(BoxLayout.Y_AXIS, btns);
             windowBaseBtn.setAlignmentX(LEFT_ALIGNMENT);
             windowBaseBtn.addActionListener(new ActionListener() {
                 @Override
@@ -320,9 +330,6 @@ public class ClockView {
                     onWindowBasedBtnPressed();
                 }
             });
-            fontBaseBtn = new JRadioButton("Select");
-            radios.add(fontBaseBtn);
-            panel.add(fontBaseBtn);
             fontBaseBtn.setAlignmentX(LEFT_ALIGNMENT);
             fontBaseBtn.addActionListener(new ActionListener() {
                 @Override
@@ -372,6 +379,22 @@ public class ClockView {
             });
         }
 
+        private void createAndAddDecorationOptions(int marginTop, int gridy) {
+            decoRadioBtns = new JRadioButton[DecorativeFrame.values().length];
+            for (DecorativeFrame deco: DecorativeFrame.values()) {
+                decoRadioBtns[deco.index] = new JRadioButton(deco.name);
+                decoRadioBtns[deco.index].addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onDecorationBtnPressed(deco);
+                    }
+                });
+            }
+            JPanel panel = addAndPutRadioBtnsTogether(BoxLayout.X_AXIS, decoRadioBtns);
+
+            addLabelAndInputCompoRow("Frame:", panel, marginTop, gridy);
+        }
+
         private void createAndAddBottomBtns(int marginTop, int gridy) {
             Panel buttonPanel = new Panel();
             applyBtn = new Button("Apply");
@@ -406,6 +429,18 @@ public class ClockView {
             listScroller.setMinimumSize(LIST_DIMENSION);
             listScroller.setMaximumSize(LIST_DIMENSION);
             return listScroller;
+        }
+
+        private JPanel addAndPutRadioBtnsTogether(int axis, JRadioButton[] btns) {
+            JPanel panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel, axis));
+            ButtonGroup radios = new ButtonGroup();
+            
+            for (JRadioButton btn: btns) {
+                radios.add(btn);
+                panel.add(btn);
+            }
+            return panel;
         }
 
         private void addLabelAndInputCompoRow(String strLabel, Component compo, int marginTop, int gridy){

@@ -8,11 +8,11 @@ public class ClockValues {
     public static final Font SYSTEM_FONT = new Font("Dialog", Font.PLAIN, 15);
     public static final Dimension MIN_FRAME_SIZE = new Dimension(150, 150);
     public static final Dimension DEFAULT_FRAME_SIZE = new Dimension(600, 400);
-    public static final Dimension FIXED_DIALOG_SIZE = new Dimension(400, 500);
+    public static final Dimension FIXED_DIALOG_SIZE = new Dimension(400, 550);
     
     public static final Integer[] FONT_SIZE_OPTIONS = {16, 20, 24, 28, 36, 50, 60, 80, 100, 120, 150, 180, 200};
     public static final int DEFAULT_FONT_SIZE_INDEX = 5;
-    private static final boolean DEFAULT_WINDOW_SIZE_DETEMINES_FONT_SIZE = true;
+    public static final boolean DEFAULT_WINDOW_SIZE_DETEMINES_FONT_SIZE = true;
 
     private static final Font FONT_DEFAULT = new ClockFont(Font.MONOSPACED, Font.BOLD, 24);
     private static final Font FONT_ARIAL_BLACK = new ClockFont("Arial Black", Font.PLAIN, 24);
@@ -30,12 +30,12 @@ public class ClockValues {
     public static final Color DEFAULT_BG_COLOR = new Color(252, 243, 242);
     public static final Color DEFAULT_FG_COLOR = new Color(193, 31, 9);
 
-    public static final ClockTheme THEME_DEFAULT = new ClockTheme("Default", DEFAULT_BG_COLOR, DEFAULT_FG_COLOR, DEAFULT_FONT_INDEX);
-    public static final ClockTheme THEME_SIMPLE = new ClockTheme("Simple", Color.WHITE, Color.BLACK, 7);
-    public static final ClockTheme THEME_DARK = new ClockTheme("Dark", new Color(105, 105, 105), new Color(211, 211, 211), 2);
-    public static final ClockTheme THEME_CHOCO = new ClockTheme("Mint Chocolate", new Color(127, 255, 212), new Color(77, 49, 49), 6);
+    public static final ClockTheme THEME_DEFAULT = new ClockTheme("Default", DEFAULT_BG_COLOR, DEFAULT_FG_COLOR, DEAFULT_FONT_INDEX, DecorativeFrame.OVAL);
+    public static final ClockTheme THEME_SIMPLE = new ClockTheme("Simple", Color.WHITE, Color.BLACK, 7, DecorativeFrame.NONE);
+    public static final ClockTheme THEME_DARK = new ClockTheme("Dark", new Color(105, 105, 105), new Color(211, 211, 211), 2, DecorativeFrame.OVAL);
+    public static final ClockTheme THEME_CHOCO = new ClockTheme("Mint Chocolate", new Color(127, 255, 212), new Color(77, 49, 49), 6, DecorativeFrame.OVAL);
     public static final ClockTheme[] THEME_OPTIONS = {THEME_DEFAULT, THEME_SIMPLE, THEME_DARK, THEME_CHOCO};
-    private static final int DEFAULT_THEME_INDEX = 0;
+    public static final int DEFAULT_THEME_INDEX = 0;
 
     private int themeIndex;
     private int fontIndex;
@@ -43,6 +43,7 @@ public class ClockValues {
     private final int initialFontSize;
     private Color bgColorField;
     private Color fgColorField;
+    private DecorativeFrame decoration;
     private boolean windowSizeDeterminesFontSize;
     
     enum FontSizeRatioOptions {
@@ -54,14 +55,28 @@ public class ClockValues {
             this.ratio = ratio;
         }
     }
-    
+
+    enum DecorativeFrame {
+        OVAL(0, "Circle"), NONE(1, "None");
+        
+        int index;
+        String name;
+        
+        private DecorativeFrame(int index, String name) {
+            this.index = index;
+            this.name = name;
+        }
+    }
+
     public ClockValues() {
         themeIndex = DEFAULT_THEME_INDEX;
-        fontIndex = DEAFULT_FONT_INDEX;
+        ClockTheme theme = THEME_OPTIONS[DEFAULT_THEME_INDEX];
+        fontIndex = theme.fontIndex();
         setFontSize(DEFAULT_FONT_SIZE_INDEX);
         initialFontSize = fontSize(FontSizeRatioOptions.STANDARD, DEFAULT_FRAME_SIZE.width);
-        bgColorField = DEFAULT_BG_COLOR;
-        fgColorField = DEFAULT_FG_COLOR;
+        bgColorField = theme.bgColor();
+        fgColorField = theme.fgColor();
+        decoration = theme.decoration();
         windowSizeDeterminesFontSize = DEFAULT_WINDOW_SIZE_DETEMINES_FONT_SIZE;
     }
 
@@ -72,6 +87,7 @@ public class ClockValues {
         initialFontSize = oldValues.initialFontSize;
         bgColorField = oldValues.bgColor();
         fgColorField = oldValues.fgColor();
+        decoration = oldValues.decoration();
         windowSizeDeterminesFontSize = oldValues.windowSizeDeterminesFontSize();
     }
 
@@ -88,6 +104,7 @@ public class ClockValues {
         setFont(theme.fontIndex());
         setBgColor(theme.bgColor());
         setFgColor(theme.fgColor());
+        setDecoration(theme.decoration());
     }
 
     public Color bgColor() {
@@ -169,6 +186,14 @@ public class ClockValues {
         }
     }
 
+    public DecorativeFrame decoration() {
+        return decoration;
+    }
+
+    public void setDecoration(DecorativeFrame decoration) {
+        this.decoration = decoration;
+    }
+
     public boolean windowSizeDeterminesFontSize() {
         return windowSizeDeterminesFontSize;
     }
@@ -180,7 +205,11 @@ public class ClockValues {
 
     private int calcFontSize(FontSizeRatioOptions ratio, int panelWidth) {
         if (windowSizeDeterminesFontSize) {
-            return (int)(FONT_SIZE_OPTIONS[DEFAULT_FONT_SIZE_INDEX] * panelWidth / DEFAULT_FRAME_SIZE.width * ratio.ratio);
+            if (decoration == DecorativeFrame.NONE) {
+                return (int)(FONT_SIZE_OPTIONS[DEFAULT_FONT_SIZE_INDEX] * panelWidth / DEFAULT_FRAME_SIZE.width * ratio.ratio * 2);
+            } else {
+                return (int)(FONT_SIZE_OPTIONS[DEFAULT_FONT_SIZE_INDEX] * panelWidth / DEFAULT_FRAME_SIZE.width * ratio.ratio);
+            }
         } else {
             return (int)(FONT_SIZE_OPTIONS[fontSizeIndex] * ratio.ratio);
         }
