@@ -17,7 +17,7 @@ public class LineReader extends FilterReader {
             return null;
         }
         int c  = super.read();
-        while(c == 10 || c == 13) {
+        while(c == '\n' || c == '\r') {
             c = super.read();
         }
         if (c == -1) {
@@ -25,15 +25,15 @@ public class LineReader extends FilterReader {
             return null;
         }
         
-        StringBuffer stringBuffer = new StringBuffer();
-        while(c != -1 && c != 10 && c != 13) {
-            stringBuffer.append((char)c);
+        StringBuilder sb = new StringBuilder();
+        while(c != -1 && c != '\n' && c != '\r') {
+            sb.append((char)c);
             c = super.read();
         }
         if(c == -1) {
             endOfStream = true;
         }
-        return stringBuffer.toString();
+        return sb.toString();
     }
 
 }
