@@ -2,12 +2,16 @@ package gui.ex23;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.regex.Pattern;
 
 import javax.swing.Timer;
 
 public class ClockTask {
 
     private static final String SEPARATOR = ":";
+    private static final String TASK_NAME_REGEX = "[a-zA-Z0-9_-]{1,10}+";
+    private static Pattern taskNamePattern = Pattern.compile(TASK_NAME_REGEX);
+
     private String name;
     private int minute;
     private Timer timer;
@@ -19,7 +23,6 @@ public class ClockTask {
             @Override
             public void actionPerformed(ActionEvent e) {
                 addMinute();
-                System.out.println(name() + ":" + minute());
             }
         });
     }
@@ -76,12 +79,16 @@ public class ClockTask {
         return buffer.toString();
     }
 
+    public static boolean isValidTaskName(String name) {
+        return taskNamePattern.matcher(name).matches();
+    }
+
     public String name() {
         return name;
     }
 
     public String displayName() {
-        return name + " - " + minute + "min";
+        return name + " : " + minute + "min";
     }
 
     public void setName(String name) {

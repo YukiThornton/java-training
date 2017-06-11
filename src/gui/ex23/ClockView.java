@@ -20,6 +20,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JWindow;
@@ -117,6 +118,14 @@ public class ClockView {
         clockPanel.setTask(null);
     }
 
+    public void showTaskMode() {
+        clockPanel.setModeRelatedMessage(ClockValues.MODE_MESSAGE_TASK);
+    }
+
+    public void stopShowingTaskMode() {
+        clockPanel.setModeRelatedMessage(null);
+    }
+
     private void initWindow() {
         window = new JWindow();
         window.addMouseMotionListener(new MouseMotionAdapter() {
@@ -170,9 +179,9 @@ public class ClockView {
         JMenu modeMenu = new JMenu(ClockValues.POPUP_COMMAND_MODE);
         ButtonGroup buttonGroup = new ButtonGroup();
         modeMenuItems = new JRadioButtonMenuItem[2];
-        JRadioButtonMenuItem standardModeMenuItem = new JRadioButtonMenuItem(ClockValues.POPUP_COMMAND_STANDARD_MODE);
+        JRadioButtonMenuItem standardModeMenuItem = new JRadioButtonMenuItem(ClockValues.POPUP_COMMAND_MODE_STANDARD);
         modeMenuItems[ClockMode.CLOCK.index()] = standardModeMenuItem;
-        JRadioButtonMenuItem taskModeMenuItem = new JRadioButtonMenuItem(ClockValues.POPUP_COMMAND_TASK_MODE);
+        JRadioButtonMenuItem taskModeMenuItem = new JRadioButtonMenuItem(ClockValues.POPUP_COMMAND_MODE_TASK);
         modeMenuItems[ClockMode.TASK.index()] = taskModeMenuItem;
         for (JRadioButtonMenuItem item: modeMenuItems) {
             modeMenu.add(item);
@@ -232,11 +241,17 @@ public class ClockView {
         taskMenu.setEnabled(true);
     }
 
+    public String showTaskRenameDialog(String message, String oldTaskName, String initialVal) {
+        return (String) JOptionPane.showInputDialog(window, message, "Rename " + oldTaskName, JOptionPane.PLAIN_MESSAGE, null, null, initialVal);
+    }
+
     private JMenu createTaskNamedMenu(String tempName) {
         JMenu taskNamedMenu = new JMenu(tempName);
         // When you change the order of the code below, check out updateTaskNamedMenu too.
         JMenuItem taskStartMenu = new JMenuItem(ClockValues.POPUP_COMMAND_TASK_START);
         taskNamedMenu.add(taskStartMenu);
+        JMenuItem taskRenameMenu = new JMenuItem(ClockValues.POPUP_COMMAND_TASK_RENAME);
+        taskNamedMenu.add(taskRenameMenu);
         JMenuItem taskResetMenu = new JMenuItem(ClockValues.POPUP_COMMAND_TASK_RESET);
         taskNamedMenu.add(taskResetMenu);
         return taskNamedMenu;
@@ -261,7 +276,15 @@ public class ClockView {
                 controller.onTaskStartSelected(task);
             }
         });
-        JMenuItem taskResetMenu = taskNamedMenu.getItem(1);
+        JMenuItem taskRenameMenu = taskNamedMenu.getItem(1);
+        removeActionListeners(taskRenameMenu);
+        taskRenameMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.onTaskRenameSelected(task);
+            }
+        });
+        JMenuItem taskResetMenu = taskNamedMenu.getItem(2);
         removeActionListeners(taskResetMenu);
         taskResetMenu.addActionListener(new ActionListener() {
             @Override
@@ -269,6 +292,15 @@ public class ClockView {
                 controller.onTaskResetSelected(task);
             }
         });
+    }
+
+    public void updateNamesOfTaskNamedMenus(ClockTask[] tasks) {
+        if (taskNamedMenus.length != tasks.length) {
+            throw new IllegalArgumentException("Something went wrong!");
+        }
+        for (int i = 0; i < tasks.length; i++) {
+            taskNamedMenus[i].setText(tasks[i].name());
+        }
     }
 
     private void removeActionListeners(JMenuItem item) {
@@ -289,7 +321,7 @@ public class ClockView {
     }
 
     private JMenu createThemeMenuSet() {
-        JMenu themeMenu = new JMenu(ClockValues.POPUP_COMMAND_THEME);
+        JMenu themeMenu = new JMenu(ClockValues.POPUP_COMMAND_PREF_THEME);
         themeRadioMenuGroup = new ButtonGroup();
 
         ClockTheme[] themes = ClockValues.THEME_OPTIONS;
@@ -315,7 +347,7 @@ public class ClockView {
     }
 
     private JMenu createFontMenuSet() {
-        JMenu fontMenu = new JMenu(ClockValues.POPUP_COMMAND_FONT);
+        JMenu fontMenu = new JMenu(ClockValues.POPUP_COMMAND_PREF_FONT);
         ButtonGroup group = new ButtonGroup();
 
         Font[] fonts = ClockValues.FONT_OPTIONS;
@@ -341,7 +373,7 @@ public class ClockView {
     }
 
     private JMenu createFontSizeMenuSet() {
-        JMenu fontSizeMenu = new JMenu(ClockValues.POPUP_COMMAND_FONT_SIZE);
+        JMenu fontSizeMenu = new JMenu(ClockValues.POPUP_COMMAND_PREF_FONT_SIZE);
         ButtonGroup group = new ButtonGroup();
 
         Integer[] fontSizes = ClockValues.FONT_SIZE_OPTIONS;
@@ -367,7 +399,7 @@ public class ClockView {
     }
 
     private JMenuItem createBgColMenu() {
-        bgColMenuItem = new JMenuItem(ClockValues.POPUP_COMMAND_COL1);
+        bgColMenuItem = new JMenuItem(ClockValues.POPUP_COMMAND_PREF_BG_COL);
         bgColMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -378,7 +410,7 @@ public class ClockView {
     }
 
     private JMenuItem createFgColMenu() {
-        fgColMenuItem = new JMenuItem(ClockValues.POPUP_COMMAND_COL2);
+        fgColMenuItem = new JMenuItem(ClockValues.POPUP_COMMAND_PREF_FG_COL);
         fgColMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -389,7 +421,7 @@ public class ClockView {
     }
 
     private JCheckBoxMenuItem createDecorationMenu() {
-        decorationMenuItem = new JCheckBoxMenuItem(ClockValues.POPUP_COMMAND_DECORATION);
+        decorationMenuItem = new JCheckBoxMenuItem(ClockValues.POPUP_COMMAND_PREF_DECORATION);
         decorationMenuItem.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {

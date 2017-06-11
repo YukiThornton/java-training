@@ -141,12 +141,14 @@ public class ClockController {
     private void setupForTaskMode() {
         tasks = taskController.tasks();
         view.setupForTaskMode(tasks);
+        view.showTaskMode();
     }
 
     private void quitTaskMode() {
         if (taskController.isTaskRunning()) {
             pauseAndSaveTask();
         }
+        view.stopShowingTaskMode();
     }
 
     public void onTaskStartSelected(ClockTask task) {
@@ -162,6 +164,31 @@ public class ClockController {
             throw new IllegalStateException("Something went wrong!");
         }
         pauseAndSaveTask();
+    }
+
+    public void onTaskRenameSelected(ClockTask task) {
+        taskController.select(task);
+        if (taskController.isTaskRunning()) {
+            throw new IllegalStateException("Something went wrong!");
+        }
+        String newName = null;
+        String initialVal = task.name();
+        String message = ClockValues.DIALOG_MESSAGE_RENAME_TASK;
+        do {
+            newName = view.showTaskRenameDialog(message, task.name(), initialVal);
+            message = ClockValues.DIALOG_MESSAGE_RENAME_TASK_AFTER_VALID_ERR;
+            initialVal = newName;
+        } while(newName != null && !isValidTaskName(newName));
+        if (newName != null) {
+            taskController.renameTask(newName);
+            taskController.saveTasks();
+        }
+        taskController.select(null);
+        view.updateNamesOfTaskNamedMenus(tasks);
+    }
+
+    private boolean isValidTaskName(String name) {
+        return ClockTask.isValidTaskName(name);
     }
 
     public void onTaskResetSelected(ClockTask task) {

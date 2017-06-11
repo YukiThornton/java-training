@@ -52,6 +52,13 @@ public class TaskController {
         selectedTask.reset();
     }
 
+    public void renameTask(String newName) {
+        if (selectedTask == null) {
+            throw new IllegalStateException("No task is selected.");
+        }
+        selectedTask.setName(newName);
+    }
+
     public boolean isTaskRunning() {
         if (selectedTask == null || !selectedTask.isRunning()) {
             return false;

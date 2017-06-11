@@ -31,6 +31,7 @@ public class ClockPanel extends JPanel {
     private DecorativeFrame currentDecoration;
     private Dimension dimension;
     private ClockTask task;
+    private String modeRelatedMessage;
 
     public ClockPanel(JWindow parent, ClockValues values) {
         super();
@@ -50,6 +51,10 @@ public class ClockPanel extends JPanel {
 
     public void setTask(ClockTask task) {
         this.task = task;
+    }
+
+    public void setModeRelatedMessage(String message) {
+        this.modeRelatedMessage = message;
     }
 
     public void paintComponent(Graphics g) {
@@ -157,19 +162,20 @@ public class ClockPanel extends JPanel {
         secondData.locate(timeData.getIntX() + timeData.width(), timeData.getIntY() + secondData.height() / 3);
         secondData.draw();
 
-        if (task != null) {
+        if (task != null || modeRelatedMessage != null) {
             drawTask(g2, paneWidth, center.x, secondData.getIntY() + (int)secondData.height());
         }
     }
 
     private void drawTask(Graphics2D g2, int paneWidth, int centerX, int topY) {
-        if (task == null) {
+        if (task == null && modeRelatedMessage == null) {
             throw new IllegalStateException("Something went wrong!");
         }
 
         Font smallerFont = values.font(FontSizeRatioOptions.TINY, paneWidth);
         
-        TextData taskData = new TextData(task.displayName(), smallerFont, values.fgColor(), g2);
+        String text = task == null ? modeRelatedMessage : task.displayName();
+        TextData taskData = new TextData(text, smallerFont, values.fgColor(), g2);
         taskData.locate(centerX - taskData.width() / 2, topY);
         taskData.draw();
     }

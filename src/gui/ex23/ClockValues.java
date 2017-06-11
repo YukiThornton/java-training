@@ -8,20 +8,24 @@ import java.util.prefs.Preferences;
 public class ClockValues {
 
     public static final String POPUP_COMMAND_PREF = "Preferences";
-    public static final String POPUP_COMMAND_THEME = "Theme";
-    public static final String POPUP_COMMAND_FONT = "Font";
-    public static final String POPUP_COMMAND_FONT_SIZE = "Font Size";
-    public static final String POPUP_COMMAND_COL1 = "Color1";
-    public static final String POPUP_COMMAND_COL2 = "Color2";
-    public static final String POPUP_COMMAND_DECORATION = "Circle";
+    public static final String POPUP_COMMAND_PREF_THEME = "Theme";
+    public static final String POPUP_COMMAND_PREF_FONT = "Font";
+    public static final String POPUP_COMMAND_PREF_FONT_SIZE = "Font Size";
+    public static final String POPUP_COMMAND_PREF_BG_COL = "Color1";
+    public static final String POPUP_COMMAND_PREF_FG_COL = "Color2";
+    public static final String POPUP_COMMAND_PREF_DECORATION = "Circle";
     public static final String POPUP_COMMAND_EXIT = "Exit";
     public static final String POPUP_COMMAND_MODE = "Mode";
-    public static final String POPUP_COMMAND_STANDARD_MODE = "Standard Clock";
-    public static final String POPUP_COMMAND_TASK_MODE = "+Stopwatch";
+    public static final String POPUP_COMMAND_MODE_STANDARD = "Standard Clock";
+    public static final String POPUP_COMMAND_MODE_TASK = "+Stopwatch";
     public static final String POPUP_COMMAND_TASK = "Stopwatch";
     public static final String POPUP_COMMAND_TASK_START = "Start";
     public static final String POPUP_COMMAND_TASK_PAUSE = "Pause";
     public static final String POPUP_COMMAND_TASK_RESET = "Reset";
+    public static final String POPUP_COMMAND_TASK_RENAME = "Rename";
+    public static final String MODE_MESSAGE_TASK = "-- : --";
+    public static final String DIALOG_MESSAGE_RENAME_TASK = "Type a new name.\nYou can use only alphanumerics.";
+    public static final String DIALOG_MESSAGE_RENAME_TASK_AFTER_VALID_ERR = "Not that name.\nYou can use only alphanumerics.\nType a different one.";
 
     public static final Font SYSTEM_FONT = new Font("Dialog", Font.PLAIN, 15);
     public static final Dimension MIN_FRAME_SIZE = new Dimension(150, 150);
