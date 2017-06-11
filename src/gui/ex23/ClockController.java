@@ -7,8 +7,22 @@ import gui.ex23.ClockValues.DecorativeFrame;
 public class ClockController {
     private ClockView view;
     private ClockValues values;
+    private TaskController taskController;
     private boolean isInitialized = false;
     private boolean changingTheme = false;
+    private ClockMode currentMode = ClockMode.CLOCK;
+    private ClockTask[] tasks = null;
+    
+    enum ClockMode {
+        CLOCK(0), TASK(1);
+        int index;
+        private ClockMode(int index) {
+            this.index = index;
+        }
+        public int index() {
+            return index;
+        }
+    }
     
     public ClockController(ClockView view, ClockValues values) {
         if (view == null) {
@@ -16,7 +30,8 @@ public class ClockController {
         }
         this.view = view;
         this.values = values;
-        view.init(values, this);
+        view.init(currentMode, values, this);
+        taskController = new TaskController(values, view);
         isInitialized = true;
     }
     
@@ -29,6 +44,9 @@ public class ClockController {
     }
 
     public void quit() {
+        if (currentMode == ClockMode.TASK) {
+            quitTaskMode();
+        }
         System.exit(0);
     }
 
@@ -91,6 +109,78 @@ public class ClockController {
             values.setDecoration(DecorativeFrame.NONE);
         }
         view.updateClockPanelView();
+    }
+
+    public void onModeSelected(int modeIndex) {
+        if (!isInitialized || modeIndex < 0) {
+            return;
+        }
+        for (ClockMode m : ClockMode.values()) {
+            if (m.index() == modeIndex) {
+                currentMode = m;
+            }
+        }
+        switch(currentMode) {
+        case CLOCK:
+            setupForStandardMode();
+            break;
+        case TASK:
+            setupForTaskMode();
+            break;
+        default:
+            break;
+        }
+    }
+
+    private void setupForStandardMode() {
+        quitTaskMode();
+        view.setupForStandardMode();
+        tasks = null;
+    }
+
+    private void setupForTaskMode() {
+        tasks = taskController.tasks();
+        view.setupForTaskMode(tasks);
+    }
+
+    private void quitTaskMode() {
+        if (taskController.isTaskRunning()) {
+            pauseAndSaveTask();
+        }
+    }
+
+    public void onTaskStartSelected(ClockTask task) {
+        taskController.select(task);
+        taskController.startTask();
+        view.setEnableTaskPauseMenu(true);
+        view.setEnableTaskNamedMenus(false);
+        view.showTask(task);
+    }
+
+    public void onTaskPauseSelected() {
+        if (!taskController.isTaskRunning()) {
+            throw new IllegalStateException("Something went wrong!");
+        }
+        pauseAndSaveTask();
+    }
+
+    public void onTaskResetSelected(ClockTask task) {
+        taskController.select(task);
+        if (taskController.isTaskRunning()) {
+            throw new IllegalStateException("Something went wrong!");
+        }
+        taskController.resetTask();
+        taskController.saveTasks();
+        taskController.select(null);
+    }
+
+    private void pauseAndSaveTask() {
+        taskController.pauseTask();
+        taskController.saveTasks();
+        taskController.select(null);
+        view.setEnableTaskPauseMenu(false);
+        view.setEnableTaskNamedMenus(true);
+        view.stopShowingTask();
     }
 
     private void clearThemeSelection() {

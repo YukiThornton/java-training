@@ -30,6 +30,7 @@ public class ClockPanel extends JPanel {
     private int currentFontSize;
     private DecorativeFrame currentDecoration;
     private Dimension dimension;
+    private ClockTask task;
 
     public ClockPanel(JWindow parent, ClockValues values) {
         super();
@@ -46,6 +47,11 @@ public class ClockPanel extends JPanel {
         });
         timer.start();
     }
+
+    public void setTask(ClockTask task) {
+        this.task = task;
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
@@ -70,7 +76,7 @@ public class ClockPanel extends JPanel {
         if (values.decoration() != DecorativeFrame.NONE) {
             drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfPanel);
         }
-        drawTime(g2, rectangle.width, centerOfPanel);
+        drawCenteredText(g2, rectangle.width, centerOfPanel);
     }
 
     private Point getCenterPoint(Rectangle rectangle) {
@@ -91,7 +97,7 @@ public class ClockPanel extends JPanel {
         if (values.decoration() != DecorativeFrame.NONE) {
             drawOval(g2, values.clockOvalWidth(rectangle.width), ovalDiameter, centerOfPanel);
         }
-        drawTime(g2, rectangle.width, centerOfPanel);
+        drawCenteredText(g2, rectangle.width, centerOfPanel);
     }
 
     public void setValues(ClockValues newValues) {
@@ -133,7 +139,7 @@ public class ClockPanel extends JPanel {
         g2.drawOval(centerOfOval.x - halfOval, centerOfOval.y - halfOval, ovalDiameter, ovalDiameter);
     }
 
-    private void drawTime(Graphics2D g2, int paneWidth, Point center) {
+    private void drawCenteredText(Graphics2D g2, int paneWidth, Point center) {
         Font standardFont = values.font(paneWidth);
         Font smallerFont = values.font(FontSizeRatioOptions.SMALLER, paneWidth);
         
@@ -150,5 +156,21 @@ public class ClockPanel extends JPanel {
         TextData secondData = new TextData(time, "ss", smallerFont, values.fgColor(), g2);
         secondData.locate(timeData.getIntX() + timeData.width(), timeData.getIntY() + secondData.height() / 3);
         secondData.draw();
+
+        if (task != null) {
+            drawTask(g2, paneWidth, center.x, secondData.getIntY() + (int)secondData.height());
+        }
+    }
+
+    private void drawTask(Graphics2D g2, int paneWidth, int centerX, int topY) {
+        if (task == null) {
+            throw new IllegalStateException("Something went wrong!");
+        }
+
+        Font smallerFont = values.font(FontSizeRatioOptions.TINY, paneWidth);
+        
+        TextData taskData = new TextData(task.displayName(), smallerFont, values.fgColor(), g2);
+        taskData.locate(centerX - taskData.width() / 2, topY);
+        taskData.draw();
     }
 }

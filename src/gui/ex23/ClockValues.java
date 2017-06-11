@@ -3,6 +3,7 @@ package gui.ex23;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.prefs.Preferences;
 
 public class ClockValues {
 
@@ -14,6 +15,13 @@ public class ClockValues {
     public static final String POPUP_COMMAND_COL2 = "Color2";
     public static final String POPUP_COMMAND_DECORATION = "Circle";
     public static final String POPUP_COMMAND_EXIT = "Exit";
+    public static final String POPUP_COMMAND_MODE = "Mode";
+    public static final String POPUP_COMMAND_STANDARD_MODE = "Standard Clock";
+    public static final String POPUP_COMMAND_TASK_MODE = "+Stopwatch";
+    public static final String POPUP_COMMAND_TASK = "Stopwatch";
+    public static final String POPUP_COMMAND_TASK_START = "Start";
+    public static final String POPUP_COMMAND_TASK_PAUSE = "Pause";
+    public static final String POPUP_COMMAND_TASK_RESET = "Reset";
 
     public static final Font SYSTEM_FONT = new Font("Dialog", Font.PLAIN, 15);
     public static final Dimension MIN_FRAME_SIZE = new Dimension(150, 150);
@@ -42,10 +50,15 @@ public class ClockValues {
 
     public static final ClockTheme THEME_DEFAULT = new ClockTheme("Default", DEFAULT_BG_COLOR, DEFAULT_FG_COLOR, DEAFULT_FONT_INDEX, DecorativeFrame.OVAL);
     public static final ClockTheme THEME_SIMPLE = new ClockTheme("Simple", Color.WHITE, Color.BLACK, 7, DecorativeFrame.NONE);
-    public static final ClockTheme THEME_DARK = new ClockTheme("Dark", new Color(105, 105, 105), new Color(211, 211, 211), 2, DecorativeFrame.OVAL);
+    public static final ClockTheme THEME_DARK = new ClockTheme("Dark", new Color(105, 105, 105), new Color(211, 211, 211), 2, DecorativeFrame.NONE);
     public static final ClockTheme THEME_CHOCO = new ClockTheme("Mint Chocolate", new Color(127, 255, 212), new Color(77, 49, 49), 6, DecorativeFrame.OVAL);
     public static final ClockTheme[] THEME_OPTIONS = {THEME_DEFAULT, THEME_SIMPLE, THEME_DARK, THEME_CHOCO};
     public static final int DEFAULT_THEME_INDEX = 0;
+
+    private final static String PREF_KEY_TASK_STRING = "okuno_clock_ex23_1.0_task_string";
+    private final static String PREF_DEFAULT_VAL_TASK_STRING = "Task1:0;Task2:0;Task3:0;Task4:0;Task5:0";
+    public final static int TASK_AMOUNT = 5;
+    private Preferences preferences;
 
     private int themeIndex;
     private int fontIndex;
@@ -55,9 +68,9 @@ public class ClockValues {
     private Color fgColorField;
     private DecorativeFrame decoration;
     private boolean windowSizeDeterminesFontSize;
-    
+
     enum FontSizeRatioOptions {
-        STANDARD(1), SMALLER(0.6);
+        STANDARD(1), SMALLER(0.6), TINY(0.4);
         
         private double ratio;
         
@@ -79,6 +92,8 @@ public class ClockValues {
     }
 
     public ClockValues() {
+        preferences = Preferences.userNodeForPackage(this.getClass());
+        //preferences = Preferences.userRoot().node(this.getClass().getName());
         themeIndex = DEFAULT_THEME_INDEX;
         ClockTheme theme = THEME_OPTIONS[DEFAULT_THEME_INDEX];
         fontIndex = theme.fontIndex();
@@ -91,6 +106,7 @@ public class ClockValues {
     }
 
     private ClockValues(ClockValues oldValues) {
+        preferences = oldValues.preferences();
         themeIndex = oldValues.themeIndex();
         fontIndex = oldValues.fontIndex();
         setFontSize(oldValues.fontSizeIndex());
@@ -115,6 +131,10 @@ public class ClockValues {
         setBgColor(theme.bgColor());
         setFgColor(theme.fgColor());
         setDecoration(theme.decoration());
+    }
+
+    public Preferences preferences() {
+        return preferences;
     }
 
     public Color bgColor() {
@@ -213,6 +233,22 @@ public class ClockValues {
         setFontSize(DEFAULT_FONT_SIZE_INDEX);
     }
 
+    public int clockOvalWidth(int panelWidth) {
+        if (windowSizeDeterminesFontSize) {
+            return FONT_SIZE_OPTIONS[DEFAULT_FONT_SIZE_INDEX] * 9 / 10 * panelWidth / DEFAULT_FRAME_SIZE.width;
+        } else {
+            return FONT_SIZE_OPTIONS[fontSizeIndex] * 9 / 10;
+        }
+    }
+
+    public String taskString() {
+        return preferences.get(PREF_KEY_TASK_STRING, PREF_DEFAULT_VAL_TASK_STRING);
+    }
+
+    public void saveTaskString(String taskString) {
+        preferences.put(PREF_KEY_TASK_STRING, taskString);
+    }
+
     private int calcFontSize(FontSizeRatioOptions ratio, int panelWidth) {
         if (windowSizeDeterminesFontSize) {
             if (decoration == DecorativeFrame.NONE) {
@@ -224,13 +260,5 @@ public class ClockValues {
             return (int)(FONT_SIZE_OPTIONS[fontSizeIndex] * ratio.ratio);
         }
     }
-    public int clockOvalWidth(int panelWidth) {
-        if (windowSizeDeterminesFontSize) {
-            return FONT_SIZE_OPTIONS[DEFAULT_FONT_SIZE_INDEX] * 9 / 10 * panelWidth / DEFAULT_FRAME_SIZE.width;
-        } else {
-            return FONT_SIZE_OPTIONS[fontSizeIndex] * 9 / 10;
-        }
-    }
-
 
 }
