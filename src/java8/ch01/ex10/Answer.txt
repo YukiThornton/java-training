@@ -1,0 +1,5 @@
+binarySearch(List<? extends Comparable<? super T>> list, T key)
+emptyList()
+のように、
+引数、メソッド名などで指定されたCollectionのサブインターフェースに、そのメソッドを追加したい。
+その場合は既存のコードを壊さないようにdeafultメソッドであるべき。
