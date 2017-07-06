@@ -29,10 +29,11 @@ public class WordCounter {
         
         while(tokenizer.nextToken() != StreamTokenizer.TT_EOF) {
             if (tokenizer.ttype == StreamTokenizer.TT_WORD) {
-                if (map.containsKey(tokenizer.sval)) {
-                    map.put(tokenizer.sval, Integer.valueOf(map.get(tokenizer.sval).intValue() + 1));
+        	String word = tokenizer.sval;
+                if (map.containsKey(word)) {
+                    map.put(word, map.get(word).intValue() + 1);
                 } else {
-                    map.put(tokenizer.sval, Integer.valueOf(1));
+                    map.put(word, 1);
                 }
             }
         }

@@ -53,6 +53,8 @@ public final class ResourceManager {
                     ref.clear();
                 } catch (InterruptedException e) {
                     shutdown = true;
+                    //44行目で同期を取らずshutdownにアクセスしている。この行がないと危ないことになっていた。
+                    //shutdownをvolatile宣言することでも回避できる
                 }
             }
         }
