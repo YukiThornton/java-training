@@ -48,6 +48,21 @@ public class ClockValues {
     public static final ClockTheme[] THEME_OPTIONS = {THEME_DEFAULT, THEME_SIMPLE, THEME_DARK, THEME_CHOCO};
     public static final int DEFAULT_THEME_INDEX = 0;
 
+    public static final String POPUP_COMMAND_VIEW = "View";
+    public static final String POPUP_COMMAND_PREF = "Preferences";
+    public static final String POPUP_COMMAND_EXIT = "Exit";
+    public static final String POPUP_COMMAND_MODE = "Mode";
+    public static final String POPUP_COMMAND_MODE_STANDARD = "Standard Clock";
+    public static final String POPUP_COMMAND_MODE_TASK = "+Stopwatch";
+    public static final String POPUP_COMMAND_TASK = "Stopwatch";
+    public static final String POPUP_COMMAND_TASK_START = "Start";
+    public static final String POPUP_COMMAND_TASK_PAUSE = "Pause";
+    public static final String POPUP_COMMAND_TASK_RESET = "Reset";
+    public static final String POPUP_COMMAND_TASK_RENAME = "Rename";
+    public static final String MODE_MESSAGE_TASK = "-- : --";
+    public static final String DIALOG_MESSAGE_RENAME_TASK = "Type a new name.\nYou can use only alphanumerics.";
+    public static final String DIALOG_MESSAGE_RENAME_TASK_AFTER_VALID_ERR = "Not that name.\nYou can use only alphanumerics.\nType a different one.";
+
     private final static String PREF_KEY_FRAME_DIMENSION = "okuno_clock_ex24_1.0_frame_dimension";
     private final static String PREF_KEY_FRAME_POINT = "okuno_clock_ex24_1.0_frame_point";
     private final static String PREF_KEY_THEME_INDEX = "okuno_clock_ex24_1.0_theme_index";
@@ -71,7 +86,7 @@ public class ClockValues {
     private boolean windowSizeDeterminesFontSize;
     
     enum FontSizeRatioOptions {
-        STANDARD(1), SMALLER(0.6);
+        STANDARD(1), SMALLER(0.6), TINY(0.4);
         
         private double ratio;
         
