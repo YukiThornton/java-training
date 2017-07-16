@@ -176,7 +176,7 @@ public class ClockView {
                 windowBaseBtn.setSelected(true);
                 fontSizeList.setEnabled(false);
             } else {
-                fontBaseBtn.setSelected(false);
+                fontBaseBtn.setSelected(true);
                 fontSizeList.setEnabled(true);
                 
                 setSelectedItemOnList(fontSizeList, values.fontSizeIndex());
