@@ -1,4 +1,4 @@
-package java8.ch03.ex05;
+package java8.ch03.ex08;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
@@ -16,7 +16,16 @@ public class PhotoEditor {
         }
         return out;
     }
-    @FunctionalInterface
+    public static ColorTransformer addFrame(Color color, int size, int imageWidth, int imageHeight) {
+        return (x, y, col) -> {
+            if (x <= size || y <= size || x >= imageWidth - size || y >= imageHeight - size) {
+                return color;
+            } else {
+                return col;
+            }
+        };
+    }
+    @FunctionalInterface 
     interface ColorTransformer {
         Color apply(int x, int y, Color colorAtXY);
     }
