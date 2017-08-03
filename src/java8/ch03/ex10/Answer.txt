@@ -1,0 +1,3 @@
+composeの返り値はUnaryOperatorではなく、Function<V, R>
+キャストもできないためcomposeも使用できない
+よってストラクチャル型が良い
