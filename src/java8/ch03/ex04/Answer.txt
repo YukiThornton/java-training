@@ -1,0 +1,17 @@
+一覧：https://docs.oracle.com/javase/8/docs/api/?java/lang/FunctionalInterface.html
+java.io.FileFilter
+    URL: https://docs.oracle.com/javase/8/docs/api/java/io/FileFilter.html
+         特徴: Fileを使って評価方法を実装できる。
+         File.listFilesに適用できるという点で付加価値はある
+java.io.FilenameFilter
+    URL: https://docs.oracle.com/javase/8/docs/api/java/io/FilenameFilter.html
+         特徴: File, Stringを使って評価方法を実装できる。
+         File.listに適用できるという点で付加価値はある
+java.nio.fileDirectoryStream.Filter<T>
+    URL: https://docs.oracle.com/javase/8/docs/api/java/nio/file/DirectoryStream.Filter.html
+         特徴: Tを使って評価方法を実装できる。
+                     例外をスローできるという点で付加価値はある
+java.util.logging.Filter
+    URL: https://docs.oracle.com/javase/8/docs/api/java/util/logging/Filter.html
+         特徴: LogRecord(Level, Stringを持つ)を使って評価方法を実装できる。
+         Loggerオブジェクトに設定できるという点で付加価値はある

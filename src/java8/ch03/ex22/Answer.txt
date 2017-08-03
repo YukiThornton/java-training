@@ -1,0 +1,3 @@
+public <U,V> CompletableFuture<V> thenCombine(CompletionStage<? extends U> other,
+                                              BiFunction<? super T,? super U,? extends V> fn)
+URL: https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-
