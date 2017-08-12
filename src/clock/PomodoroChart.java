@@ -1,26 +1,20 @@
 package clock;
 
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
-import javafx.geometry.Bounds;
-import javafx.scene.Node;
-import javafx.scene.chart.Chart;
 import javafx.scene.chart.PieChart;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 
 public class PomodoroChart extends PieChart {
     private Data remainingTimeData;
     private Data passedTimeData;
+    private ColorSet colorSet;
 
-    public PomodoroChart(int remainingTime, int passedTime) {
+    public PomodoroChart(int remainingTime, int passedTime, ColorSet colorSet) {
         super();
         this.remainingTimeData = new Data("remaining", remainingTime);
         this.passedTimeData = new Data("passed", passedTime);
         this.setData(FXCollections.observableArrayList(passedTimeData, remainingTimeData));
-        remainingTimeData.getNode().setStyle("-fx-pie-color: #80bfff");
-        passedTimeData.getNode().setStyle("-fx-pie-color: #1745cf;");
+        this.colorSet = colorSet;
+        dimColor();
         this.setLegendVisible(false);
         this.setLabelsVisible(false);
         this.setStartAngle(90);
@@ -32,12 +26,13 @@ public class PomodoroChart extends PieChart {
     }
 
     public void dimColor() {
-        remainingTimeData.getNode().setStyle("-fx-pie-color: #9fbfdf;");
-        passedTimeData.getNode().setStyle("-fx-pie-color: #506295;");
+        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.remainingDim);
+        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.passedDim);
     }
 
     public void brighterColor() {
-        remainingTimeData.getNode().setStyle("-fx-pie-color: #80bfff;");
-        passedTimeData.getNode().setStyle("-fx-pie-color: #1745cf;");
+        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.remaining);
+        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.passed);
     }
+
 }

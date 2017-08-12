@@ -1,44 +1,31 @@
 package clock;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.sun.imageio.plugins.common.BogusColorSpace;
-
 import javafx.application.Application;
-
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    DateTimeFormatter clockDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy");
-    DateTimeFormatter clockTimeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
-    PieChart.Data remainingTimeData;
-    PieChart.Data passedTimeData;
-    Duration pomoPassedTime = Duration.of(0, ChronoUnit.SECONDS);
-    LocalDateTime pomoStartTime = LocalDateTime.now();
-    boolean isStarted = false;
-    private Circle innerCircle;
+    private static final String BTN_TXT_START = "Start";
+    private static final String BTN_TXT_PAUSE = "Pause";
+
+    private Clock clock;
+    private List<CountdownTimer> timers;
+    private CountdownTimer workTimer;
+    private CountdownTimer restTimer;
+    private int currentTimerIndex;
 
     public static void main(String[] args) {
         launch(args);
@@ -46,60 +33,43 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        VBox box = new VBox(4);
-        Label clockDateLabel = new Label(clockDate());
-        Label clockTimeLabel = new Label(clockTime());
-        innerCircle = new Circle(100, Color.WHITESMOKE);
-        innerCircle.setStrokeWidth(0);
-        PomodoroChart pomoChart = new PomodoroChart(25, 0);
-        innerCircle.radiusProperty().bind(pomoChart.heightProperty().multiply(0.35));
-        Label remainingMinuteLabel = new Label(Integer.toString(remainingMinute()));
-        remainingMinuteLabel.setTextFill(Color.LIGHTGRAY);
-        StackPane chartPane = new StackPane(pomoChart, innerCircle, remainingMinuteLabel);
-        Label switchLabel = new Label("start");
+        clock = new Clock();
+        workTimer = new CountdownTimer("work", 25, ColorSet.BLUE);
+        restTimer = new CountdownTimer("rest", 5, ColorSet.YELLOW);
+        timers = new ArrayList<>();
+        timers.add(workTimer);
+        timers.add(restTimer);
+        currentTimerIndex = 1;
+        HBox timerBox = new HBox(workTimer.getNode(), restTimer.getNode());
+
+        Label switchLabel = new Label(BTN_TXT_START);
+        switchLabel.setFont(new Font(50));
         switchLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                if (isStarted) {
-                    switchLabel.setText("start");
-                    remainingMinuteLabel.setTextFill(Color.LIGHTGRAY);
-                    pomoPassedTime = pomoPassedTime.plus(Duration.between(pomoStartTime, LocalDateTime.now()));
-                    isStarted = false;
-                    pomoChart.dimColor();
+                if (isStarted()) {
+                    switchLabel.setText(BTN_TXT_START);
+                    timers.get(currentTimerIndex).pause();
                 } else {
-                    switchLabel.setText("pause");
-                    pomoStartTime = LocalDateTime.now();
-                    remainingMinuteLabel.setTextFill(Color.CORNFLOWERBLUE);
-                    isStarted = true;
-                    pomoChart.brighterColor();
+                    switchLabel.setText(BTN_TXT_PAUSE);
+                    timers.get(currentTimerIndex).start();
                 }
             }
         });
-        clockDateLabel.setFont(new Font(50));
-        clockTimeLabel.setFont(new Font(50));
-        switchLabel.setFont(new Font(50));
-        remainingMinuteLabel.setFont(new Font(50));
-        box.getChildren().add(clockDateLabel);
-        box.getChildren().add(clockTimeLabel);
-        box.getChildren().add(chartPane);
+        VBox box = new VBox(4);
+        box.getChildren().add(clock.getDateNode());
+        box.getChildren().add(clock.getTimeNode());
+        box.getChildren().add(timerBox);
         box.getChildren().add(switchLabel);
-
-        primaryStage.setScene(new Scene(box));
-        primaryStage.setTitle("Pomo");
-        primaryStage.show();
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 Platform.runLater(() -> {
-                    clockDateLabel.setText(clockDate());
-                    clockTimeLabel.setText(clockTime());
-                    if (isStarted) {
-                        int remaining = remainingMinute();
-                        int passed = passedMinute();
-                        remainingMinuteLabel.setText(Integer.toString(remaining));
-                        pomoChart.setTimeValues(remaining, passed);
+                    clock.update();
+                    if (isStarted()) {
+                        timers.get(currentTimerIndex).updateTimer();
                     }
                 });
             }
@@ -107,30 +77,13 @@ public class Main extends Application {
         primaryStage.setOnCloseRequest(evet -> {
             timer.cancel();
         });
+
+        primaryStage.setScene(new Scene(box));
+        primaryStage.setTitle("Pomo");
+        primaryStage.show();
     }
 
-    private String clockDate() {
-        return LocalDate.now().format(clockDateFormatter);
+    private boolean isStarted() {
+        return timers.get(currentTimerIndex).isActive();
     }
-
-    private String clockTime() {
-        return LocalTime.now().format(clockTimeFormatter);
-    }
-
-    private int remainingMinute() {
-        return 25- passedMinute();
-    }
-
-    private int passedMinute() {
-        if(isStarted) {
-            Duration durationAfterStart = Duration.between(pomoStartTime, LocalDateTime.now());
-            Duration totalDuration = pomoPassedTime.plus(durationAfterStart);
-            System.out.println("isStarted" + totalDuration);
-            return (int)totalDuration.toMinutes();
-        } else {
-            System.out.println("isNotStared" + pomoPassedTime);
-            return (int)pomoPassedTime.toMinutes();
-        }
-    }
-
 }
