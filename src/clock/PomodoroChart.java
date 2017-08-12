@@ -8,8 +8,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class PomodoroChart extends PieChart {
-    private final Circle innerCircle;
-    private boolean initialized;
+    private Circle innerCircle;
     private Data remainingTimeData;
     private Data passedTimeData;
 
@@ -17,11 +16,18 @@ public class PomodoroChart extends PieChart {
         super();
         this.remainingTimeData = new Data("remaining", remainingTime);
         this.passedTimeData = new Data("passed", passedTime);
-        this.setData(FXCollections.observableArrayList(remainingTimeData, passedTimeData));
+        this.setData(FXCollections.observableArrayList(passedTimeData, remainingTimeData));
+        remainingTimeData.getNode().setStyle("-fx-pie-color: white");
+        passedTimeData.getNode().setStyle("-fx-pie-color: black;");
         innerCircle = new Circle();
         innerCircle.setFill(Color.WHITESMOKE);
         innerCircle.setStroke(Color.WHITE);
         innerCircle.setStrokeWidth(3);
+        this.setLegendVisible(false);
+        this.setLabelsVisible(false);
+        this.setStartAngle(90);
+        
+        addInnerCircle();
     }
 
     public void setTimeValues(int remainingTime, int passedTime) {
@@ -32,18 +38,11 @@ public class PomodoroChart extends PieChart {
     @Override
     protected void layoutChartChildren(double top, double left, double contentWidth, double contentHeight) {
         super.layoutChartChildren(top, left, contentWidth, contentHeight);
-        if (!initialized) {
-            addInnerCircle();
-        }
         updateInnerCircleLayout();
     }
 
     private void addInnerCircle() {
-        if (initialized) {
-            new IllegalStateException("Something wrong!");
-        }
         getChildren().add(innerCircle);
-        initialized = true;
     }
     private void updateInnerCircleLayout() {
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
