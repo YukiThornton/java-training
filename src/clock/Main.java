@@ -1,7 +1,5 @@
 package clock;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,10 +20,8 @@ public class Main extends Application {
     private static final String BTN_TXT_PAUSE = "Pause";
 
     private Clock clock;
-    private List<CountdownTimer> timers;
-    private CountdownTimer workTimer;
-    private CountdownTimer restTimer;
-    private int currentTimerIndex;
+    private PomodoroController pomoCtrl;
+    private Label pomoCtrlBtn;
 
     public static void main(String[] args) {
         launch(args);
@@ -34,33 +30,23 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         clock = new Clock();
-        workTimer = new CountdownTimer("work", 25, ColorSet.BLUE);
-        restTimer = new CountdownTimer("rest", 5, ColorSet.YELLOW);
-        timers = new ArrayList<>();
-        timers.add(workTimer);
-        timers.add(restTimer);
-        currentTimerIndex = 1;
-        HBox timerBox = new HBox(workTimer.getNode(), restTimer.getNode());
+        pomoCtrl = new PomodoroController();
+        HBox timerBox = new HBox(pomoCtrl.getNodes());
 
-        Label switchLabel = new Label(BTN_TXT_START);
-        switchLabel.setFont(new Font(50));
-        switchLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        pomoCtrlBtn = new Label(BTN_TXT_START);
+        pomoCtrlBtn.setFont(new Font(50));
+        pomoCtrlBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                if (isStarted()) {
-                    switchLabel.setText(BTN_TXT_START);
-                    timers.get(currentTimerIndex).pause();
-                } else {
-                    switchLabel.setText(BTN_TXT_PAUSE);
-                    timers.get(currentTimerIndex).start();
-                }
+                onClickPomoCtrlBtn();
             }
         });
+
         VBox box = new VBox(4);
         box.getChildren().add(clock.getDateNode());
         box.getChildren().add(clock.getTimeNode());
         box.getChildren().add(timerBox);
-        box.getChildren().add(switchLabel);
+        box.getChildren().add(pomoCtrlBtn);
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -68,8 +54,8 @@ public class Main extends Application {
             public void run() {
                 Platform.runLater(() -> {
                     clock.update();
-                    if (isStarted()) {
-                        timers.get(currentTimerIndex).updateTimer();
+                    if (pomoCtrl.isActive()) {
+                        pomoCtrl.update();
                     }
                 });
             }
@@ -83,7 +69,13 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-    private boolean isStarted() {
-        return timers.get(currentTimerIndex).isActive();
+    private void onClickPomoCtrlBtn() {
+        if (pomoCtrl.isActive()) {
+            pomoCtrlBtn.setText(BTN_TXT_START);
+            pomoCtrl.pause();
+        } else {
+            pomoCtrlBtn.setText(BTN_TXT_PAUSE);
+            pomoCtrl.start();
+        }
     }
 }

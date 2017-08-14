@@ -3,12 +3,12 @@ package clock;
 import javafx.collections.FXCollections;
 import javafx.scene.chart.PieChart;
 
-public class PomodoroChart extends PieChart {
+public class TimerChart extends PieChart {
     private Data remainingTimeData;
     private Data passedTimeData;
     private ColorSet colorSet;
 
-    public PomodoroChart(int remainingTime, int passedTime, ColorSet colorSet) {
+    public TimerChart(int remainingTime, int passedTime, ColorSet colorSet) {
         super();
         this.remainingTimeData = new Data("remaining", remainingTime);
         this.passedTimeData = new Data("passed", passedTime);

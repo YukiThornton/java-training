@@ -15,20 +15,22 @@ import javafx.scene.text.Font;
 
 public class CountdownTimer {
     private Duration passedTimeInRound;
+    private Duration passedTimeInTotal;
     private LocalDateTime startTime;
-    private int maxMinute;
+    private int maxSeconds;
     private boolean isActive = false;
     private ColorSet colorSet;
 
     private Label timerNameLabel;
-    private PomodoroChart chart;
+    private TimerChart chart;
     private Circle donutHole;
     private Label remainingMinuteLabel;
     private VBox timerNode;
 
     public CountdownTimer(String timerName, int maxMinute, ColorSet colorSet) {
-        this.maxMinute = maxMinute;
+        this.maxSeconds = maxMinute * 60;
         passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
+        passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
         startTime = LocalDateTime.now();
         this.colorSet = colorSet;
 
@@ -36,9 +38,9 @@ public class CountdownTimer {
 
         donutHole = new Circle(100, Color.WHITESMOKE);
         donutHole.setStrokeWidth(0);
-        chart = new PomodoroChart(maxMinute, 0, colorSet);
+        chart = new TimerChart(maxMinute, 0, colorSet);
         donutHole.radiusProperty().bind(chart.heightProperty().multiply(0.35));
-        remainingMinuteLabel = new Label(Integer.toString(remainingMinute()));
+        remainingMinuteLabel = new Label(toRemainingText());
         remainingMinuteLabel.setTextFill(colorSet.remainingDimColor);
         remainingMinuteLabel.setFont(new Font(50));
         StackPane chartPane = new StackPane(chart, donutHole, remainingMinuteLabel);
@@ -56,6 +58,7 @@ public class CountdownTimer {
         remainingMinuteLabel.setTextFill(colorSet.remainingColor);
         chart.brighterColor();
         isActive = true;
+        System.out.println("start" + timerNameLabel.textProperty().get());
     }
 
     public void pause() {
@@ -63,31 +66,61 @@ public class CountdownTimer {
         passedTimeInRound = passedTimeInRound.plus(Duration.between(startTime, LocalDateTime.now()));
         chart.dimColor();
         isActive = false;
+        System.out.println("pause" + timerNameLabel.textProperty().get());
     }
-    public void updateTimer() {
-        int remaining = remainingMinute();
-        int passed = passedMinute();
-        remainingMinuteLabel.setText(Integer.toString(remaining));
+
+    public void saveAndReset() {
+        passedTimeInTotal = passedTimeInTotal.plus(passedTimeInRound);
+        passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
+        startTime = LocalDateTime.now();
+        int remaining = remainingSeconds();
+        remainingMinuteLabel.setText(Integer.toString(remaining / 60));
+        chart.setTimeValues(remaining, passedSeconds());
+    }
+
+    public void update() {
+        int passed = passedSeconds();
+        int remaining = remainingSeconds(passed);
+        remainingMinuteLabel.setText(toRemainingText(remaining));
         chart.setTimeValues(remaining, passed);
+    }
+
+    public boolean shouldReset() {
+        return remainingSeconds() < 0;
     }
 
     public boolean isActive() {
         return isActive;
     }
 
-    private int remainingMinute() {
-        return maxMinute- passedMinute();
+    private int remainingSeconds() {
+        return maxSeconds- passedSeconds();
     }
 
-    private int passedMinute() {
+    private int remainingSeconds(int passedSeconds) {
+        return maxSeconds- passedSeconds;
+    }
+
+    private String toRemainingText() {
+        return toRemainingText(remainingSeconds());
+    }
+
+    private String toRemainingText(int remainingSeconds) {
+        if (remainingSeconds < 60) {
+            return "0:" + remainingSeconds;
+        } else {
+            return Integer.toString(remainingSeconds / 60);
+        }
+    }
+
+    private int passedSeconds() {
         if(isActive) {
             Duration durationAfterStart = Duration.between(startTime, LocalDateTime.now());
             Duration totalDuration = passedTimeInRound.plus(durationAfterStart);
             System.out.println("isStarted" + totalDuration);
-            return (int)totalDuration.toMinutes();
+            return (int)totalDuration.getSeconds();
         } else {
-            System.out.println("isNotStared" + passedTimeInRound);
-            return (int)passedTimeInRound.toMinutes();
+            return (int)passedTimeInRound.getSeconds();
         }
     }
 
