@@ -17,6 +17,7 @@ public class CountdownTimer {
     private Duration passedTimeInRound;
     private Duration passedTimeInTotal;
     private LocalDateTime startTime;
+    private int passedSeconds;
     private int maxSeconds;
     private boolean isActive = false;
     private ColorSet colorSet;
@@ -26,6 +27,10 @@ public class CountdownTimer {
     private Circle donutHole;
     private Label remainingMinuteLabel;
     private VBox timerNode;
+
+    public enum UpdateCheckResult {
+        UPDATED, NO_CHANGE, REACHED_MAXIMUM;
+    }
 
     public CountdownTimer(String timerName, int maxMinute, ColorSet colorSet) {
         this.maxSeconds = maxMinute * 60;
@@ -69,32 +74,49 @@ public class CountdownTimer {
         System.out.println("pause" + timerNameLabel.textProperty().get());
     }
 
-    public void saveAndReset() {
+    public void reset() {
+        if (isActive) {
+            throw new IllegalStateException("Pause the timer first.");
+        }
         passedTimeInTotal = passedTimeInTotal.plus(passedTimeInRound);
-        passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
-        startTime = LocalDateTime.now();
-        int remaining = remainingSeconds();
-        remainingMinuteLabel.setText(Integer.toString(remaining / 60));
-        chart.setTimeValues(remaining, passedSeconds());
-    }
-
-    public void update() {
+        clearRoundVariable();
         int passed = passedSeconds();
         int remaining = remainingSeconds(passed);
-        remainingMinuteLabel.setText(toRemainingText(remaining));
-        chart.setTimeValues(remaining, passed);
+        updateChartAndRemainingLabel(remaining, passed);
+        System.out.println("reset" + timerNameLabel.textProperty().get());
     }
 
-    public boolean shouldReset() {
-        return remainingSeconds() < 0;
+    public UpdateCheckResult checkAndUpdateIfNecessary() {
+        int passed = passedSeconds();
+        if (passed <= passedSeconds) {
+            return UpdateCheckResult.NO_CHANGE;
+        }
+        passedSeconds = passed;
+        if (passedSeconds > maxSeconds) {
+            return UpdateCheckResult.REACHED_MAXIMUM;
+        }
+        int remaining = remainingSeconds(passedSeconds);
+        updateChartAndRemainingLabel(remaining, passedSeconds);
+        return UpdateCheckResult.UPDATED;
     }
 
     public boolean isActive() {
         return isActive;
     }
 
+    private void updateChartAndRemainingLabel(int remaining, int passed) {
+        chart.setTimeValues(remaining, passed);
+        remainingMinuteLabel.setText(toRemainingText(remaining));
+    }
+
+    private void clearRoundVariable() {
+        passedSeconds = 0;
+        passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
+        startTime = null;
+    }
+
     private int remainingSeconds() {
-        return maxSeconds- passedSeconds();
+        return remainingSeconds(passedSeconds());
     }
 
     private int remainingSeconds(int passedSeconds) {
@@ -106,19 +128,13 @@ public class CountdownTimer {
     }
 
     private String toRemainingText(int remainingSeconds) {
-        if (remainingSeconds < 60) {
-            return "0:" + remainingSeconds;
-        } else {
-            return Integer.toString(remainingSeconds / 60);
-        }
+        return Integer.toString((int)Math.ceil(remainingSeconds / 60.0));
     }
 
     private int passedSeconds() {
         if(isActive) {
             Duration durationAfterStart = Duration.between(startTime, LocalDateTime.now());
-            Duration totalDuration = passedTimeInRound.plus(durationAfterStart);
-            System.out.println("isStarted" + totalDuration);
-            return (int)totalDuration.getSeconds();
+            return (int)(durationAfterStart.getSeconds() + passedTimeInRound.getSeconds());
         } else {
             return (int)passedTimeInRound.getSeconds();
         }

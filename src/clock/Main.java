@@ -18,10 +18,12 @@ public class Main extends Application {
 
     private static final String BTN_TXT_START = "Start";
     private static final String BTN_TXT_PAUSE = "Pause";
+    private static final String BTN_TXT_RESET = "Reset";
 
     private Clock clock;
     private PomodoroController pomoCtrl;
     private Label pomoCtrlBtn;
+    private Label pomoResetBtn;
 
     public static void main(String[] args) {
         launch(args);
@@ -42,11 +44,21 @@ public class Main extends Application {
             }
         });
 
+        pomoResetBtn = new Label(BTN_TXT_RESET);
+        pomoResetBtn.setFont(new Font(50));
+        pomoResetBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                onClickPomoResetBtn();
+            }
+        });
+        HBox btns = new HBox(pomoCtrlBtn, pomoResetBtn);
+
         VBox box = new VBox(4);
         box.getChildren().add(clock.getDateNode());
         box.getChildren().add(clock.getTimeNode());
         box.getChildren().add(timerBox);
-        box.getChildren().add(pomoCtrlBtn);
+        box.getChildren().add(btns);
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -72,10 +84,16 @@ public class Main extends Application {
     private void onClickPomoCtrlBtn() {
         if (pomoCtrl.isActive()) {
             pomoCtrlBtn.setText(BTN_TXT_START);
+            pomoResetBtn.setVisible(true);
             pomoCtrl.pause();
         } else {
             pomoCtrlBtn.setText(BTN_TXT_PAUSE);
+            pomoResetBtn.setVisible(false);
             pomoCtrl.start();
         }
+    }
+
+    private void onClickPomoResetBtn() {
+        pomoCtrl.reset();
     }
 }

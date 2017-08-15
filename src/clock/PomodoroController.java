@@ -13,7 +13,7 @@ public class PomodoroController {
     private int currentTimerIndex;
 
     public PomodoroController() {
-        workTimer = new CountdownTimer("work", 1, ColorSet.BLUE);
+        workTimer = new CountdownTimer("work", 5, ColorSet.BLUE);
         restTimer = new CountdownTimer("rest", 1, ColorSet.YELLOW);
         timers = new ArrayList<>();
         timers.add(workTimer);
@@ -33,13 +33,20 @@ public class PomodoroController {
         timers.get(currentTimerIndex).pause();
     }
 
+    public void reset() {
+        timers.get(currentTimerIndex).reset();
+    }
+
     public void update() {
         CountdownTimer timer = timers.get(currentTimerIndex);
-        if (timer.shouldReset()) {
+        switch(timer.checkAndUpdateIfNecessary()) {
+        case UPDATED:
+        case NO_CHANGE:
+            break;
+        case REACHED_MAXIMUM:
             switchTimers();
-        } else {
-            timer.update();
-        } 
+            break;
+        }
     }
 
     public boolean isActive() {
@@ -49,7 +56,7 @@ public class PomodoroController {
     private void switchTimers() {
         CountdownTimer oldTimer = timers.get(currentTimerIndex);
         oldTimer.pause();
-        oldTimer.saveAndReset();
+        oldTimer.reset();
         if (currentTimerIndex == timers.size() - 1) {
             currentTimerIndex = 0;
         } else {
