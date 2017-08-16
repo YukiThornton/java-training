@@ -26,7 +26,7 @@ public class CountdownTimer {
     private int maxSeconds;
     private String timerName;
     private boolean isActive = false;
-    private ColorSet colorSet;
+    private TimerType timerType;
 
     private Label timerNameLabel;
     private TextField timerNameTextField;
@@ -40,13 +40,36 @@ public class CountdownTimer {
         UPDATED, NO_CHANGE, REACHED_MAXIMUM;
     }
 
-    public CountdownTimer(String timerName, int maxMinute, ColorSet colorSet) {
+    public enum TimerPurpose {
+        WORK, REST;
+    }
+
+    public enum TimerType {
+        
+        WORK_BLUE(ColorSet.BLUE, TimerPurpose.WORK),
+        REST_YELLOW(ColorSet.YELLOW, TimerPurpose.REST);
+
+        private ColorSet colorSet;
+        private TimerPurpose purpose;
+        private TimerType(ColorSet colorSet, TimerPurpose purpose) {
+            this.colorSet = colorSet;
+            this.purpose = purpose;
+        }
+        public ColorSet getColorSet() {
+            return colorSet;
+        }
+        public TimerPurpose getPurpose() {
+            return purpose;
+        }
+    }
+
+    public CountdownTimer(String timerName, int maxMinute, TimerType timerType) {
         this.timerName = timerName;
         this.maxSeconds = maxMinute * 60;
         passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
         passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
         startTime = LocalDateTime.now();
-        this.colorSet = colorSet;
+        this.timerType = timerType;
 
         timerNameLabel = new Label(timerName);
         timerNameLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -87,10 +110,10 @@ public class CountdownTimer {
 
         donutHole = new Circle(100, Color.WHITESMOKE);
         donutHole.setStrokeWidth(0);
-        chart = new TimerChart(maxMinute, 0, colorSet);
+        chart = new TimerChart(maxMinute, 0, timerType.getColorSet());
         donutHole.radiusProperty().bind(chart.heightProperty().multiply(0.35));
         remainingMinuteLabel = new Label(toRemainingText());
-        remainingMinuteLabel.setTextFill(colorSet.remainingDimColor);
+        remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingDimColor);
         remainingMinuteLabel.setFont(new Font(50));
         remainingMinuteLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -161,14 +184,14 @@ public class CountdownTimer {
 
     public void start() {
         startTime = LocalDateTime.now();
-        remainingMinuteLabel.setTextFill(colorSet.remainingColor);
+        remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingColor);
         chart.brighterColor();
         isActive = true;
         System.out.println("start" + timerNameLabel.textProperty().get());
     }
 
     public void pause() {
-        remainingMinuteLabel.setTextFill(colorSet.remainingDimColor);
+        remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingDimColor);
         passedTimeInRound = passedTimeInRound.plus(Duration.between(startTime, LocalDateTime.now()));
         chart.dimColor();
         isActive = false;

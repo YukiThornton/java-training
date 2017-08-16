@@ -3,6 +3,7 @@ package clock;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import clock.CountdownTimer.TimerType;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -22,8 +23,11 @@ public class Main extends Application {
 
     private Clock clock;
     private PomodoroController pomoCtrl;
+    private HBox timerBox;
     private Label pomoCtrlBtn;
     private Label pomoResetBtn;
+    private Label pomoAddTimerBtn;
+    private Label pomoAddRestBtn;
 
     public static void main(String[] args) {
         launch(args);
@@ -33,7 +37,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         clock = new Clock();
         pomoCtrl = new PomodoroController();
-        HBox timerBox = new HBox(pomoCtrl.getNodes());
+        timerBox = new HBox(pomoCtrl.getNodes());
 
         pomoCtrlBtn = new Label(BTN_TXT_START);
         pomoCtrlBtn.setFont(new Font(50));
@@ -52,7 +56,25 @@ public class Main extends Application {
                 onClickPomoResetBtn();
             }
         });
-        HBox btns = new HBox(pomoCtrlBtn, pomoResetBtn);
+
+        pomoAddTimerBtn = new Label("add work");
+        pomoAddTimerBtn.setFont(new Font(50));
+        pomoAddTimerBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                onClickPomoAddTimerBtn();
+            }
+        });
+        pomoAddRestBtn = new Label("add rest");
+        pomoAddRestBtn.setFont(new Font(50));
+        pomoAddRestBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                onClickPomoAddRestBtn();
+            }
+        });
+        HBox btns = new HBox(pomoCtrlBtn, pomoResetBtn, pomoAddTimerBtn, pomoAddRestBtn);
+        btns.setSpacing(20);
 
         VBox box = new VBox(4);
         box.getChildren().add(clock.getDateNode());
@@ -95,5 +117,25 @@ public class Main extends Application {
 
     private void onClickPomoResetBtn() {
         pomoCtrl.reset();
+    }
+
+    private void onClickPomoAddTimerBtn() {
+        if (!pomoCtrl.canAddMoreTimer()) {
+            // TODO Dialog
+            throw new IllegalStateException();
+        }
+        Platform.runLater(() -> {
+            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.WORK_BLUE));
+        });
+    }
+
+    private void onClickPomoAddRestBtn() {
+        if (!pomoCtrl.canAddMoreTimer()) {
+            // TODO Dialog
+            throw new IllegalStateException();
+        }
+        Platform.runLater(() -> {
+            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.REST_YELLOW));
+        });
     }
 }
