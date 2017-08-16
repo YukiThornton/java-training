@@ -2,6 +2,7 @@ package clock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import clock.CountdownTimer.TimerType;
 import javafx.scene.Node;
@@ -14,6 +15,7 @@ public class PomodoroController {
     private CountdownTimer workTimer;
     private CountdownTimer restTimer;
     private int currentTimerIndex;
+    private Consumer<CountdownTimer> onSwitchTimersAction;
     
     public PomodoroController() {
         workTimer = new CountdownTimer("work", 5, TimerType.WORK_BLUE);
@@ -60,10 +62,18 @@ public class PomodoroController {
         return timers.size() < MAX_TIMER_COUNT;
     }
 
+    public CountdownTimer currentTimer() {
+        return timers.get(currentTimerIndex);
+    }
+
     public Node createNewTimer(TimerType timerType) {
         CountdownTimer timer = new CountdownTimer("work", 5, timerType);
         timers.add(timer);
         return timer.getNode();
+    }
+
+    public void onSwitchTimers(Consumer<CountdownTimer> consumer) {
+        onSwitchTimersAction = consumer;
     }
 
     private void switchTimers() {
@@ -75,7 +85,9 @@ public class PomodoroController {
         } else {
             currentTimerIndex++;
         }
-        timers.get(currentTimerIndex).start();
+        CountdownTimer newTimer = timers.get(currentTimerIndex);
+        onSwitchTimersAction.accept(newTimer);
+        newTimer.start();
     }
 
 }

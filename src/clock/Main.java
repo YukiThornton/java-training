@@ -9,6 +9,8 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -24,6 +26,7 @@ public class Main extends Application {
     private Clock clock;
     private PomodoroController pomoCtrl;
     private HBox timerBox;
+    private VBox rootBox;
     private Label pomoCtrlBtn;
     private Label pomoResetBtn;
     private Label pomoAddTimerBtn;
@@ -37,7 +40,13 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         clock = new Clock();
         pomoCtrl = new PomodoroController();
+        pomoCtrl.onSwitchTimers((newTimer) -> {
+            changeBgColor(newTimer.getColorSet());
+        });
         timerBox = new HBox(pomoCtrl.getNodes());
+        ScrollPane sp = new ScrollPane(timerBox);
+        sp.setHbarPolicy(ScrollBarPolicy.NEVER);
+        sp.setVbarPolicy(ScrollBarPolicy.NEVER);
 
         pomoCtrlBtn = new Label(BTN_TXT_START);
         pomoCtrlBtn.setFont(new Font(50));
@@ -76,11 +85,13 @@ public class Main extends Application {
         HBox btns = new HBox(pomoCtrlBtn, pomoResetBtn, pomoAddTimerBtn, pomoAddRestBtn);
         btns.setSpacing(20);
 
-        VBox box = new VBox(4);
-        box.getChildren().add(clock.getDateNode());
-        box.getChildren().add(clock.getTimeNode());
-        box.getChildren().add(timerBox);
-        box.getChildren().add(btns);
+        rootBox = new VBox(4);
+        rootBox.getChildren().add(clock.getDateNode());
+        rootBox.getChildren().add(clock.getTimeNode());
+        rootBox.getChildren().add(sp);
+        rootBox.getChildren().add(btns);
+        changeBgColor(pomoCtrl.currentTimer().getColorSet());
+        
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -98,7 +109,11 @@ public class Main extends Application {
             timer.cancel();
         });
 
-        primaryStage.setScene(new Scene(box));
+        Scene scene = new Scene(rootBox);
+        scene.getStylesheets().add("clock/css/main.css");
+        sp.setStyle("-fx-background-color:transparent;");
+        sp.getStyleClass().add("scroll-pane");
+        primaryStage.setScene(scene);
         primaryStage.setTitle("Pomo");
         primaryStage.show();
     }
@@ -113,6 +128,10 @@ public class Main extends Application {
             pomoResetBtn.setVisible(false);
             pomoCtrl.start();
         }
+    }
+
+    private void changeBgColor(ColorSet colorSet) {
+        rootBox.setStyle("-fx-background-color:" + colorSet.whitish);
     }
 
     private void onClickPomoResetBtn() {

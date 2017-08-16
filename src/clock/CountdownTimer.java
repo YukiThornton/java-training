@@ -72,6 +72,8 @@ public class CountdownTimer {
         this.timerType = timerType;
 
         timerNameLabel = new Label(timerName);
+        timerNameLabel.setTextFill(timerType.colorSet.remainingDimColor);
+        timerNameLabel.setFont(new Font(30));
         timerNameLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -158,6 +160,10 @@ public class CountdownTimer {
         timerNode.setAlignment(Pos.TOP_CENTER);
     }
 
+    public ColorSet getColorSet() {
+        return timerType.getColorSet();
+    }
+
     private int validateMaxMinute(String input) {
         return Integer.parseInt(input);
     }
@@ -186,6 +192,7 @@ public class CountdownTimer {
         startTime = LocalDateTime.now();
         remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingColor);
         chart.brighterColor();
+        timerNameLabel.setTextFill(timerType.colorSet.remainingColor);
         isActive = true;
         System.out.println("start" + timerNameLabel.textProperty().get());
     }
@@ -194,6 +201,7 @@ public class CountdownTimer {
         remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingDimColor);
         passedTimeInRound = passedTimeInRound.plus(Duration.between(startTime, LocalDateTime.now()));
         chart.dimColor();
+        timerNameLabel.setTextFill(timerType.colorSet.remainingDimColor);
         isActive = false;
         System.out.println("pause" + timerNameLabel.textProperty().get());
     }

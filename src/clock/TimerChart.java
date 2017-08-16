@@ -26,13 +26,13 @@ public class TimerChart extends PieChart {
     }
 
     public void dimColor() {
-        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.remainingDim);
-        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.passedDim);
+        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.remainingDim + ";-fx-border-color: derive(-fx-pie-color, -10%);");
+        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.passedDim + ";-fx-border-color: derive(-fx-pie-color, -10%);");
     }
 
     public void brighterColor() {
-        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.remaining);
-        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.passed);
+        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.remaining + ";-fx-border-color: derive(-fx-pie-color, -10%);");
+        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.passed + ";-fx-border-color: derive(-fx-pie-color, -10%);");
     }
 
 }
