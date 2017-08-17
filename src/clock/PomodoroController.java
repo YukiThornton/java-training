@@ -16,10 +16,30 @@ public class PomodoroController {
     private CountdownTimer restTimer;
     private int currentTimerIndex;
     private Consumer<CountdownTimer> onSwitchTimersAction;
+    private Consumer<CountdownTimer> timerDeleteAction;
+    private Consumer<CountdownTimer> onTimerDeleted;
     
     public PomodoroController() {
-        workTimer = new CountdownTimer("work", 5, TimerType.WORK_BLUE);
-        restTimer = new CountdownTimer("rest", 1, TimerType.REST_YELLOW);
+        timerDeleteAction = timer -> {
+            if (timer.isActive() || timers.size() <= 2) {
+                throw new IllegalStateException();
+            }
+            int index = timers.indexOf(timer);
+            System.out.println(timer + " " + index);
+            if (index == currentTimerIndex) {
+                System.out.println("switch " + currentTimerIndex + " " + index);
+                switchTimers();
+            }
+            timers.remove(index);
+            if (index < currentTimerIndex) {
+                currentTimerIndex--;
+                System.out.println("minus " + currentTimerIndex + " " + index);
+            }
+            timers.forEach(t -> System.out.println(t));
+            onTimerDeleted.accept(timer);
+        };
+        workTimer = new CountdownTimer("work", 5, TimerType.WORK_BLUE, timerDeleteAction);
+        restTimer = new CountdownTimer("rest", 1, TimerType.REST_YELLOW, timerDeleteAction);
         timers = new ArrayList<>();
         timers.add(workTimer);
         timers.add(restTimer);
@@ -49,7 +69,7 @@ public class PomodoroController {
         case NO_CHANGE:
             break;
         case REACHED_MAXIMUM:
-            switchTimers();
+            switchAndStart();
             break;
         }
     }
@@ -66,8 +86,8 @@ public class PomodoroController {
         return timers.get(currentTimerIndex);
     }
 
-    public Node createNewTimer(TimerType timerType) {
-        CountdownTimer timer = new CountdownTimer("work", 5, timerType);
+    public Node createNewTimer(String timerName, int maxMin, TimerType timerType) {
+        CountdownTimer timer = new CountdownTimer(timerName, maxMin, timerType, timerDeleteAction);
         timers.add(timer);
         return timer.getNode();
     }
@@ -76,7 +96,16 @@ public class PomodoroController {
         onSwitchTimersAction = consumer;
     }
 
-    private void switchTimers() {
+    public void onTimerDeleted(Consumer<CountdownTimer> consumer) {
+        onTimerDeleted = consumer;
+    }
+
+    public void switchAndStart() {
+        switchTimers();
+        timers.get(currentTimerIndex).start();
+    }
+
+    public void switchTimers() {
         CountdownTimer oldTimer = timers.get(currentTimerIndex);
         oldTimer.pause();
         oldTimer.reset();
@@ -85,9 +114,7 @@ public class PomodoroController {
         } else {
             currentTimerIndex++;
         }
-        CountdownTimer newTimer = timers.get(currentTimerIndex);
-        onSwitchTimersAction.accept(newTimer);
-        newTimer.start();
+        onSwitchTimersAction.accept(timers.get(currentTimerIndex));
     }
 
 }

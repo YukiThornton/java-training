@@ -23,17 +23,19 @@ public class Main extends Application {
 
     private static final String BTN_TXT_START = "\uE038";
     private static final String BTN_TXT_PAUSE = "\uE035";
-    private static final String BTN_TXT_RESET = "\uE047";
+    private static final String BTN_TXT_SKIP = "\uE044";
+    private static final String BTN_TXT_STOP = "\uE047";
     private static final String BTN_TXT_ADD_TIMER = "\uE856";
 
     private Clock clock;
     private PomodoroController pomoCtrl;
     private HBox timerBox;
     private VBox rootBox;
-    private Label pomoCtrlBtn;
-    private Label pomoResetBtn;
-    private Label pomoAddTimerBtn;
-    private Label pomoAddRestBtn;
+    private Label startOrPauseBtn;
+    private Label skipBtn;
+    private Label stopBtn;
+    private Label addWorkTimerBtn;
+    private Label addRestTimerBtn;
 
     public static void main(String[] args) {
         launch(args);
@@ -43,9 +45,11 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         pomoCtrl = new PomodoroController();
         pomoCtrl.onSwitchTimers((newTimer) -> {
-            ColorSet colorSet = newTimer.getColorSet();
-            changeBgColor(colorSet);
-            switchTxtBtnColors(colorSet.remainingDimColor);
+            changeColors(newTimer.getColorSet());
+        });
+        pomoCtrl.onTimerDeleted(timer -> {
+            timerBox.getChildren().clear();
+            timerBox.getChildren().addAll(pomoCtrl.getNodes());
         });
         ColorSet currentColorSet = pomoCtrl.currentTimer().getColorSet();
         clock = new Clock(FONT_SMALL, currentColorSet.remainingDimColor);
@@ -60,36 +64,43 @@ public class Main extends Application {
         sp.setHbarPolicy(ScrollBarPolicy.NEVER);
         sp.setVbarPolicy(ScrollBarPolicy.NEVER);
 
-        pomoCtrlBtn = createIconBtn(BTN_TXT_START, FONT_MEDIUM, currentColorSet.remainingDimColor);
-        pomoCtrlBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        startOrPauseBtn = createIconBtn(BTN_TXT_START, FONT_MEDIUM, currentColorSet.remainingDimColor);
+        startOrPauseBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 onClickPomoCtrlBtn();
             }
         });
 
-        pomoResetBtn = createIconBtn(BTN_TXT_RESET, FONT_MEDIUM, currentColorSet.remainingDimColor);
-        pomoResetBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        skipBtn = createIconBtn(BTN_TXT_SKIP, FONT_MEDIUM, currentColorSet.remainingDimColor);
+        skipBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                onClickSkipBtn();
+            }
+        });
+        stopBtn = createIconBtn(BTN_TXT_STOP, FONT_MEDIUM, currentColorSet.remainingDimColor);
+        stopBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 onClickPomoResetBtn();
             }
         });
-        pomoAddTimerBtn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.BLUE.remainingDimColor);
-        pomoAddTimerBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        addWorkTimerBtn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.BLUE.remainingDimColor);
+        addWorkTimerBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 onClickPomoAddTimerBtn();
             }
         });
-        pomoAddRestBtn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.YELLOW.remainingDimColor);
-        pomoAddRestBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        addRestTimerBtn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.YELLOW.remainingDimColor);
+        addRestTimerBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 onClickPomoAddRestBtn();
             }
         });
-        HBox btns = new HBox(pomoCtrlBtn, pomoResetBtn, pomoAddTimerBtn, pomoAddRestBtn);
+        HBox btns = new HBox(startOrPauseBtn, skipBtn, stopBtn, addWorkTimerBtn, addRestTimerBtn);
         btns.setSpacing(20);
 
         rootBox.getChildren().add(clock.getDateNode());
@@ -123,25 +134,40 @@ public class Main extends Application {
     }
 
     private void switchTxtBtnColors(Color color) {
-        pomoCtrlBtn.setTextFill(color);
-        pomoResetBtn.setTextFill(color);
+        startOrPauseBtn.setTextFill(color);
+        stopBtn.setTextFill(color);
+        skipBtn.setTextFill(color);
         clock.changeTextColor(color);
     }
 
     private void onClickPomoCtrlBtn() {
         if (pomoCtrl.isActive()) {
-            pomoCtrlBtn.setText(BTN_TXT_START);
-            pomoResetBtn.setVisible(true);
+            startOrPauseBtn.setText(BTN_TXT_START);
+            stopBtn.setVisible(true);
             pomoCtrl.pause();
         } else {
-            pomoCtrlBtn.setText(BTN_TXT_PAUSE);
-            pomoResetBtn.setVisible(false);
+            startOrPauseBtn.setText(BTN_TXT_PAUSE);
+            stopBtn.setVisible(false);
             pomoCtrl.start();
         }
     }
 
     private void changeBgColor(ColorSet colorSet) {
         rootBox.setStyle("-fx-background-color:" + colorSet.whitish);
+    }
+
+    private void onClickSkipBtn() {
+        if (pomoCtrl.isActive()) {
+            pomoCtrl.switchAndStart();
+        } else {
+            pomoCtrl.switchTimers();
+        }
+        changeColors(pomoCtrl.currentTimer().getColorSet());
+    }
+
+    private void changeColors(ColorSet colorSet) {
+        changeBgColor(colorSet);
+        switchTxtBtnColors(colorSet.remainingDimColor);
     }
 
     private void onClickPomoResetBtn() {
@@ -154,7 +180,7 @@ public class Main extends Application {
             throw new IllegalStateException();
         }
         Platform.runLater(() -> {
-            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.WORK_BLUE));
+            timerBox.getChildren().add(pomoCtrl.createNewTimer("work", 25, TimerType.WORK_BLUE));
         });
     }
 
@@ -164,7 +190,7 @@ public class Main extends Application {
             throw new IllegalStateException();
         }
         Platform.runLater(() -> {
-            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.REST_YELLOW));
+            timerBox.getChildren().add(pomoCtrl.createNewTimer("reset", 5, TimerType.REST_YELLOW));
         });
     }
 }

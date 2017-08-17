@@ -1,17 +1,11 @@
 package clock;
 
-import static clock.NodeTools.FONT_MEDIUM;
-import static clock.NodeTools.FONT_SMALL;
-import static clock.NodeTools.FONT_TINY;
-import static clock.NodeTools.acceptOnEnterAndSetInvisibleOnEscape;
-import static clock.NodeTools.createTextBtn;
-import static clock.NodeTools.createTextField;
-import static clock.NodeTools.setInvisibleOnFocusLost;
-import static clock.NodeTools.showHiddenTextField;
+import static clock.NodeTools.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Consumer;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -25,6 +19,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class CountdownTimer {
+    private static final String BTN_TXT_DELETE = "\uE872";
+
     private Duration passedTimeInRound;
     private Duration passedTimeInTotal;
     private LocalDateTime startTime;
@@ -69,7 +65,7 @@ public class CountdownTimer {
         }
     }
 
-    public CountdownTimer(String timerName, int maxMinute, TimerType timerType) {
+    public CountdownTimer(String timerName, int maxMinute, TimerType timerType, Consumer<CountdownTimer> timerDeleteAction) {
         this.timerName = timerName;
         this.maxSeconds = maxMinute * 60;
         this.timerType = timerType;
@@ -79,9 +75,9 @@ public class CountdownTimer {
 
         StackPane donutTop = initDonutTop(timerName);
         StackPane donut = initDonut(maxMinute);
+        StackPane donutBottom = initDonutBottom(timerDeleteAction);
 
-
-        timerNode = new VBox(donutTop, donut);
+        timerNode = new VBox(donutTop, donut, donutBottom);
         timerNode.setAlignment(Pos.TOP_CENTER);
     }
 
@@ -123,6 +119,17 @@ public class CountdownTimer {
         chartPane.setMaxSize(300, 300);
         chartPane.setMinSize(300, 300);
         return chartPane;
+    }
+
+    private StackPane initDonutBottom(Consumer<CountdownTimer> timerDeleteAction) {
+        Label deleteBtn = createIconBtn(BTN_TXT_DELETE, FONT_SMALL, timerType.colorSet.remainingDimColor);
+        deleteBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                timerDeleteAction.accept(CountdownTimer.this);
+            }
+        });
+        return new StackPane(deleteBtn);
     }
 
     private StackPane initDonutCenter(int maxMin) {
