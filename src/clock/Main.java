@@ -1,5 +1,7 @@
 package clock;
 
+import static clock.NodeTools.*;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,14 +16,15 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    private static final String BTN_TXT_START = "Start";
-    private static final String BTN_TXT_PAUSE = "Pause";
-    private static final String BTN_TXT_RESET = "Reset";
+    private static final String BTN_TXT_START = "\uE038";
+    private static final String BTN_TXT_PAUSE = "\uE035";
+    private static final String BTN_TXT_RESET = "\uE047";
+    private static final String BTN_TXT_ADD_TIMER = "\uE856";
 
     private Clock clock;
     private PomodoroController pomoCtrl;
@@ -38,18 +41,26 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        clock = new Clock();
         pomoCtrl = new PomodoroController();
         pomoCtrl.onSwitchTimers((newTimer) -> {
-            changeBgColor(newTimer.getColorSet());
+            ColorSet colorSet = newTimer.getColorSet();
+            changeBgColor(colorSet);
+            switchTxtBtnColors(colorSet.remainingDimColor);
         });
+        ColorSet currentColorSet = pomoCtrl.currentTimer().getColorSet();
+        clock = new Clock(FONT_SMALL, currentColorSet.remainingDimColor);
+
+        rootBox = new VBox(4);
+        Scene scene = new Scene(rootBox);
+        scene.getStylesheets().add("clock/css/main.css");
+        scene.getStylesheets().add("http://fonts.googleapis.com/css?family=Material+Icons");
+
         timerBox = new HBox(pomoCtrl.getNodes());
         ScrollPane sp = new ScrollPane(timerBox);
         sp.setHbarPolicy(ScrollBarPolicy.NEVER);
         sp.setVbarPolicy(ScrollBarPolicy.NEVER);
 
-        pomoCtrlBtn = new Label(BTN_TXT_START);
-        pomoCtrlBtn.setFont(new Font(50));
+        pomoCtrlBtn = createIconBtn(BTN_TXT_START, FONT_MEDIUM, currentColorSet.remainingDimColor);
         pomoCtrlBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -57,25 +68,21 @@ public class Main extends Application {
             }
         });
 
-        pomoResetBtn = new Label(BTN_TXT_RESET);
-        pomoResetBtn.setFont(new Font(50));
+        pomoResetBtn = createIconBtn(BTN_TXT_RESET, FONT_MEDIUM, currentColorSet.remainingDimColor);
         pomoResetBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 onClickPomoResetBtn();
             }
         });
-
-        pomoAddTimerBtn = new Label("add work");
-        pomoAddTimerBtn.setFont(new Font(50));
+        pomoAddTimerBtn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.BLUE.remainingDimColor);
         pomoAddTimerBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 onClickPomoAddTimerBtn();
             }
         });
-        pomoAddRestBtn = new Label("add rest");
-        pomoAddRestBtn.setFont(new Font(50));
+        pomoAddRestBtn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.YELLOW.remainingDimColor);
         pomoAddRestBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -85,7 +92,6 @@ public class Main extends Application {
         HBox btns = new HBox(pomoCtrlBtn, pomoResetBtn, pomoAddTimerBtn, pomoAddRestBtn);
         btns.setSpacing(20);
 
-        rootBox = new VBox(4);
         rootBox.getChildren().add(clock.getDateNode());
         rootBox.getChildren().add(clock.getTimeNode());
         rootBox.getChildren().add(sp);
@@ -109,13 +115,17 @@ public class Main extends Application {
             timer.cancel();
         });
 
-        Scene scene = new Scene(rootBox);
-        scene.getStylesheets().add("clock/css/main.css");
         sp.setStyle("-fx-background-color:transparent;");
         sp.getStyleClass().add("scroll-pane");
         primaryStage.setScene(scene);
         primaryStage.setTitle("Pomo");
         primaryStage.show();
+    }
+
+    private void switchTxtBtnColors(Color color) {
+        pomoCtrlBtn.setTextFill(color);
+        pomoResetBtn.setTextFill(color);
+        clock.changeTextColor(color);
     }
 
     private void onClickPomoCtrlBtn() {

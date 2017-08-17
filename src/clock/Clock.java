@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class Clock {
@@ -14,11 +15,13 @@ public class Clock {
     private Label clockDateLabel;
     private Label clockTimeLabel;
 
-    public Clock() {
+    public Clock(Font font, Color color) {
         clockDateLabel = new Label(clockDate());
         clockTimeLabel = new Label(clockTime());
-        clockDateLabel.setFont(new Font(50));
-        clockTimeLabel.setFont(new Font(50));
+        clockDateLabel.setFont(font);
+        clockTimeLabel.setFont(font);
+        clockDateLabel.setTextFill(color);
+        clockTimeLabel.setTextFill(color);
     }
 
     public Node getDateNode() {
@@ -32,6 +35,11 @@ public class Clock {
     public void update() {
         clockDateLabel.setText(clockDate());
         clockTimeLabel.setText(clockTime());
+    }
+
+    public void changeTextColor(Color color) {
+        clockDateLabel.setTextFill(color);
+        clockTimeLabel.setTextFill(color);
     }
 
     private String clockDate() {

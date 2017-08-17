@@ -1,5 +1,14 @@
 package clock;
 
+import static clock.NodeTools.FONT_MEDIUM;
+import static clock.NodeTools.FONT_SMALL;
+import static clock.NodeTools.FONT_TINY;
+import static clock.NodeTools.acceptOnEnterAndSetInvisibleOnEscape;
+import static clock.NodeTools.createTextBtn;
+import static clock.NodeTools.createTextField;
+import static clock.NodeTools.setInvisibleOnFocusLost;
+import static clock.NodeTools.showHiddenTextField;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -9,14 +18,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
 
 public class CountdownTimer {
     private Duration passedTimeInRound;
@@ -66,102 +72,81 @@ public class CountdownTimer {
     public CountdownTimer(String timerName, int maxMinute, TimerType timerType) {
         this.timerName = timerName;
         this.maxSeconds = maxMinute * 60;
+        this.timerType = timerType;
         passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
         passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
         startTime = LocalDateTime.now();
-        this.timerType = timerType;
 
-        timerNameLabel = new Label(timerName);
-        timerNameLabel.setTextFill(timerType.colorSet.remainingDimColor);
-        timerNameLabel.setFont(new Font(30));
-        timerNameLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() >= 2) {
-                    timerNameTextField.setText(CountdownTimer.this.timerName);
-                    timerNameTextField.setVisible(true);
-                }
-            }
-        });
-        timerNameTextField = new TextField(timerName);
-        timerNameTextField.setFont(new Font(20));
-        timerNameTextField.setMaxSize(150, 10);
-        timerNameTextField.setVisible(false);
-        timerNameTextField.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                switch(event.getCode()) {
-                case ENTER:
-                    String val = validateTimerName(timerNameTextField.getText());
-                    if (val != null) {
-                        changeTimerName(val);
-                        timerNameTextField.setVisible(false);
-                    } else {
-                        timerNameTextField.setVisible(false);
-                    }
-                    break;
-                case ESCAPE:
-                    timerNameTextField.setVisible(false);
-                    break;
-                default:
-                    break;
-                }
-            }
-        });
-        StackPane donutTop = new StackPane(timerNameLabel, timerNameTextField);
+        StackPane donutTop = initDonutTop(timerName);
+        StackPane donut = initDonut(maxMinute);
 
-        donutHole = new Circle(100, Color.WHITESMOKE);
-        donutHole.setStrokeWidth(0);
-        chart = new TimerChart(maxMinute, 0, timerType.getColorSet());
-        donutHole.radiusProperty().bind(chart.heightProperty().multiply(0.35));
-        remainingMinuteLabel = new Label(toRemainingText());
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingDimColor);
-        remainingMinuteLabel.setFont(new Font(50));
-        remainingMinuteLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() >= 2) {
-                    maxMinuteTxtField.setText(toTextInMinute(maxSeconds));
-                    maxMinuteTxtField.setVisible(true);
-                }
-            }
-        });
-        maxMinuteTxtField = new TextField(Integer.toString(maxMinute));
-        maxMinuteTxtField.setFont(new Font(20));
-        maxMinuteTxtField.setMaxSize(60, 10);
-        maxMinuteTxtField.setVisible(false);
-        maxMinuteTxtField.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                switch(event.getCode()) {
-                case ENTER:
-                    int val = validateMaxMinute(maxMinuteTxtField.getText());
-                    if (val < 0) {
-                        maxMinuteTxtField.setVisible(false);
-                    } else {
-                        changeMaxMinute(val);
-                        maxMinuteTxtField.setVisible(false);
-                    }
-                    break;
-                case ESCAPE:
-                    maxMinuteTxtField.setVisible(false);
-                    break;
-                default:
-                    break;
-                }
-            }
-        });
-        StackPane donutCenter = new StackPane(remainingMinuteLabel, maxMinuteTxtField);
-        StackPane chartPane = new StackPane(chart, donutHole, donutCenter);
-        chartPane.setMaxSize(300, 300);
-        chartPane.setMinSize(300, 300);
 
-        timerNode = new VBox(donutTop, chartPane);
+        timerNode = new VBox(donutTop, donut);
         timerNode.setAlignment(Pos.TOP_CENTER);
     }
 
     public ColorSet getColorSet() {
         return timerType.getColorSet();
+    }
+
+    private StackPane initDonutTop(String donutTitle) {
+        timerNameLabel = createTextBtn(donutTitle, FONT_SMALL, timerType.colorSet.remainingDimColor);
+        timerNameLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (!isActive() && event.getClickCount() >= 2) {
+                    showHiddenTextField(timerNameTextField, CountdownTimer.this.timerName);
+                }
+            }
+        });
+        timerNameTextField = createTextField(donutTitle, FONT_TINY, 150, 10, false);
+        setInvisibleOnFocusLost(timerNameTextField);
+        acceptOnEnterAndSetInvisibleOnEscape(timerNameTextField, text -> {
+            String val = validateTimerName(text);
+            if (val != null) {
+                changeTimerName(val);
+                timerNameTextField.setVisible(false);
+            } else {
+                timerNameTextField.setVisible(false);
+            }
+        });
+        return new StackPane(timerNameLabel, timerNameTextField);
+    }
+
+    private StackPane initDonut(int maxMin) {
+        chart = new TimerChart(maxMin, 0, timerType.getColorSet());
+        donutHole = new Circle(100, Color.WHITESMOKE);
+        donutHole.setStrokeWidth(0);
+        donutHole.radiusProperty().bind(chart.heightProperty().multiply(0.35));
+        StackPane donutCenter = initDonutCenter(maxMin);
+        StackPane chartPane = new StackPane(chart, donutHole, donutCenter);
+        chartPane.setMaxSize(300, 300);
+        chartPane.setMinSize(300, 300);
+        return chartPane;
+    }
+
+    private StackPane initDonutCenter(int maxMin) {
+        remainingMinuteLabel = createTextBtn(toRemainingText(), FONT_MEDIUM, timerType.colorSet.remainingDimColor);
+        remainingMinuteLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (!isActive() && event.getClickCount() >= 2) {
+                    showHiddenTextField(maxMinuteTxtField, toTextInMinute(maxSeconds));
+                }
+            }
+        });
+        maxMinuteTxtField = createTextField(Integer.toString(maxMin), FONT_TINY, 60, 10, false);
+        setInvisibleOnFocusLost(maxMinuteTxtField);
+        acceptOnEnterAndSetInvisibleOnEscape(maxMinuteTxtField, text -> {
+            int val = validateMaxMinute(text);
+            if (val < 0) {
+                maxMinuteTxtField.setVisible(false);
+            } else {
+                changeMaxMinute(val);
+                maxMinuteTxtField.setVisible(false);
+            }
+        });
+        return new StackPane(remainingMinuteLabel, maxMinuteTxtField);
     }
 
     private int validateMaxMinute(String input) {
