@@ -5,10 +5,15 @@ import java.util.function.Consumer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -42,6 +47,33 @@ public class NodeTools {
         textField.setText(text);
         textField.setVisible(true);
         textField.requestFocus();
+    }
+
+    public static HBox createHBox(Pos posValue, Node... nodes) {
+        HBox box = new HBox(nodes.length);
+        if (posValue != null) {
+            box.setAlignment(posValue);
+        }
+        box.getChildren().addAll(nodes);
+        return box;
+    }
+
+    public static VBox createVBox(Pos posValue, Node... nodes) {
+        VBox box = new VBox(nodes.length);
+        if (posValue != null) {
+            box.setAlignment(posValue);
+        }
+        box.getChildren().addAll(nodes);
+        return box;
+    }
+
+    public static ScrollPane wrapWithScrollPane(Node view) {
+        ScrollPane pane = new ScrollPane(view);
+        pane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        pane.setVbarPolicy(ScrollBarPolicy.NEVER);
+        pane.setFitToHeight(true);
+        pane.setFitToWidth(true);
+        return pane;
     }
 
     public static void acceptOnEnterAndSetInvisibleOnEscape(TextField textField, Consumer<String> onEnter) {
