@@ -27,16 +27,18 @@ public class CountdownTimer {
     private int passedSeconds;
     private int maxSeconds;
     private String timerName;
+    private boolean initialized = false;
     private boolean isActive = false;
     private TimerType timerType;
 
     private Label timerNameLabel;
-    private TextField timerNameTextField;
+    private TextField timerNameInput;
     private TimerChart chart;
     private Circle donutHole;
     private Label remainingMinuteLabel;
-    private TextField maxMinuteTxtField;
-    private VBox timerNode;
+    private TextField maxMinuteInput;
+    private Node deleteBtn;
+    private Node rootNode;
 
     public enum UpdateCheckResult {
         UPDATED, NO_CHANGE, REACHED_MAXIMUM;
@@ -73,55 +75,90 @@ public class CountdownTimer {
         passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
         startTime = LocalDateTime.now();
 
-        StackPane donutTop = initDonutTop(timerName);
-        StackPane donut = initDonut(maxMinute);
-        StackPane donutBottom = initDonutBottom(timerDeleteAction);
+        timerNameLabel = createTimerNameLabel(timerName);
+        timerNameInput = createTimerNameInput(timerName);
+        Node topBox = new StackPane(timerNameLabel, timerNameInput);
 
-        timerNode = new VBox(donutTop, donut, donutBottom);
-        timerNode.setAlignment(Pos.TOP_CENTER);
+        chart = new TimerChart(maxMinute, 0, timerType.getColorSet());
+        donutHole = createHole(chart);
+        remainingMinuteLabel = createRemainingMinuteLabel();
+        maxMinuteInput = createMaxMinuteInput(maxMinute);
+        Node donutCenter = new StackPane(remainingMinuteLabel, maxMinuteInput);
+        Node centerBox = createDonut(chart, donutHole, donutCenter);
+
+        deleteBtn = createDeleteBtn(timerDeleteAction);
+        Node bottomBox = new StackPane(deleteBtn);
+
+        rootNode = createRootNode(topBox, centerBox, bottomBox);
+        initialized = true;
     }
 
-    public ColorSet getColorSet() {
-        return timerType.getColorSet();
-    }
+    private Label createTimerNameLabel(String initialText) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
 
-    private StackPane initDonutTop(String donutTitle) {
-        timerNameLabel = createTextBtn(donutTitle, FONT_SMALL, timerType.colorSet.remainingDimColor);
-        timerNameLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        Label label = createTextBtn(initialText, FONT_SMALL, timerType.colorSet.remainingDimColor);
+        label.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 if (!isActive() && event.getClickCount() >= 2) {
-                    showHiddenTextField(timerNameTextField, CountdownTimer.this.timerName);
+                    if (timerNameInput == null) {
+                        throw new IllegalStateException("The input is not initialized yet.");
+                    }
+                    showHiddenTextField(timerNameInput, CountdownTimer.this.timerName);
                 }
             }
         });
-        timerNameTextField = createTextField(donutTitle, FONT_TINY, 150, 10, false);
-        setInvisibleOnFocusLost(timerNameTextField);
-        acceptOnEnterAndSetInvisibleOnEscape(timerNameTextField, text -> {
+        return label;
+    }
+
+    private TextField createTimerNameInput(String initialText) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        TextField textField = createTextField(initialText, FONT_TINY, 150, 10, false);
+        setInvisibleOnFocusLost(textField);
+        acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
             String val = validateTimerName(text);
             if (val != null) {
                 changeTimerName(val);
-                timerNameTextField.setVisible(false);
+                textField.setVisible(false);
             } else {
-                timerNameTextField.setVisible(false);
+                textField.setVisible(false);
             }
         });
-        return new StackPane(timerNameLabel, timerNameTextField);
+        return textField;
     }
 
-    private StackPane initDonut(int maxMin) {
-        chart = new TimerChart(maxMin, 0, timerType.getColorSet());
-        donutHole = new Circle(100, Color.WHITESMOKE);
-        donutHole.setStrokeWidth(0);
-        donutHole.radiusProperty().bind(chart.heightProperty().multiply(0.35));
-        StackPane donutCenter = initDonutCenter(maxMin);
-        StackPane chartPane = new StackPane(chart, donutHole, donutCenter);
+    private Node createDonut(Node donutRing, Node donutHole, Node donutCenter) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        StackPane chartPane = new StackPane(donutRing, donutHole, donutCenter);
         chartPane.setMaxSize(300, 300);
         chartPane.setMinSize(300, 300);
         return chartPane;
     }
 
-    private StackPane initDonutBottom(Consumer<CountdownTimer> timerDeleteAction) {
+    private Circle createHole(TimerChart donutRing) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        Circle circle = new Circle(100, Color.WHITESMOKE);
+        circle.setStrokeWidth(0);
+        circle.radiusProperty().bind(donutRing.heightProperty().multiply(0.35));
+        return circle;
+    }
+
+    private Node createDeleteBtn(Consumer<CountdownTimer> timerDeleteAction) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
         Label deleteBtn = createIconBtn(BTN_TXT_DELETE, FONT_SMALL, timerType.colorSet.remainingDimColor);
         deleteBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -129,31 +166,72 @@ public class CountdownTimer {
                 timerDeleteAction.accept(CountdownTimer.this);
             }
         });
-        return new StackPane(deleteBtn);
+        deleteBtn.setVisible(false);
+        return deleteBtn;
     }
 
-    private StackPane initDonutCenter(int maxMin) {
-        remainingMinuteLabel = createTextBtn(toRemainingText(), FONT_MEDIUM, timerType.colorSet.remainingDimColor);
-        remainingMinuteLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+    private Label createRemainingMinuteLabel() {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        Label label = createTextBtn(toRemainingText(), FONT_MEDIUM, timerType.colorSet.remainingDimColor);
+        label.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 if (!isActive() && event.getClickCount() >= 2) {
-                    showHiddenTextField(maxMinuteTxtField, toTextInMinute(maxSeconds));
+                    if (maxMinuteInput == null) {
+                        throw new IllegalStateException("The input is not initialized yet.");
+                    }
+                    showHiddenTextField(maxMinuteInput, toTextInMinute(maxSeconds));
                 }
             }
         });
-        maxMinuteTxtField = createTextField(Integer.toString(maxMin), FONT_TINY, 60, 10, false);
-        setInvisibleOnFocusLost(maxMinuteTxtField);
-        acceptOnEnterAndSetInvisibleOnEscape(maxMinuteTxtField, text -> {
+        return label;
+    }
+
+    private TextField createMaxMinuteInput(int maxMin) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        TextField textField = createTextField(Integer.toString(maxMin), FONT_TINY, 60, 10, false);
+        setInvisibleOnFocusLost(textField);
+        acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
             int val = validateMaxMinute(text);
             if (val < 0) {
-                maxMinuteTxtField.setVisible(false);
+                textField.setVisible(false);
             } else {
                 changeMaxMinute(val);
-                maxMinuteTxtField.setVisible(false);
+                textField.setVisible(false);
             }
         });
-        return new StackPane(remainingMinuteLabel, maxMinuteTxtField);
+        return textField;
+    }
+
+    private Node createRootNode(Node... contents) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+        if (deleteBtn == null) {
+            throw new IllegalStateException("The deleteBtn is not initialized yet.");
+        }
+
+        VBox box = new VBox(contents);
+        box.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                deleteBtn.setVisible(true);
+            }
+        });
+        box.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                deleteBtn.setVisible(false);
+            }
+        });
+        box.setAlignment(Pos.TOP_CENTER);
+        return box;
     }
 
     private int validateMaxMinute(String input) {
@@ -177,7 +255,11 @@ public class CountdownTimer {
     }
 
     public Node getNode() {
-        return timerNode;
+        return rootNode;
+    }
+
+    public ColorSet getColorSet() {
+        return timerType.getColorSet();
     }
 
     public void start() {
