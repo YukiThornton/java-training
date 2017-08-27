@@ -30,6 +30,18 @@ public class NodeTools {
         node.setManaged(visibleAndManaged);
     }
 
+    public static void ensureVisibleInScrollPane(ScrollPane pane, Node node) {
+        double width = pane.getContent().getBoundsInLocal().getWidth();
+        double height = pane.getContent().getBoundsInLocal().getHeight();
+
+        double x = node.getBoundsInParent().getMaxX();
+        double y = node.getBoundsInParent().getMaxY();
+
+        pane.setVvalue(y/height);
+        pane.setHvalue(x/width);
+        node.requestFocus();
+    }
+
     public static Label createIconBtn(String text, Font font, Color color) {
         Label label = createTextBtn(text, font, color);
         label.setStyle("-fx-font-family: \'Material Icons\'; -fx-font-size: 60; -fx-fill: firebrick;");

@@ -4,6 +4,7 @@ import static clock.NodeTools.FONT_MEDIUM;
 import static clock.NodeTools.FONT_SMALL;
 import static clock.NodeTools.FONT_TINY;
 import static clock.NodeTools.hideNode;
+import static clock.NodeTools.ensureVisibleInScrollPane;
 import static clock.NodeTools.createHBox;
 import static clock.NodeTools.createIconBtn;
 import static clock.NodeTools.createVBox;
@@ -61,6 +62,7 @@ public class Main extends Application {
     private Timer timer;
     private boolean initialized = false;
     private HBox timerBox;
+    private ScrollPane timerScrlPane;
     private BorderPane rootBox;
     private Label startOrPauseBtn;
     private Label skipBtn;
@@ -83,7 +85,7 @@ public class Main extends Application {
         clock = new Clock(FONT_TINY, FONT_SMALL,currentColorSet.remainingDimColor);
 
         timerBox = createHBox(Pos.CENTER, pomoCtrl.getNodes());
-        ScrollPane timerScrlPane = wrapWithScrollPane(timerBox);
+        timerScrlPane = wrapWithScrollPane(timerBox);
         timerScrlPane.setStyle("-fx-background-color:transparent;");
         timerScrlPane.getStyleClass().add("scroll-pane");
 
@@ -147,6 +149,7 @@ public class Main extends Application {
         pomoCtrl.onSwitchTimers((oldTimer, newTimer) -> {
             Toolkit.getDefaultToolkit().beep();
             showSwitchTimerAlert(newTimer.getTimerPurpose());
+            ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
             changeColors(newTimer.getColorSet());
         });
         pomoCtrl.onInvalidInputForMaxMinute(t -> showMaxMinuteInputErrorAlert());
@@ -326,7 +329,9 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.WORK_BLUE));
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_BLUE);
+            timerBox.getChildren().add(newTimer);
+            ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
     }
 
@@ -336,7 +341,9 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.REST_YELLOW));
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.REST_YELLOW);
+            timerBox.getChildren().add(newTimer);
+            ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
     }
 
