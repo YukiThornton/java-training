@@ -20,6 +20,8 @@ import javafx.scene.shape.Circle;
 
 public class CountdownTimer {
     private static final String BTN_TXT_DELETE = "\uE872";
+    private static final int MAX_VALID_MINUTE = 999;
+    private static final int MAX_TIMER_NAME_SIZE = 15;
 
     private Duration passedTimeInRound;
     private Duration passedTimeInTotal;
@@ -30,6 +32,9 @@ public class CountdownTimer {
     private boolean initialized = false;
     private boolean isActive = false;
     private TimerType timerType;
+    private Consumer<CountdownTimer> onTimerDeleteBtnSelectedAction;
+    private Consumer<CountdownTimer> onInvalidInputForMaxMinuteAction;
+    private Consumer<CountdownTimer> onInvalidInputForTimerNameAction;
 
     private Label timerNameLabel;
     private TextField timerNameInput;
@@ -45,7 +50,29 @@ public class CountdownTimer {
     }
 
     public enum TimerPurpose {
-        WORK, REST;
+        WORK("work", "work", 1), REST("rest", "rest", 1);
+
+        private String initialTimerName;
+        private String verb;
+        private int initialTimerMinute;
+
+        private TimerPurpose(String initialTimerName, String verb, int initialTimerMinute) {
+            this.initialTimerName = initialTimerName;
+            this.verb = verb;
+            this.initialTimerMinute = initialTimerMinute;
+        }
+
+        public String initialTimerName() {
+            return initialTimerName;
+        }
+
+        public String verb() {
+            return verb;
+        }
+
+        public int initialTimerMinute() {
+            return initialTimerMinute;
+        }
     }
 
     public enum TimerType {
@@ -55,21 +82,32 @@ public class CountdownTimer {
 
         private ColorSet colorSet;
         private TimerPurpose purpose;
+
         private TimerType(ColorSet colorSet, TimerPurpose purpose) {
             this.colorSet = colorSet;
             this.purpose = purpose;
         }
+
         public ColorSet getColorSet() {
             return colorSet;
         }
+
         public TimerPurpose getPurpose() {
             return purpose;
         }
+
+        public String initialTimerName() {
+            return purpose.initialTimerName();
+        }
+
+        public int initialTimerMinute() {
+            return purpose.initialTimerMinute();
+        }
     }
 
-    public CountdownTimer(String timerName, int maxMinute, TimerType timerType, Consumer<CountdownTimer> timerDeleteAction) {
-        this.timerName = timerName;
-        this.maxSeconds = maxMinute * 60;
+    public CountdownTimer(TimerType timerType) {
+        this.timerName = timerType.initialTimerName();
+        this.maxSeconds = timerType.initialTimerMinute() * 60;
         this.timerType = timerType;
         passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
         passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
@@ -79,18 +117,30 @@ public class CountdownTimer {
         timerNameInput = createTimerNameInput(timerName);
         Node topBox = new StackPane(timerNameLabel, timerNameInput);
 
-        chart = new TimerChart(maxMinute, 0, timerType.getColorSet());
+        chart = new TimerChart(timerType.initialTimerMinute(), 0, timerType.getColorSet());
         donutHole = createHole(chart);
         remainingMinuteLabel = createRemainingMinuteLabel();
-        maxMinuteInput = createMaxMinuteInput(maxMinute);
+        maxMinuteInput = createMaxMinuteInput(timerType.initialTimerMinute());
         Node donutCenter = new StackPane(remainingMinuteLabel, maxMinuteInput);
         Node centerBox = createDonut(chart, donutHole, donutCenter);
 
-        deleteBtn = createDeleteBtn(timerDeleteAction);
+        deleteBtn = createDeleteBtn();
         Node bottomBox = new StackPane(deleteBtn);
 
         rootNode = createRootNode(topBox, centerBox, bottomBox);
         initialized = true;
+    }
+
+    public void onTimerDeleteBtnSelected(Consumer<CountdownTimer> consumer) {
+        this.onTimerDeleteBtnSelectedAction = consumer;
+    }
+
+    public void onInvalidInputForMaxMinute(Consumer<CountdownTimer> consumer) {
+        this.onInvalidInputForMaxMinuteAction = consumer;
+    }
+
+    public void onInvalidInputForTimerName(Consumer<CountdownTimer> consumer) {
+        this.onInvalidInputForTimerNameAction = consumer;
     }
 
     private Label createTimerNameLabel(String initialText) {
@@ -121,12 +171,14 @@ public class CountdownTimer {
         TextField textField = createTextField(initialText, FONT_TINY, 150, 10, false);
         setInvisibleOnFocusLost(textField);
         acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
-            String val = validateTimerName(text);
-            if (val != null) {
-                changeTimerName(val);
+            if (validateTimerName(text)) {
+                changeTimerName(text);
                 textField.setVisible(false);
             } else {
-                textField.setVisible(false);
+                if (onInvalidInputForTimerNameAction != null) {
+                    onInvalidInputForTimerNameAction.accept(this);
+                    textField.setVisible(true);
+                }
             }
         });
         return textField;
@@ -154,7 +206,7 @@ public class CountdownTimer {
         return circle;
     }
 
-    private Node createDeleteBtn(Consumer<CountdownTimer> timerDeleteAction) {
+    private Node createDeleteBtn() {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
@@ -163,7 +215,10 @@ public class CountdownTimer {
         deleteBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                timerDeleteAction.accept(CountdownTimer.this);
+                if (onTimerDeleteBtnSelectedAction == null) {
+                    throw new IllegalStateException("No action is set.");
+                }
+                onTimerDeleteBtnSelectedAction.accept(CountdownTimer.this);
             }
         });
         deleteBtn.setVisible(false);
@@ -195,15 +250,17 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        TextField textField = createTextField(Integer.toString(maxMin), FONT_TINY, 60, 10, false);
+        TextField textField = createTextField(Integer.toString(maxMin), FONT_TINY, 80, 10, false);
         setInvisibleOnFocusLost(textField);
         acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
-            int val = validateMaxMinute(text);
-            if (val < 0) {
+            if (validateMaxMinute(text)) {
+                changeMaxMinute(Integer.parseInt(text));
                 textField.setVisible(false);
             } else {
-                changeMaxMinute(val);
-                textField.setVisible(false);
+                if (onInvalidInputForMaxMinuteAction != null) {
+                    onInvalidInputForMaxMinuteAction.accept(this);
+                    textField.setVisible(true);
+                }
             }
         });
         return textField;
@@ -221,7 +278,9 @@ public class CountdownTimer {
         box.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                deleteBtn.setVisible(true);
+                if (!isActive) {
+                    deleteBtn.setVisible(true);
+                }
             }
         });
         box.setOnMouseExited(new EventHandler<MouseEvent>() {
@@ -234,12 +293,20 @@ public class CountdownTimer {
         return box;
     }
 
-    private int validateMaxMinute(String input) {
-        return Integer.parseInt(input);
+    private boolean validateMaxMinute(String input) {
+        try {
+            int val = Integer.parseInt(input);
+            if (val <= MAX_VALID_MINUTE) {
+                return true;
+            }
+            return false;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
-    private String validateTimerName(String input) {
-        return input;
+    private boolean validateTimerName(String input) {
+        return input.length() <= MAX_TIMER_NAME_SIZE;
     }
 
     private void changeTimerName(String newName) {
@@ -256,6 +323,14 @@ public class CountdownTimer {
 
     public Node getNode() {
         return rootNode;
+    }
+
+    public TimerType getTimerType() {
+        return timerType;
+    }
+
+    public TimerPurpose getTimerPurpose() {
+        return timerType.getPurpose();
     }
 
     public ColorSet getColorSet() {

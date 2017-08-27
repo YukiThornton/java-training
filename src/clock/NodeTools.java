@@ -7,6 +7,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -16,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 public class NodeTools {
     public static final Font FONT_MEDIUM = new Font(50);
@@ -47,6 +50,18 @@ public class NodeTools {
         textField.setText(text);
         textField.setVisible(true);
         textField.requestFocus();
+    }
+
+    public static void showAlertAndWait(String title, String content, AlertType type, boolean onTop){
+        Alert alert = new Alert(type);
+        if (onTop) {
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);
+        }
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     public static HBox createHBox(Pos posValue, Node... nodes) {

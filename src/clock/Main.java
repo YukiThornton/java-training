@@ -6,10 +6,13 @@ import static clock.NodeTools.createHBox;
 import static clock.NodeTools.createIconBtn;
 import static clock.NodeTools.createVBox;
 import static clock.NodeTools.wrapWithScrollPane;
+import static clock.NodeTools.showAlertAndWait;
 
+import java.awt.Toolkit;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import clock.CountdownTimer.TimerPurpose;
 import clock.CountdownTimer.TimerType;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -19,6 +22,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -36,6 +40,16 @@ public class Main extends Application {
     private static final double WINDOW_PREF_HEIGHT = 700;
     private static final double WINDOW_MIN_WIDTH = 350;
     private static final double WINDOW_MIN_HEIGHT = 665;
+    private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
+    private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
+    private static final String ALERT_MAX_MINUTE_INPUT_ERROR_TITLE = "You can't!";
+    private static final String ALERT_MAX_MINUTE_INPUT_ERROR_CONTENT = "You cannot set bigger than 1000 minutes.";
+    private static final String ALERT_TIMER_NAME_INPUT_ERROR_TITLE = "You can't!";
+    private static final String ALERT_TIMER_NAME_INPUT_ERROR_CONTENT = "Too long!";
+    private static final String ALERT_TOO_MANY_TIMERS_TITLE = "You can't!";
+    private static final String ALERT_TOO_MANY_TIMERS_CONTENT = "You cannot have more than 10 timers.";
+    private static final String ALERT_TIMER_DELETE_REJECT_TITLE = "You can't!";
+    private static final String ALERT_TIMER_DELETE_REJECT_CONTENT = "You MUST have at least 1 work timer and 1 rest timer.";
 
     private Clock clock;
     private PomodoroController pomoCtrl;
@@ -101,13 +115,21 @@ public class Main extends Application {
         }
 
         PomodoroController pomoCtrl = new PomodoroController();
-        pomoCtrl.onSwitchTimers((newTimer) -> {
+        pomoCtrl.onSwitchTimers((oldTimer, newTimer) -> {
+            Toolkit.getDefaultToolkit().beep();
+            showSwitchTimerAlert(newTimer.getTimerPurpose());
             changeColors(newTimer.getColorSet());
         });
-        pomoCtrl.onTimerDeleted(timer -> {
-            if (timerBox == null) {
-                throw new IllegalStateException("Timers are not initialized yet.");
+        pomoCtrl.onInvalidInputForMaxMinute(t -> showMaxMinuteInputErrorAlert());
+        pomoCtrl.onInvalidInputForTimerName(t -> showTimerNameInputErrorAlert());
+        pomoCtrl.onTimerDeleteBtnSelected(timer -> {
+            if (!pomoCtrl.canDeleteTimer(timer)) {
+                showTimerDeleteRejectionAlert();
+                return;
             }
+            pomoCtrl.deleteTimer(timer);
+        });
+        pomoCtrl.onTimerDeleted(timer -> {
             timerBox.getChildren().clear();
             timerBox.getChildren().addAll(pomoCtrl.getNodes());
         });
@@ -271,21 +293,41 @@ public class Main extends Application {
 
     private void onClickPomoAddTimerBtn() {
         if (!pomoCtrl.canAddMoreTimer()) {
-            // TODO Dialog
-            throw new IllegalStateException();
+            showTooManyTimerAlert();
+            return;
         }
         Platform.runLater(() -> {
-            timerBox.getChildren().add(pomoCtrl.createNewTimer("work", 25, TimerType.WORK_BLUE));
+            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.WORK_BLUE));
         });
     }
 
     private void onClickPomoAddRestBtn() {
         if (!pomoCtrl.canAddMoreTimer()) {
-            // TODO Dialog
-            throw new IllegalStateException();
+            showTooManyTimerAlert();
+            return;
         }
         Platform.runLater(() -> {
-            timerBox.getChildren().add(pomoCtrl.createNewTimer("reset", 5, TimerType.REST_YELLOW));
+            timerBox.getChildren().add(pomoCtrl.createNewTimer(TimerType.REST_YELLOW));
         });
+    }
+
+    private void showSwitchTimerAlert(TimerPurpose purpose) {
+        showAlertAndWait(ALERT_SWITCH_TIMERS_TITLE, ALERT_SWITCH_TIMERS_CONTENT + purpose.verb(), AlertType.INFORMATION, true);
+    }
+
+    private void showMaxMinuteInputErrorAlert() {
+        showAlertAndWait(ALERT_MAX_MINUTE_INPUT_ERROR_TITLE, ALERT_MAX_MINUTE_INPUT_ERROR_CONTENT, AlertType.INFORMATION, false);
+    }
+
+    private void showTimerNameInputErrorAlert() {
+        showAlertAndWait(ALERT_TIMER_NAME_INPUT_ERROR_TITLE, ALERT_TIMER_NAME_INPUT_ERROR_CONTENT, AlertType.INFORMATION, false);
+    }
+
+    private void showTooManyTimerAlert() {
+        showAlertAndWait(ALERT_TOO_MANY_TIMERS_TITLE, ALERT_TOO_MANY_TIMERS_CONTENT, AlertType.INFORMATION, false);
+    }
+
+    private void showTimerDeleteRejectionAlert() {
+        showAlertAndWait(ALERT_TIMER_DELETE_REJECT_TITLE, ALERT_TIMER_DELETE_REJECT_CONTENT, AlertType.INFORMATION, false);
     }
 }
