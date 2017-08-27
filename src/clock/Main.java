@@ -2,6 +2,8 @@ package clock;
 
 import static clock.NodeTools.FONT_MEDIUM;
 import static clock.NodeTools.FONT_SMALL;
+import static clock.NodeTools.FONT_TINY;
+import static clock.NodeTools.hideNode;
 import static clock.NodeTools.createHBox;
 import static clock.NodeTools.createIconBtn;
 import static clock.NodeTools.createVBox;
@@ -16,9 +18,12 @@ import clock.CountdownTimer.TimerPurpose;
 import clock.CountdownTimer.TimerType;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -38,8 +43,8 @@ public class Main extends Application {
     private static final String BTN_TXT_ADD_TIMER = "\uE856";
     private static final double WINDOW_PREF_WIDTH = 800;
     private static final double WINDOW_PREF_HEIGHT = 700;
-    private static final double WINDOW_MIN_WIDTH = 350;
-    private static final double WINDOW_MIN_HEIGHT = 665;
+    private static final double WINDOW_MIN_WIDTH = 340;
+    private static final double WINDOW_MIN_HEIGHT = 535;
     private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
     private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
     private static final String ALERT_MAX_MINUTE_INPUT_ERROR_TITLE = "You can't!";
@@ -75,7 +80,7 @@ public class Main extends Application {
 
         pomoCtrl = createPomoCtrl();
         ColorSet currentColorSet = pomoCtrl.currentTimer().getColorSet();
-        clock = new Clock(FONT_SMALL, currentColorSet.remainingDimColor);
+        clock = new Clock(FONT_TINY, FONT_SMALL,currentColorSet.remainingDimColor);
 
         timerBox = createHBox(Pos.CENTER, pomoCtrl.getNodes());
         ScrollPane timerScrlPane = wrapWithScrollPane(timerBox);
@@ -92,9 +97,33 @@ public class Main extends Application {
 
         rootBox = new BorderPane();
         rootBox.setPadding(new Insets(10, 20, 10, 10));
-        rootBox.setTop(createHBox(null, clock.getDateNode()));
+        Node topBox = createHBox(null, clock.getDateNode());
+        rootBox.setTop(topBox);
         rootBox.setCenter(createVBox(Pos.CENTER, clock.getTimeNode(), timerScrlPane, ctrlBtns));
         rootBox.setBottom(createVBox(null, timerBtns));
+        rootBox.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                double btnWidth = addRestTimerBtn.getWidth() + skipBtn.getWidth() + stopBtn.getWidth() + (addWorkTimerBtn.getWidth() + addRestTimerBtn.getWidth()) * 2;
+                if (btnWidth >= rootBox.getWidth()) {
+                    hideNode(timerBtns, false);
+                } else {
+                    hideNode(timerBtns, true);
+                }
+            }
+        });
+        rootBox.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if (rootBox.getHeight() <= WINDOW_MIN_HEIGHT - 10) {
+                    hideNode(topBox, false);
+                    pomoCtrl.setVisibleAndMangedOnDeleteBtn(false);
+                } else {
+                    hideNode(topBox, true);
+                    pomoCtrl.setVisibleAndMangedOnDeleteBtn(true);
+                }
+            }
+        });
 
         Scene scene = new Scene(rootBox);
         scene.getStylesheets().add("clock/css/main.css");

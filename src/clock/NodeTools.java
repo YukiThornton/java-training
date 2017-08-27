@@ -25,6 +25,11 @@ public class NodeTools {
     public static final Font FONT_SMALL = new Font(30);
     public static final Font FONT_TINY = new Font(20);
 
+    public static void hideNode(Node node, boolean visibleAndManaged) {
+        node.setVisible(visibleAndManaged);
+        node.setManaged(visibleAndManaged);
+    }
+
     public static Label createIconBtn(String text, Font font, Color color) {
         Label label = createTextBtn(text, font, color);
         label.setStyle("-fx-font-family: \'Material Icons\'; -fx-font-size: 60; -fx-fill: firebrick;");

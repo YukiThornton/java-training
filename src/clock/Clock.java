@@ -15,11 +15,11 @@ public class Clock {
     private Label clockDateLabel;
     private Label clockTimeLabel;
 
-    public Clock(Font font, Color color) {
+    public Clock(Font dateFont, Font timeFont, Color color) {
         clockDateLabel = new Label(clockDate());
         clockTimeLabel = new Label(clockTime());
-        clockDateLabel.setFont(font);
-        clockTimeLabel.setFont(font);
+        clockDateLabel.setFont(dateFont);
+        clockTimeLabel.setFont(timeFont);
         clockDateLabel.setTextFill(color);
         clockTimeLabel.setTextFill(color);
     }

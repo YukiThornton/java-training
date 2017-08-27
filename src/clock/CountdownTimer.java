@@ -325,6 +325,11 @@ public class CountdownTimer {
         return rootNode;
     }
 
+    public void setVisibleAndMangedOnDeleteBtn(boolean visibleAndManaged) {
+        deleteBtn.setVisible(visibleAndManaged);
+        deleteBtn.setManaged(visibleAndManaged);
+    }
+
     public TimerType getTimerType() {
         return timerType;
     }
