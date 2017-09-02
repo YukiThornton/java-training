@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -40,6 +41,15 @@ public class NodeTools {
         pane.setVvalue(y/height);
         pane.setHvalue(x/width);
         node.requestFocus();
+    }
+
+    public static void setFixedSize(Region target, double width, double height) {
+        target.setMaxSize(width, height);
+        target.setMinSize(width, height);
+    }
+
+    public static void setFixedSize(Region target, double size) {
+        setFixedSize(target, size, size);
     }
 
     public static Label createIconBtn(String text, Font font, Color color) {

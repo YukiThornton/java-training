@@ -32,6 +32,7 @@ public class PomodoroController {
         timers.add(workTimer);
         timers.add(restTimer);
         currentTimerIndex = 0;
+        timers.get(currentTimerIndex).select();
     }
 
     public Node[] getNodes() {
@@ -184,6 +185,8 @@ public class PomodoroController {
         }
         onSwitchTimersAction.accept(oldTimer, timers.get(currentTimerIndex));
         oldTimer.reset();
+        oldTimer.deselect();
+        timers.get(currentTimerIndex).select();
     }
 
     public void selectNewTimer(int index) {

@@ -13,6 +13,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -22,6 +23,8 @@ public class CountdownTimer {
     private static final String BTN_TXT_DELETE = "\uE872";
     private static final int MAX_VALID_MINUTE = 999;
     private static final int MAX_TIMER_NAME_SIZE = 15;
+    private static final double CENTERBOX_SIZE_SMALL = 230;
+    private static final double CENTERBOX_SIZE_BIG = 300;
 
     private Duration passedTimeInRound;
     private Duration passedTimeInTotal;
@@ -43,6 +46,7 @@ public class CountdownTimer {
     private Label remainingMinuteLabel;
     private TextField maxMinuteInput;
     private Node deleteBtn;
+    private Region centerBox;
     private Node rootNode;
 
     public enum UpdateCheckResult {
@@ -122,12 +126,14 @@ public class CountdownTimer {
         remainingMinuteLabel = createRemainingMinuteLabel();
         maxMinuteInput = createMaxMinuteInput(timerType.initialTimerMinute());
         Node donutCenter = new StackPane(remainingMinuteLabel, maxMinuteInput);
-        Node centerBox = createDonut(chart, donutHole, donutCenter);
+        centerBox = createDonut(chart, donutHole, donutCenter);
+        Region centerArea = createHBox(Pos.CENTER, centerBox);
+        setFixedSize(centerArea, CENTERBOX_SIZE_BIG);
 
         deleteBtn = createDeleteBtn();
         Node bottomBox = new StackPane(deleteBtn);
 
-        rootNode = createRootNode(topBox, centerBox, bottomBox);
+        rootNode = createRootNode(topBox, centerArea, bottomBox);
         initialized = true;
     }
 
@@ -184,14 +190,13 @@ public class CountdownTimer {
         return textField;
     }
 
-    private Node createDonut(Node donutRing, Node donutHole, Node donutCenter) {
+    private Region createDonut(Node donutRing, Node donutHole, Node donutCenter) {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
 
         StackPane chartPane = new StackPane(donutRing, donutHole, donutCenter);
-        chartPane.setMaxSize(300, 300);
-        chartPane.setMinSize(300, 300);
+        setFixedSize(chartPane, CENTERBOX_SIZE_SMALL);
         return chartPane;
     }
 
@@ -340,6 +345,14 @@ public class CountdownTimer {
 
     public ColorSet getColorSet() {
         return timerType.getColorSet();
+    }
+
+    public void select() {
+        setFixedSize(centerBox, CENTERBOX_SIZE_BIG);
+    }
+
+    public void deselect() {
+        setFixedSize(centerBox, CENTERBOX_SIZE_SMALL);
     }
 
     public void start() {
