@@ -12,6 +12,7 @@ import static clock.NodeTools.wrapWithScrollPane;
 import static clock.NodeTools.showAlertAndWait;
 
 import java.awt.Toolkit;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,6 +47,7 @@ public class Main extends Application {
     private static final double WINDOW_PREF_HEIGHT = 700;
     private static final double WINDOW_MIN_WIDTH = 340;
     private static final double WINDOW_MIN_HEIGHT = 535;
+    private static final String INFO_REPORT_TITLE = "Good job!";
     private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
     private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
     private static final String ALERT_MAX_MINUTE_INPUT_ERROR_TITLE = "You can't!";
@@ -150,6 +152,9 @@ public class Main extends Application {
             Toolkit.getDefaultToolkit().beep();
             showSwitchTimerAlert(newTimer.getTimerPurpose());
             ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
+            changeColors(newTimer.getColorSet());
+        });
+        pomoCtrl.onSelectNewTimer(newTimer -> {
             changeColors(newTimer.getColorSet());
         });
         pomoCtrl.onInvalidInputForMaxMinute(t -> showMaxMinuteInputErrorAlert());
@@ -321,6 +326,9 @@ public class Main extends Application {
 
     private void onClickPomoResetBtn() {
         pomoCtrl.reset();
+        showTimerReport(pomoCtrl.getReports());
+        pomoCtrl.clearAllHistory();
+        pomoCtrl.selectNewTimer(0);
     }
 
     private void onClickPomoAddTimerBtn() {
@@ -345,6 +353,14 @@ public class Main extends Application {
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
+    }
+
+    private void showTimerReport(List<TimerReport> reports) {
+        String reportStr = "";
+        for (int i = 0; i < reports.size(); i++) {
+            reportStr += reports.get(i).toString() + "\n";
+        }
+        showAlertAndWait(INFO_REPORT_TITLE, reportStr, AlertType.INFORMATION, true);
     }
 
     private void showSwitchTimerAlert(TimerPurpose purpose) {

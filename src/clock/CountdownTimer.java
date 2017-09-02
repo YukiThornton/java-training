@@ -344,9 +344,9 @@ public class CountdownTimer {
 
     public void start() {
         startTime = LocalDateTime.now();
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingColor);
+        remainingMinuteLabel.setTextFill(timerType.getColorSet().passedColor);
         chart.brighterColor();
-        timerNameLabel.setTextFill(timerType.colorSet.remainingColor);
+        timerNameLabel.setTextFill(timerType.colorSet.passedColor);
         isActive = true;
         System.out.println("start" + timerNameLabel.textProperty().get());
     }
@@ -372,6 +372,15 @@ public class CountdownTimer {
         System.out.println("reset" + timerNameLabel.textProperty().get());
     }
 
+    public void clearHistory() {
+        passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
+        clearRoundVariable();
+    }
+
+    public TimerReport getReport() {
+        return new TimerReport(passedTimeInTotal, timerName);
+    }
+    
     public UpdateCheckResult checkAndUpdateIfNecessary() {
         int passed = passedSeconds();
         if (passed <= passedSeconds) {

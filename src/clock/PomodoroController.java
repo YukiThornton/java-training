@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import clock.CountdownTimer.TimerPurpose;
 import clock.CountdownTimer.TimerType;
@@ -18,6 +19,7 @@ public class PomodoroController {
     private CountdownTimer restTimer;
     private int currentTimerIndex;
     private BiConsumer<CountdownTimer, CountdownTimer> onSwitchTimersAction;
+    private Consumer<CountdownTimer> onSelectNewTimerAction;
     private Consumer<CountdownTimer> onInvalidInputForMaxMinuteAction;
     private Consumer<CountdownTimer> onInvalidInputForTimerNameAction;
     private Consumer<CountdownTimer> onTimerDeleteBtnSelectedAction;
@@ -46,6 +48,14 @@ public class PomodoroController {
 
     public void reset() {
         timers.get(currentTimerIndex).reset();
+    }
+
+    public List<TimerReport> getReports() {
+        return timers.stream().map(timer -> timer.getReport()).collect(Collectors.toList());
+    }
+
+    public void clearAllHistory() {
+        timers.forEach(timer -> timer.clearHistory());
     }
 
     public void update() {
@@ -104,6 +114,10 @@ public class PomodoroController {
 
     public void onSwitchTimers(BiConsumer<CountdownTimer, CountdownTimer> consumer) {
         onSwitchTimersAction = consumer;
+    }
+
+    public void onSelectNewTimer(Consumer<CountdownTimer> consumer) {
+        onSelectNewTimerAction = consumer;
     }
 
     public void onInvalidInputForMaxMinute(Consumer<CountdownTimer> consumer) {
@@ -170,6 +184,14 @@ public class PomodoroController {
         }
         onSwitchTimersAction.accept(oldTimer, timers.get(currentTimerIndex));
         oldTimer.reset();
+    }
+
+    public void selectNewTimer(int index) {
+        if (timers.get(currentTimerIndex).isActive()) {
+            throw new IllegalStateException("Reset timer first.");
+        }
+        currentTimerIndex = index;
+        onSelectNewTimerAction.accept(timers.get(currentTimerIndex));
     }
 
 }
