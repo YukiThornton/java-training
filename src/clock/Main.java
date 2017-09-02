@@ -1,6 +1,5 @@
 package clock;
 
-import static clock.NodeTools.FONT_MEDIUM;
 import static clock.NodeTools.FONT_SMALL;
 import static clock.NodeTools.FONT_TINY;
 import static clock.NodeTools.hideNode;
@@ -18,6 +17,7 @@ import java.util.TimerTask;
 
 import clock.CountdownTimer.TimerPurpose;
 import clock.CountdownTimer.TimerType;
+import clock.NodeTools.IconFont;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -38,11 +38,12 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    private static final String BTN_TXT_START = "\uE038";
-    private static final String BTN_TXT_PAUSE = "\uE035";
-    private static final String BTN_TXT_SKIP = "\uE044";
-    private static final String BTN_TXT_STOP = "\uE047";
-    private static final String BTN_TXT_ADD_TIMER = "\uE856";
+    private static final String BTN_TXT_START = "\uf04b";
+    private static final String BTN_TXT_PAUSE = "\uf04c";
+    private static final String BTN_TXT_SKIP = "\uf051";
+    private static final String BTN_TXT_STOP = "\uf04d";
+    private static final String BTN_TXT_ADD_TIMER = "\uf0fe";
+//    private static final String BTN_TXT_RECORD = "\uf15c";
     private static final double WINDOW_PREF_WIDTH = 800;
     private static final double WINDOW_PREF_HEIGHT = 700;
     private static final double WINDOW_MIN_WIDTH = 340;
@@ -81,7 +82,6 @@ public class Main extends Application {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
-
         pomoCtrl = createPomoCtrl();
         ColorSet currentColorSet = pomoCtrl.currentTimer().getColorSet();
         clock = new Clock(FONT_TINY, FONT_SMALL,currentColorSet.remainingDimColor);
@@ -97,6 +97,7 @@ public class Main extends Application {
         addWorkTimerBtn = createAddWorkTimerBtn();
         addRestTimerBtn = createAddRestTimerBtn();
         HBox ctrlBtns = createHBox(Pos.CENTER, stopBtn, startOrPauseBtn, skipBtn);
+        ctrlBtns.setSpacing(30);
         HBox timerBtns = createHBox(Pos.CENTER_RIGHT, addWorkTimerBtn, addRestTimerBtn);
 
         rootBox = new BorderPane();
@@ -131,7 +132,6 @@ public class Main extends Application {
 
         Scene scene = new Scene(rootBox);
         scene.getStylesheets().add("clock/css/main.css");
-        scene.getStylesheets().add("http://fonts.googleapis.com/css?family=Material+Icons");
 
         changeBgColor(pomoCtrl.currentTimer().getColorSet());
 
@@ -178,7 +178,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_START, FONT_MEDIUM, colorSet.remainingDimColor);
+        Label btn = createIconBtn(BTN_TXT_START, IconFont.LARGE, colorSet.remainingDimColor);
         btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -193,7 +193,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_SKIP, FONT_MEDIUM, colorSet.remainingDimColor);
+        Label btn = createIconBtn(BTN_TXT_SKIP, IconFont.LARGE, colorSet.remainingDimColor);
         btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -208,7 +208,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_STOP, FONT_MEDIUM, colorSet.remainingDimColor);
+        Label btn = createIconBtn(BTN_TXT_STOP, IconFont.LARGE, colorSet.remainingDimColor);
         btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -223,7 +223,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.BLUE.remainingDimColor);
+        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, IconFont.LARGE, ColorSet.BLUE.remainingDimColor);
         btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -238,7 +238,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, FONT_MEDIUM, ColorSet.YELLOW.remainingDimColor);
+        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, IconFont.LARGE, ColorSet.YELLOW.remainingDimColor);
         btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {

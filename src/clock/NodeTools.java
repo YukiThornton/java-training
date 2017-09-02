@@ -1,5 +1,8 @@
 package clock;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.function.Consumer;
 
 import javafx.beans.value.ChangeListener;
@@ -25,6 +28,24 @@ public class NodeTools {
     public static final Font FONT_MEDIUM = new Font(50);
     public static final Font FONT_SMALL = new Font(30);
     public static final Font FONT_TINY = new Font(20);
+
+    enum IconFont {
+        SMALL(30), MEDIUM(40), LARGE(50);
+
+        private Font font;
+
+        private IconFont(int size) {
+            try {
+                this.font = Font.loadFont(new FileInputStream(new File("src/clock/font/fontawesome-webfont.ttf")), size);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private Font get() {
+            return font;
+        }
+    }
 
     public static void hideNode(Node node, boolean visibleAndManaged) {
         node.setVisible(visibleAndManaged);
@@ -52,10 +73,8 @@ public class NodeTools {
         setFixedSize(target, size, size);
     }
 
-    public static Label createIconBtn(String text, Font font, Color color) {
-        Label label = createTextBtn(text, font, color);
-        label.setStyle("-fx-font-family: \'Material Icons\'; -fx-font-size: 60; -fx-fill: firebrick;");
-        return label;
+    public static Label createIconBtn(String text, IconFont iconFont, Color color) {
+        return createTextBtn(text, iconFont.get(), color);
     }
 
     public static Label createTextBtn(String text, Font font, Color color) {

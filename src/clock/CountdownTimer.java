@@ -20,7 +20,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class CountdownTimer {
-    private static final String BTN_TXT_DELETE = "\uE872";
+    private static final String BTN_TXT_DELETE = "\uf00d";
     private static final int MAX_VALID_MINUTE = 999;
     private static final int MAX_TIMER_NAME_SIZE = 15;
     private static final double CENTERBOX_SIZE_SMALL = 230;
@@ -216,7 +216,7 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label deleteBtn = createIconBtn(BTN_TXT_DELETE, FONT_SMALL, timerType.colorSet.remainingDimColor);
+        Label deleteBtn = createIconBtn(BTN_TXT_DELETE, IconFont.SMALL, timerType.colorSet.remainingDimColor);
         deleteBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
