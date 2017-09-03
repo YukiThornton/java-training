@@ -34,11 +34,7 @@ public class NodeTools {
         private Font font;
 
         private IconFont(int size) {
-            try {
-                this.font = Font.loadFont(new FileInputStream(new File("src/clock/font/fontawesome-webfont.ttf")), size);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+            this.font = Font.loadFont(this.getClass().getResource("font/fontawesome-webfont.ttf").toExternalForm(), size);
         }
 
         private Font get() {
