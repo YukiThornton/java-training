@@ -308,7 +308,7 @@ public class Main extends Application {
         }
 
         stage.setScene(scene);
-        stage.setTitle("Pairdoro Timer");
+        stage.setTitle("Pomopomo Timer");
         stage.setOnCloseRequest(evet -> {
             timer.cancel();
         });
