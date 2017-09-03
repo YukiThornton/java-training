@@ -138,8 +138,8 @@ public class PomodoroController {
         return timer.getNode();
     }
 
-    public void setVisibleAndMangedOnDeleteBtn(boolean visibleAndManaged) {
-        timers.forEach(t -> t.setVisibleAndMangedOnDeleteBtn(visibleAndManaged));
+    public void setVisibleOnDeleteBtn(boolean visibleAndManaged) {
+        timers.forEach(t -> t.setVisibleOnDeleteBtn(visibleAndManaged));
     }
 
     public void onTimerFinished(BiConsumer<CountdownTimer, CountdownTimer> consumer) {

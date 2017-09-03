@@ -29,6 +29,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -39,7 +40,8 @@ public class Main extends Application {
     private static final String BTN_TXT_SKIP = "\uf051";
     private static final String BTN_TXT_STOP = "\uf04d";
     private static final String BTN_TXT_ADD_TIMER = "\uf0fe";
-//    private static final String BTN_TXT_RECORD = "\uf15c";
+    private static final String BTN_TXT_REPORT = "\uf15c";
+    private static final String BTN_TXT_TRASH = "\uf1f8";
     private static final double WINDOW_PREF_WIDTH = 800;
     private static final double WINDOW_PREF_HEIGHT = 700;
     private static final double WINDOW_MIN_WIDTH = 340;
@@ -62,10 +64,15 @@ public class Main extends Application {
     private PomodoroController pomoCtrl;
     private Timer timer;
     private boolean initialized = false;
+    private boolean isDeleting = false;
     private ColorSet currentColorSet;
     private HBox timerBox;
     private ScrollPane timerScrlPane;
     private BorderPane rootBox;
+    private Label dateLabel;
+    private Label timeLabel;
+    private Label trashBtn;
+    private Label reportBtn;
     private Label startOrPauseBtn;
     private Label skipBtn;
     private Label stopBtn;
@@ -89,22 +96,32 @@ public class Main extends Application {
         timerScrlPane = wrapWithScrollPane(timerBox);
         timerScrlPane.setStyle("-fx-background-color:transparent;");
         timerScrlPane.getStyleClass().add("scroll-pane");
+        timeLabel = clock.getTimeNode();
 
-        startOrPauseBtn = createStartOrPauseBtn(currentColorSet);
-        skipBtn = createSkipBtn(currentColorSet);
-        stopBtn = createStopBtn(currentColorSet);
+        trashBtn = createTrashBtn();
+        trashBtn.setPadding(new Insets(0, 15, 0, 0));
+        reportBtn = createReportBtn();
+        BorderPane topBox = new BorderPane();
+        dateLabel = clock.getDateNode();
+        topBox.setLeft(dateLabel);
+        topBox.setRight(createHBox(Pos.TOP_RIGHT, trashBtn, reportBtn));
+
+        startOrPauseBtn = createStartOrPauseBtn();
+        skipBtn = createSkipBtn();
+        stopBtn = createStopBtn();
         addWorkTimerBtn = createAddWorkTimerBtn();
         addRestTimerBtn = createAddRestTimerBtn();
         HBox ctrlBtns = createHBox(Pos.CENTER, stopBtn, startOrPauseBtn, skipBtn);
         ctrlBtns.setSpacing(30);
+
         HBox timerBtns = createHBox(Pos.CENTER_RIGHT, addWorkTimerBtn, addRestTimerBtn);
+        VBox bottomBox = createVBox(null, timerBtns);
 
         rootBox = new BorderPane();
         rootBox.setPadding(new Insets(10, 20, 10, 10));
-        Node topBox = createHBox(null, clock.getDateNode());
         rootBox.setTop(topBox);
-        rootBox.setCenter(createVBox(Pos.CENTER, clock.getTimeNode(), timerScrlPane, ctrlBtns));
-        rootBox.setBottom(createVBox(null, timerBtns));
+        rootBox.setCenter(createVBox(Pos.CENTER, timeLabel, timerScrlPane, ctrlBtns));
+        rootBox.setBottom(bottomBox);
         rootBox.widthProperty().addListener((observable, oldValue, newValue) -> {
             double btnWidth = addRestTimerBtn.getWidth() + skipBtn.getWidth() + stopBtn.getWidth() + (addWorkTimerBtn.getWidth() + addRestTimerBtn.getWidth()) * 2;
             if (btnWidth >= rootBox.getWidth()) {
@@ -116,10 +133,10 @@ public class Main extends Application {
         rootBox.heightProperty().addListener((observable, oldValue, newValue) -> {
             if (rootBox.getHeight() <= WINDOW_MIN_HEIGHT - 10) {
                 hideNode(topBox, false);
-                pomoCtrl.setVisibleAndMangedOnDeleteBtn(false);
+                hideNode(bottomBox, false);
             } else {
                 hideNode(topBox, true);
-                pomoCtrl.setVisibleAndMangedOnDeleteBtn(true);
+                hideNode(bottomBox, true);
             }
         });
 
@@ -164,7 +181,29 @@ public class Main extends Application {
         return pomoCtrl;
     }
 
-    private Label createStartOrPauseBtn(ColorSet colorSet) {
+    private Label createReportBtn() {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        Label btn = createIconBtn(BTN_TXT_REPORT, IconFont.MEDIUM);
+        btn.setOnMouseClicked(event -> onClickReportBtn());
+        setColorOnLabel(btn, ColorSet.GRAY);
+        return btn;
+    }
+
+    private Label createTrashBtn() {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized.");
+        }
+
+        Label btn = createIconBtn(BTN_TXT_TRASH, IconFont.MEDIUM);
+        btn.setOnMouseClicked(event -> onClickTrashBtn());
+        setColorOnLabel(btn, ColorSet.GRAY);
+        return btn;
+    }
+
+    private Label createStartOrPauseBtn() {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
@@ -175,7 +214,7 @@ public class Main extends Application {
         return btn;
     }
 
-    private Label createSkipBtn(ColorSet colorSet) {
+    private Label createSkipBtn() {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
@@ -186,7 +225,7 @@ public class Main extends Application {
         return btn;
     }
 
-    private Label createStopBtn(ColorSet colorSet) {
+    private Label createStopBtn() {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
@@ -229,9 +268,15 @@ public class Main extends Application {
     }
 
     private void setColorOnLabel(Label label, ColorSet colorSet) {
-        label.setTextFill(colorSet.lightColor());
-        label.setOnMouseEntered(event -> label.setTextFill(colorSet.darkColor()));
-        label.setOnMouseExited(event -> label.setTextFill(colorSet.lightColor()));
+        if (colorSet == ColorSet.GRAY) {
+            label.setTextFill(colorSet.saturatedDarkColor());
+            label.setOnMouseEntered(event -> label.setTextFill(colorSet.darkColor()));
+            label.setOnMouseExited(event -> label.setTextFill(colorSet.saturatedDarkColor()));
+        } else {
+            label.setTextFill(colorSet.lightColor());
+            label.setOnMouseEntered(event -> label.setTextFill(colorSet.darkColor()));
+            label.setOnMouseExited(event -> label.setTextFill(colorSet.lightColor()));
+        }
     }
 
     private Timer createAndSetupTimer() {
@@ -271,6 +316,36 @@ public class Main extends Application {
         stage.setWidth(WINDOW_PREF_WIDTH);
         stage.setMinHeight(WINDOW_MIN_HEIGHT);
         stage.setMinWidth(WINDOW_MIN_WIDTH);
+    }
+
+    private void onClickTrashBtn() {
+        if (isDeleting) {
+            reportBtn.setVisible(true);
+            pomoCtrl.setVisibleOnDeleteBtn(false);
+            dateLabel.setVisible(true);
+            timeLabel.setVisible(true);
+            stopBtn.setVisible(true);
+            startOrPauseBtn.setVisible(true);
+            skipBtn.setVisible(true);
+            addWorkTimerBtn.setVisible(true);
+            addRestTimerBtn.setVisible(true);
+            isDeleting = false;
+        } else {
+            reportBtn.setVisible(false);
+            pomoCtrl.setVisibleOnDeleteBtn(true);
+            dateLabel.setVisible(false);
+            timeLabel.setVisible(false);
+            stopBtn.setVisible(false);
+            startOrPauseBtn.setVisible(false);
+            skipBtn.setVisible(false);
+            addWorkTimerBtn.setVisible(false);
+            addRestTimerBtn.setVisible(false);
+            isDeleting = true;
+        }
+    }
+
+    private void onClickReportBtn() {
+        showTimerReport(pomoCtrl.getReports());
     }
 
     private void onClickPomoCtrlBtn() {

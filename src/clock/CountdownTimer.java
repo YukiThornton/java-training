@@ -11,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -117,7 +118,15 @@ public class CountdownTimer {
 
         timerNameLabel = createTimerNameLabel(timerName);
         timerNameInput = createTimerNameInput(timerName);
-        Node topBox = new StackPane(timerNameLabel, timerNameInput);
+        Node timerNameNode = new StackPane(timerNameLabel, timerNameInput);
+        deleteBtn = createDeleteBtn();
+        Node hiddenDeleteBtn = createDeleteBtn();
+        hiddenDeleteBtn.setVisible(false);
+        BorderPane topBox = new BorderPane();
+        topBox.setLeft(hiddenDeleteBtn);
+        topBox.setCenter(timerNameNode);
+        topBox.setRight(deleteBtn);
+        
 
         chart = new TimerChart(timerType.initialTimerMinute(), 0, timerType.getColorSet());
         donutHole = createHole(chart, bgColor);
@@ -128,10 +137,7 @@ public class CountdownTimer {
         Region centerArea = createHBox(Pos.CENTER, centerBox);
         setFixedSize(centerArea, CENTERBOX_SIZE_BIG);
 
-        deleteBtn = createDeleteBtn();
-        Node bottomBox = new StackPane(deleteBtn);
-
-        rootNode = createRootNode(topBox, centerArea, bottomBox);
+        rootNode = createRootNode(topBox, centerArea);
         initialized = true;
     }
 
@@ -267,17 +273,8 @@ public class CountdownTimer {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
-        if (deleteBtn == null) {
-            throw new IllegalStateException("The deleteBtn is not initialized yet.");
-        }
 
         VBox box = new VBox(contents);
-        box.setOnMouseEntered((event) -> {
-            if (!isActive) {
-                deleteBtn.setVisible(true);
-            }
-        });
-        box.setOnMouseExited(event -> deleteBtn.setVisible(false));
         box.setAlignment(Pos.TOP_CENTER);
         return box;
     }
@@ -329,9 +326,11 @@ public class CountdownTimer {
         return rootNode;
     }
 
-    public void setVisibleAndMangedOnDeleteBtn(boolean visibleAndManaged) {
+    public void setVisibleOnDeleteBtn(boolean visibleAndManaged) {
+        if (isActive()) {
+            return;
+        }
         deleteBtn.setVisible(visibleAndManaged);
-        deleteBtn.setManaged(visibleAndManaged);
     }
 
     public TimerType getTimerType() {
@@ -390,7 +389,11 @@ public class CountdownTimer {
     }
 
     public TimerReport getReport() {
-        return new TimerReport(passedTimeInTotal, timerName);
+        if (isActive()) {
+            return new TimerReport(passedTimeInTotal.plus(passedTimeInRound).plus(Duration.between(startTime, LocalDateTime.now())), timerName);
+        } else {
+            return new TimerReport(passedTimeInTotal.plus(passedTimeInRound), timerName);
+        }
     }
     
     public UpdateCheckResult checkAndUpdateIfNecessary() {

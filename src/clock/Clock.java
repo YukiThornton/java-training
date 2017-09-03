@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -24,11 +23,11 @@ public class Clock {
         clockTimeLabel.setTextFill(color);
     }
 
-    public Node getDateNode() {
+    public Label getDateNode() {
         return clockDateLabel;
     }
 
-    public Node getTimeNode() {
+    public Label getTimeNode() {
         return clockTimeLabel;
     }
 

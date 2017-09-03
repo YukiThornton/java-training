@@ -3,7 +3,7 @@ package clock;
 import javafx.scene.paint.Color;
 
 public enum ColorSet {
-    GRAY("#ffffff", "#b3b3b3", "#f6f6f6", "#a6a6a6"),
+    GRAY("#ffffff", "#b3b3b3", "#f6f6f6", "#666666"),
     BLUE("#42a4f4", "#0d7dd9", "#6fa0c8", "#3f78a6"),
     YELLOW("#e1de00", "#999600", "#b9b727", "#7e7d1b");
 
