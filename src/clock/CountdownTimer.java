@@ -7,12 +7,10 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Consumer;
 
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -109,7 +107,7 @@ public class CountdownTimer {
         }
     }
 
-    public CountdownTimer(TimerType timerType) {
+    public CountdownTimer(TimerType timerType, Color bgColor) {
         this.timerName = timerType.initialTimerName();
         this.maxSeconds = timerType.initialTimerMinute() * 60;
         this.timerType = timerType;
@@ -122,7 +120,7 @@ public class CountdownTimer {
         Node topBox = new StackPane(timerNameLabel, timerNameInput);
 
         chart = new TimerChart(timerType.initialTimerMinute(), 0, timerType.getColorSet());
-        donutHole = createHole(chart);
+        donutHole = createHole(chart, bgColor);
         remainingMinuteLabel = createRemainingMinuteLabel();
         maxMinuteInput = createMaxMinuteInput(timerType.initialTimerMinute());
         Node donutCenter = new StackPane(remainingMinuteLabel, maxMinuteInput);
@@ -154,18 +152,16 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label label = createTextBtn(initialText, FONT_SMALL, timerType.colorSet.remainingDimColor);
-        label.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (!isActive() && event.getClickCount() >= 2) {
-                    if (timerNameInput == null) {
-                        throw new IllegalStateException("The input is not initialized yet.");
-                    }
-                    showHiddenTextField(timerNameInput, CountdownTimer.this.timerName);
+        Label label = createTextBtn(initialText, FONT_SMALL);
+        label.setOnMouseClicked((event) -> {
+            if (!isActive()) {
+                if (timerNameInput == null) {
+                    throw new IllegalStateException("The input is not initialized yet.");
                 }
+                showHiddenTextField(timerNameInput, CountdownTimer.this.timerName);
             }
         });
+        setColorOnLabel(label);
         return label;
     }
 
@@ -200,12 +196,12 @@ public class CountdownTimer {
         return chartPane;
     }
 
-    private Circle createHole(TimerChart donutRing) {
+    private Circle createHole(TimerChart donutRing, Color bgColor) {
         if (initialized) {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Circle circle = new Circle(100, Color.WHITESMOKE);
+        Circle circle = new Circle(100, bgColor);
         circle.setStrokeWidth(0);
         circle.radiusProperty().bind(donutRing.heightProperty().multiply(0.35));
         return circle;
@@ -216,16 +212,14 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label deleteBtn = createIconBtn(BTN_TXT_DELETE, IconFont.SMALL, timerType.colorSet.remainingDimColor);
-        deleteBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (onTimerDeleteBtnSelectedAction == null) {
-                    throw new IllegalStateException("No action is set.");
-                }
-                onTimerDeleteBtnSelectedAction.accept(CountdownTimer.this);
+        Label deleteBtn = createIconBtn(BTN_TXT_DELETE, IconFont.SMALL);
+        deleteBtn.setOnMouseClicked((event) -> {
+            if (onTimerDeleteBtnSelectedAction == null) {
+                throw new IllegalStateException("No action is set.");
             }
+            onTimerDeleteBtnSelectedAction.accept(CountdownTimer.this);
         });
+        setColorOnLabel(deleteBtn);
         deleteBtn.setVisible(false);
         return deleteBtn;
     }
@@ -235,18 +229,16 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label label = createTextBtn(toRemainingText(), FONT_MEDIUM, timerType.colorSet.remainingDimColor);
-        label.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (!isActive() && event.getClickCount() >= 2) {
-                    if (maxMinuteInput == null) {
-                        throw new IllegalStateException("The input is not initialized yet.");
-                    }
-                    showHiddenTextField(maxMinuteInput, toTextInMinute(maxSeconds));
+        Label label = createTextBtn(toRemainingText(), FONT_MEDIUM);
+        label.setOnMouseClicked((event) -> {
+            if (!isActive()) {
+                if (maxMinuteInput == null) {
+                    throw new IllegalStateException("The input is not initialized yet.");
                 }
+                showHiddenTextField(maxMinuteInput, toTextInMinute(maxSeconds));
             }
         });
+        setColorOnLabel(label);
         return label;
     }
 
@@ -280,20 +272,12 @@ public class CountdownTimer {
         }
 
         VBox box = new VBox(contents);
-        box.setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (!isActive) {
-                    deleteBtn.setVisible(true);
-                }
+        box.setOnMouseEntered((event) -> {
+            if (!isActive) {
+                deleteBtn.setVisible(true);
             }
         });
-        box.setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                deleteBtn.setVisible(false);
-            }
-        });
+        box.setOnMouseExited(event -> deleteBtn.setVisible(false));
         box.setAlignment(Pos.TOP_CENTER);
         return box;
     }
@@ -324,6 +308,21 @@ public class CountdownTimer {
         int passed = passedSeconds();
         int remaining = remainingSeconds(passed);
         updateChartAndRemainingLabel(remaining, passed);
+    }
+
+    private void setColorOnLabel(Label label) {
+        ColorSet colorSet = timerType.colorSet;
+        label.setTextFill(colorSet.lightColor());
+        label.setOnMouseEntered((event) -> {
+            if (!isActive()) {
+                label.setTextFill(colorSet.darkColor());
+            }
+        });
+        label.setOnMouseExited((event) -> {
+            if (!isActive()) {
+                label.setTextFill(colorSet.lightColor());
+            }
+        });
     }
 
     public Node getNode() {
@@ -357,18 +356,18 @@ public class CountdownTimer {
 
     public void start() {
         startTime = LocalDateTime.now();
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().passedColor);
+        remainingMinuteLabel.setTextFill(timerType.getColorSet().saturatedDarkColor());
         chart.brighterColor();
-        timerNameLabel.setTextFill(timerType.colorSet.passedColor);
+        timerNameLabel.setTextFill(timerType.colorSet.saturatedDarkColor());
         isActive = true;
         System.out.println("start" + timerNameLabel.textProperty().get());
     }
 
     public void pause() {
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().remainingDimColor);
+        remainingMinuteLabel.setTextFill(timerType.getColorSet().lightColor());
         passedTimeInRound = passedTimeInRound.plus(Duration.between(startTime, LocalDateTime.now()));
         chart.dimColor();
-        timerNameLabel.setTextFill(timerType.colorSet.remainingDimColor);
+        timerNameLabel.setTextFill(timerType.colorSet.lightColor());
         isActive = false;
         System.out.println("pause" + timerNameLabel.textProperty().get());
     }

@@ -3,70 +3,75 @@ package clock;
 import javafx.scene.paint.Color;
 
 public enum ColorSet {
-    BLUE("#80bfff", "#1745cf", "#9fbfdf", "#506295", "#dce9f7"),
-    YELLOW("#f7e409", "#fdab02", "#d2c52d", "#bf9540", "#f7f4d9");
+    GRAY("#ffffff", "#b3b3b3", "#f6f6f6", "#a6a6a6"),
+    BLUE("#42a4f4", "#0d7dd9", "#6fa0c8", "#3f78a6"),
+    YELLOW("#e1de00", "#999600", "#b9b727", "#7e7d1b");
 
-    String remaining;
-    String passed;
-    String remainingDim;
-    String passedDim;
-    String whitish;
-    Color remainingColor;
-    Color passedColor;
-    Color remainingDimColor;
-    Color passedDimColor;
-    Color whitishColor;
+    private String saturatedLight;
+    private String saturatedDark;
+    private String light;
+    private String dark;
+    private Color saturatedLightColor;
+    private Color saturatedDarkColor;
+    private Color lightColor;
+    private Color darkColor;
 
-    private ColorSet(String remaining, String passed, String remainingDim, String passedDim, String whitish) {
-        this.remaining = remaining;
-        this.passed = passed;
-        this.remainingDim = remainingDim;
-        this.passedDim = passedDim;
-        this.whitish = whitish;
-        this.remainingColor = Color.web(remaining);
-        this.passedColor = Color.web(passed);
-        this.remainingDimColor = Color.web(remainingDim);
-        this.passedDimColor = Color.web(passedDim);
-        this.whitishColor = Color.web(whitish);
+    private ColorSet(String saturatedLight, String saturatedDark, String light, String dark) {
+        this.saturatedLight = saturatedLight;
+        this.saturatedDark = saturatedDark;
+        this.light = light;
+        this.dark = dark;
+        this.saturatedLightColor = Color.web(saturatedLight);
+        this.saturatedDarkColor = Color.web(saturatedDark);
+        this.lightColor = Color.web(light);
+        this.darkColor = Color.web(dark);
     }
 
-    public String remaining() {
-        return remaining;
+    public String toRGBTxt(Color color) {
+        if (color.equals(saturatedLightColor)) {
+            return saturatedLight;
+        }
+        if (color.equals(saturatedDarkColor)) {
+            return saturatedDark;
+        }
+        if (color.equals(lightColor)) {
+            return light;
+        }
+        if (color.equals(darkColor)) {
+            return dark;
+        }
+        throw new IllegalArgumentException("Only colors of ColorSet object are acceptable.");
     }
 
-    public String passed() {
-        return passed;
+    public String saturatedLight() {
+        return saturatedLight;
     }
 
-    public String remainingDim() {
-        return remainingDim;
+    public String saturatedDark() {
+        return saturatedDark;
     }
 
-    public String passedDim() {
-        return passedDim;
+    public String light() {
+        return light;
     }
 
-    public String whitish() {
-        return whitish;
+    public String dark() {
+        return dark;
     }
 
-    public Color remainingColor() {
-        return remainingColor;
+    public Color saturatedLightColor() {
+        return saturatedLightColor;
     }
 
-    public Color passedColor() {
-        return passedColor;
+    public Color saturatedDarkColor() {
+        return saturatedDarkColor;
     }
 
-    public Color remainingDimColor() {
-        return remainingDimColor;
+    public Color lightColor() {
+        return lightColor;
     }
 
-    public Color passedDimColor() {
-        return passedDimColor;
-    }
-
-    public Color whitishColor() {
-        return whitishColor;
+    public Color darkColor() {
+        return darkColor;
     }
 }

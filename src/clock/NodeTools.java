@@ -20,7 +20,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -73,14 +72,13 @@ public class NodeTools {
         setFixedSize(target, size, size);
     }
 
-    public static Label createIconBtn(String text, IconFont iconFont, Color color) {
-        return createTextBtn(text, iconFont.get(), color);
+    public static Label createIconBtn(String text, IconFont iconFont) {
+        return createTextBtn(text, iconFont.get());
     }
 
-    public static Label createTextBtn(String text, Font font, Color color) {
+    public static Label createTextBtn(String text, Font font) {
         Label label = new Label(text);
         label.setFont(font);
-        label.setTextFill(color);
         return label;
     }
 

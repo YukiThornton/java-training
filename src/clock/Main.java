@@ -20,9 +20,6 @@ import clock.CountdownTimer.TimerType;
 import clock.NodeTools.IconFont;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -30,7 +27,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
@@ -48,6 +44,8 @@ public class Main extends Application {
     private static final double WINDOW_PREF_HEIGHT = 700;
     private static final double WINDOW_MIN_WIDTH = 340;
     private static final double WINDOW_MIN_HEIGHT = 535;
+    private static final ColorSet BG_COLOR_SET = ColorSet.GRAY;
+    private static final Color BG_COLOR = BG_COLOR_SET.lightColor();
     private static final String INFO_REPORT_TITLE = "Good job!";
     private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
     private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
@@ -64,6 +62,7 @@ public class Main extends Application {
     private PomodoroController pomoCtrl;
     private Timer timer;
     private boolean initialized = false;
+    private ColorSet currentColorSet;
     private HBox timerBox;
     private ScrollPane timerScrlPane;
     private BorderPane rootBox;
@@ -83,8 +82,8 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
         pomoCtrl = createPomoCtrl();
-        ColorSet currentColorSet = pomoCtrl.currentTimer().getColorSet();
-        clock = new Clock(FONT_TINY, FONT_SMALL,currentColorSet.remainingDimColor);
+        currentColorSet = pomoCtrl.currentTimer().getColorSet();
+        clock = new Clock(FONT_TINY, FONT_SMALL,currentColorSet.darkColor());
 
         timerBox = createHBox(Pos.CENTER, pomoCtrl.getNodes());
         timerScrlPane = wrapWithScrollPane(timerBox);
@@ -106,34 +105,28 @@ public class Main extends Application {
         rootBox.setTop(topBox);
         rootBox.setCenter(createVBox(Pos.CENTER, clock.getTimeNode(), timerScrlPane, ctrlBtns));
         rootBox.setBottom(createVBox(null, timerBtns));
-        rootBox.widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                double btnWidth = addRestTimerBtn.getWidth() + skipBtn.getWidth() + stopBtn.getWidth() + (addWorkTimerBtn.getWidth() + addRestTimerBtn.getWidth()) * 2;
-                if (btnWidth >= rootBox.getWidth()) {
-                    hideNode(timerBtns, false);
-                } else {
-                    hideNode(timerBtns, true);
-                }
+        rootBox.widthProperty().addListener((observable, oldValue, newValue) -> {
+            double btnWidth = addRestTimerBtn.getWidth() + skipBtn.getWidth() + stopBtn.getWidth() + (addWorkTimerBtn.getWidth() + addRestTimerBtn.getWidth()) * 2;
+            if (btnWidth >= rootBox.getWidth()) {
+                hideNode(timerBtns, false);
+            } else {
+                hideNode(timerBtns, true);
             }
         });
-        rootBox.heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (rootBox.getHeight() <= WINDOW_MIN_HEIGHT - 10) {
-                    hideNode(topBox, false);
-                    pomoCtrl.setVisibleAndMangedOnDeleteBtn(false);
-                } else {
-                    hideNode(topBox, true);
-                    pomoCtrl.setVisibleAndMangedOnDeleteBtn(true);
-                }
+        rootBox.heightProperty().addListener((observable, oldValue, newValue) -> {
+            if (rootBox.getHeight() <= WINDOW_MIN_HEIGHT - 10) {
+                hideNode(topBox, false);
+                pomoCtrl.setVisibleAndMangedOnDeleteBtn(false);
+            } else {
+                hideNode(topBox, true);
+                pomoCtrl.setVisibleAndMangedOnDeleteBtn(true);
             }
         });
 
         Scene scene = new Scene(rootBox);
         scene.getStylesheets().add("clock/css/main.css");
 
-        changeBgColor(pomoCtrl.currentTimer().getColorSet());
+        rootBox.setStyle("-fx-background-color: " + BG_COLOR_SET.toRGBTxt(BG_COLOR) + ";");
 
         timer = createAndSetupTimer();
 
@@ -147,15 +140,13 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        PomodoroController pomoCtrl = new PomodoroController();
-        pomoCtrl.onSwitchTimers((oldTimer, newTimer) -> {
+        PomodoroController pomoCtrl = new PomodoroController(BG_COLOR);
+        pomoCtrl.onTimerFinished((oldTimer, newTimer) -> {
             Toolkit.getDefaultToolkit().beep();
+            pomoCtrl.selectNext();
             showSwitchTimerAlert(newTimer.getTimerPurpose());
+            pomoCtrl.start();
             ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
-            changeColors(newTimer.getColorSet());
-        });
-        pomoCtrl.onSelectNewTimer(newTimer -> {
-            changeColors(newTimer.getColorSet());
         });
         pomoCtrl.onInvalidInputForMaxMinute(t -> showMaxMinuteInputErrorAlert());
         pomoCtrl.onInvalidInputForTimerName(t -> showTimerNameInputErrorAlert());
@@ -178,13 +169,9 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_START, IconFont.LARGE, colorSet.remainingDimColor);
-        btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                onClickPomoCtrlBtn();
-            }
-        });
+        Label btn = createIconBtn(BTN_TXT_START, IconFont.LARGE);
+        btn.setOnMouseClicked(event -> onClickPomoCtrlBtn());
+        setColorOnLabel(btn);
         return btn;
     }
 
@@ -193,13 +180,9 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_SKIP, IconFont.LARGE, colorSet.remainingDimColor);
-        btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                onClickSkipBtn();
-            }
-        });
+        Label btn = createIconBtn(BTN_TXT_SKIP, IconFont.LARGE);
+        btn.setOnMouseClicked(event -> onClickSkipBtn());
+        setColorOnLabel(btn);
         return btn;
     }
 
@@ -208,13 +191,9 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_STOP, IconFont.LARGE, colorSet.remainingDimColor);
-        btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                onClickPomoResetBtn();
-            }
-        });
+        Label btn = createIconBtn(BTN_TXT_STOP, IconFont.LARGE);
+        btn.setOnMouseClicked(event -> onClickPomoResetBtn());
+        setColorOnLabel(btn);
         return btn;
     }
 
@@ -223,13 +202,9 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, IconFont.LARGE, ColorSet.BLUE.remainingDimColor);
-        btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                onClickPomoAddTimerBtn();
-            }
-        });
+        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, IconFont.LARGE);
+        btn.setOnMouseClicked(event -> onClickPomoAddTimerBtn());
+        setColorOnLabel(btn, ColorSet.BLUE);
         return btn;
     }
 
@@ -238,14 +213,25 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, IconFont.LARGE, ColorSet.YELLOW.remainingDimColor);
-        btn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                onClickPomoAddRestBtn();
-            }
-        });
+        Label btn = createIconBtn(BTN_TXT_ADD_TIMER, IconFont.LARGE);
+        btn.setOnMouseClicked(event -> onClickPomoAddRestBtn());
+        setColorOnLabel(btn, ColorSet.YELLOW);
         return btn;
+    }
+
+    private void setColorOnLabel(Label label) {
+        if (currentColorSet == null) {
+            throw new IllegalStateException("currentColorSet is null.");
+        }
+        label.setTextFill(currentColorSet.lightColor());
+        label.setOnMouseEntered(event -> label.setTextFill(currentColorSet.darkColor()));
+        label.setOnMouseExited(event -> label.setTextFill(currentColorSet.lightColor()));
+    }
+
+    private void setColorOnLabel(Label label, ColorSet colorSet) {
+        label.setTextFill(colorSet.lightColor());
+        label.setOnMouseEntered(event -> label.setTextFill(colorSet.darkColor()));
+        label.setOnMouseExited(event -> label.setTextFill(colorSet.lightColor()));
     }
 
     private Timer createAndSetupTimer() {
@@ -287,13 +273,6 @@ public class Main extends Application {
         stage.setMinWidth(WINDOW_MIN_WIDTH);
     }
 
-    private void switchTxtBtnColors(Color color) {
-        startOrPauseBtn.setTextFill(color);
-        stopBtn.setTextFill(color);
-        skipBtn.setTextFill(color);
-        clock.changeTextColor(color);
-    }
-
     private void onClickPomoCtrlBtn() {
         if (pomoCtrl.isActive()) {
             startOrPauseBtn.setText(BTN_TXT_START);
@@ -306,29 +285,34 @@ public class Main extends Application {
         }
     }
 
-    private void changeBgColor(ColorSet colorSet) {
-        rootBox.setStyle("-fx-background-color:" + colorSet.whitish);
-    }
-
     private void onClickSkipBtn() {
         if (pomoCtrl.isActive()) {
-            pomoCtrl.switchAndStart();
+            pomoCtrl.pause();
+            pomoCtrl.reset();
+            pomoCtrl.deselectCurrent();
+            pomoCtrl.selectNext();
+            pomoCtrl.start();
         } else {
-            pomoCtrl.switchTimers();
+            pomoCtrl.reset();
+            pomoCtrl.deselectCurrent();
+            pomoCtrl.selectNext();
         }
         changeColors(pomoCtrl.currentTimer().getColorSet());
     }
 
     private void changeColors(ColorSet colorSet) {
-        changeBgColor(colorSet);
-        switchTxtBtnColors(colorSet.remainingDimColor);
+        currentColorSet = colorSet;
+        startOrPauseBtn.setTextFill(currentColorSet.lightColor());
+        stopBtn.setTextFill(currentColorSet.lightColor());
+        skipBtn.setTextFill(currentColorSet.lightColor());
+        clock.changeTextColor(currentColorSet.darkColor());
     }
 
     private void onClickPomoResetBtn() {
         pomoCtrl.reset();
         showTimerReport(pomoCtrl.getReports());
         pomoCtrl.clearAllHistory();
-        pomoCtrl.selectNewTimer(0);
+        pomoCtrl.select(0);
     }
 
     private void onClickPomoAddTimerBtn() {
@@ -337,7 +321,7 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_BLUE);
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_BLUE, BG_COLOR);
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
@@ -349,7 +333,7 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.REST_YELLOW);
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.REST_YELLOW, BG_COLOR);
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import clock.CountdownTimer.TimerPurpose;
 import clock.CountdownTimer.TimerType;
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
 
 public class PomodoroController {
 
@@ -18,16 +19,15 @@ public class PomodoroController {
     private CountdownTimer workTimer;
     private CountdownTimer restTimer;
     private int currentTimerIndex;
-    private BiConsumer<CountdownTimer, CountdownTimer> onSwitchTimersAction;
-    private Consumer<CountdownTimer> onSelectNewTimerAction;
+    private BiConsumer<CountdownTimer, CountdownTimer> onTimerFinishedAction;
     private Consumer<CountdownTimer> onInvalidInputForMaxMinuteAction;
     private Consumer<CountdownTimer> onInvalidInputForTimerNameAction;
     private Consumer<CountdownTimer> onTimerDeleteBtnSelectedAction;
     private Consumer<CountdownTimer> onTimerDeletedAction;
     
-    public PomodoroController() {
-        workTimer = new CountdownTimer(TimerType.WORK_BLUE);
-        restTimer = new CountdownTimer(TimerType.REST_YELLOW);
+    public PomodoroController(Color bgColor) {
+        workTimer = new CountdownTimer(TimerType.WORK_BLUE, bgColor);
+        restTimer = new CountdownTimer(TimerType.REST_YELLOW, bgColor);
         timers = new ArrayList<>();
         timers.add(workTimer);
         timers.add(restTimer);
@@ -48,7 +48,35 @@ public class PomodoroController {
     }
 
     public void reset() {
-        timers.get(currentTimerIndex).reset();
+        CountdownTimer timer = timers.get(currentTimerIndex);
+        if (timer.isActive()) {
+            throw new IllegalStateException();
+        }
+        timer.reset();
+    }
+
+    public void deselectCurrent() {
+        deselect(currentTimerIndex);
+    }
+
+    public void deselect(int index) {
+        timers.get(index).deselect();
+    }
+
+    public void selectNext() {
+        select(nextTimerIndex());
+    }
+
+    public void select(int index) {
+        currentTimerIndex = index;
+        timers.get(currentTimerIndex).select();
+    }
+
+    private void deselectActiveTimer() {
+        CountdownTimer timer = timers.get(currentTimerIndex);
+        timer.pause();
+        timer.reset();
+        timer.deselect();
     }
 
     public List<TimerReport> getReports() {
@@ -66,7 +94,8 @@ public class PomodoroController {
         case NO_CHANGE:
             break;
         case REACHED_MAXIMUM:
-            switchAndStart();
+            deselectActiveTimer();
+            onTimerFinishedAction.accept(timers.get(currentTimerIndex), timers.get(nextTimerIndex()));
             break;
         }
     }
@@ -100,8 +129,8 @@ public class PomodoroController {
         return timers.get(currentTimerIndex);
     }
 
-    public Node createNewTimer(TimerType timerType) {
-        CountdownTimer timer = new CountdownTimer(timerType);
+    public Node createNewTimer(TimerType timerType, Color bgColor) {
+        CountdownTimer timer = new CountdownTimer(timerType, bgColor);
         timer.onTimerDeleteBtnSelected(onTimerDeleteBtnSelectedAction);
         timer.onInvalidInputForMaxMinute(onInvalidInputForMaxMinuteAction);
         timer.onInvalidInputForTimerName(onInvalidInputForTimerNameAction);
@@ -113,12 +142,8 @@ public class PomodoroController {
         timers.forEach(t -> t.setVisibleAndMangedOnDeleteBtn(visibleAndManaged));
     }
 
-    public void onSwitchTimers(BiConsumer<CountdownTimer, CountdownTimer> consumer) {
-        onSwitchTimersAction = consumer;
-    }
-
-    public void onSelectNewTimer(Consumer<CountdownTimer> consumer) {
-        onSelectNewTimerAction = consumer;
+    public void onTimerFinished(BiConsumer<CountdownTimer, CountdownTimer> consumer) {
+        onTimerFinishedAction = consumer;
     }
 
     public void onInvalidInputForMaxMinute(Consumer<CountdownTimer> consumer) {
@@ -153,7 +178,7 @@ public class PomodoroController {
         System.out.println(timer + " " + index);
         if (index == currentTimerIndex) {
             System.out.println("switch " + currentTimerIndex + " " + index);
-            switchTimers();
+            selectNext();
         }
         timers.remove(index);
         if (index < currentTimerIndex) {
@@ -170,31 +195,11 @@ public class PomodoroController {
         onTimerDeletedAction = consumer;
     }
 
-    public void switchAndStart() {
-        switchTimers();
-        timers.get(currentTimerIndex).start();
-    }
-
-    public void switchTimers() {
-        CountdownTimer oldTimer = timers.get(currentTimerIndex);
-        oldTimer.pause();
+    private int nextTimerIndex() {
         if (currentTimerIndex == timers.size() - 1) {
-            currentTimerIndex = 0;
+            return 0;
         } else {
-            currentTimerIndex++;
+            return currentTimerIndex + 1;
         }
-        onSwitchTimersAction.accept(oldTimer, timers.get(currentTimerIndex));
-        oldTimer.reset();
-        oldTimer.deselect();
-        timers.get(currentTimerIndex).select();
     }
-
-    public void selectNewTimer(int index) {
-        if (timers.get(currentTimerIndex).isActive()) {
-            throw new IllegalStateException("Reset timer first.");
-        }
-        currentTimerIndex = index;
-        onSelectNewTimerAction.accept(timers.get(currentTimerIndex));
-    }
-
 }
