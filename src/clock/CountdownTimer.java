@@ -53,7 +53,7 @@ public class CountdownTimer {
     }
 
     public enum TimerPurpose {
-        WORK("work", "work", 1), REST("rest", "rest", 1);
+        WORK("work", "work", 25), REST("rest", "rest", 5);
 
         private String initialTimerName;
         private String verb;
