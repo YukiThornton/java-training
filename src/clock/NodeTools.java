@@ -1,8 +1,5 @@
 package clock;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.function.Consumer;
 
 import javafx.beans.value.ChangeListener;

@@ -72,7 +72,7 @@ public class PomodoroController {
         timers.get(currentTimerIndex).select();
     }
 
-    private void deselectActiveTimer() {
+    public void deselectActiveTimer() {
         CountdownTimer timer = timers.get(currentTimerIndex);
         timer.pause();
         timer.reset();
@@ -92,9 +92,9 @@ public class PomodoroController {
         switch(timer.checkAndUpdateIfNecessary()) {
         case UPDATED:
         case NO_CHANGE:
+        case OVER_MAXIMUM:
             break;
-        case REACHED_MAXIMUM:
-            deselectActiveTimer();
+        case HIT_MAXIMUM:
             onTimerFinishedAction.accept(timers.get(currentTimerIndex), timers.get(nextTimerIndex()));
             break;
         }

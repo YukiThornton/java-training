@@ -52,7 +52,7 @@ public class Main extends Application {
     private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
     private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
     private static final String ALERT_MAX_MINUTE_INPUT_ERROR_TITLE = "You can't!";
-    private static final String ALERT_MAX_MINUTE_INPUT_ERROR_CONTENT = "You cannot set bigger than 1000 minutes.";
+    private static final String ALERT_MAX_MINUTE_INPUT_ERROR_CONTENT = "Set time between 1 and 999.";
     private static final String ALERT_TIMER_NAME_INPUT_ERROR_TITLE = "You can't!";
     private static final String ALERT_TIMER_NAME_INPUT_ERROR_CONTENT = "Too long!";
     private static final String ALERT_TOO_MANY_TIMERS_TITLE = "You can't!";
@@ -160,8 +160,9 @@ public class Main extends Application {
         PomodoroController pomoCtrl = new PomodoroController(BG_COLOR);
         pomoCtrl.onTimerFinished((oldTimer, newTimer) -> {
             Toolkit.getDefaultToolkit().beep();
-            pomoCtrl.selectNext();
             showSwitchTimerAlert(newTimer.getTimerPurpose());
+            pomoCtrl.deselectActiveTimer();
+            pomoCtrl.selectNext();
             pomoCtrl.start();
             ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
         });

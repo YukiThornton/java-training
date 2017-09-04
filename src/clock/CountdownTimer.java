@@ -33,6 +33,7 @@ public class CountdownTimer {
     private String timerName;
     private boolean initialized = false;
     private boolean isActive = false;
+    private boolean exceeded = false;
     private TimerType timerType;
     private Consumer<CountdownTimer> onTimerDeleteBtnSelectedAction;
     private Consumer<CountdownTimer> onInvalidInputForMaxMinuteAction;
@@ -49,7 +50,7 @@ public class CountdownTimer {
     private Node rootNode;
 
     public enum UpdateCheckResult {
-        UPDATED, NO_CHANGE, REACHED_MAXIMUM;
+        UPDATED, NO_CHANGE, HIT_MAXIMUM, OVER_MAXIMUM;
     }
 
     public enum TimerPurpose {
@@ -282,7 +283,7 @@ public class CountdownTimer {
     private boolean validateMaxMinute(String input) {
         try {
             int val = Integer.parseInt(input);
-            if (val <= MAX_VALID_MINUTE) {
+            if (val <= MAX_VALID_MINUTE && val > 0) {
                 return true;
             }
             return false;
@@ -402,11 +403,15 @@ public class CountdownTimer {
             return UpdateCheckResult.NO_CHANGE;
         }
         passedSeconds = passed;
-        if (passedSeconds > maxSeconds) {
-            return UpdateCheckResult.REACHED_MAXIMUM;
+        if (passedSeconds > maxSeconds && !exceeded) {
+            exceeded = true;
+            return UpdateCheckResult.HIT_MAXIMUM;
         }
         int remaining = remainingSeconds(passedSeconds);
         updateChartAndRemainingLabel(remaining, passedSeconds);
+        if (exceeded) {
+            return UpdateCheckResult.OVER_MAXIMUM;
+        }
         return UpdateCheckResult.UPDATED;
     }
 
@@ -415,11 +420,14 @@ public class CountdownTimer {
     }
 
     private void updateChartAndRemainingLabel(int remaining, int passed) {
-        chart.setTimeValues(remaining, passed);
+        if (remaining >= 0) {
+            chart.setTimeValues(remaining, passed);
+        }
         remainingMinuteLabel.setText(toTextInMinute(remaining));
     }
 
     private void clearRoundVariable() {
+        exceeded = false;
         passedSeconds = 0;
         passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
         startTime = null;
