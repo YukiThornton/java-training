@@ -1,6 +1,6 @@
 # java-training
 
-Personal project for 16-month Java training
+Personal project for 11-month Java training
 
 ## Contents
 
@@ -13,3 +13,8 @@ And GUI programming exercises:
 
 * Digital clock using AWT
 * Digital clock using Swing
+* Digital clock using JavaFX
+* Pomodoro timer for pair programming using JavaFX
+  * Download
+    * For Windows: [pomopomo.exe](https://github.com/okunoyuki/java-training/raw/master/src/clock/pomopomo.exe)
+    * For Mac OS:  [pomopomo.app](https://github.com/okunoyuki/java-training/raw/master/src/clock/pomopomo.app)
