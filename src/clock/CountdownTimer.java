@@ -360,7 +360,6 @@ public class CountdownTimer {
         chart.brighterColor();
         timerNameLabel.setTextFill(timerType.colorSet.saturatedDarkColor());
         isActive = true;
-        System.out.println("start" + timerNameLabel.textProperty().get());
     }
 
     public void pause() {
@@ -369,7 +368,6 @@ public class CountdownTimer {
         chart.dimColor();
         timerNameLabel.setTextFill(timerType.colorSet.lightColor());
         isActive = false;
-        System.out.println("pause" + timerNameLabel.textProperty().get());
     }
 
     public void reset() {
@@ -381,7 +379,6 @@ public class CountdownTimer {
         int passed = passedSeconds();
         int remaining = remainingSeconds(passed);
         updateChartAndRemainingLabel(remaining, passed);
-        System.out.println("reset" + timerNameLabel.textProperty().get());
     }
 
     public void clearHistory() {

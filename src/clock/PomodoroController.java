@@ -175,17 +175,13 @@ public class PomodoroController {
 
     public void deleteTimer(CountdownTimer timer) {
         int index = timers.indexOf(timer);
-        System.out.println(timer + " " + index);
         if (index == currentTimerIndex) {
-            System.out.println("switch " + currentTimerIndex + " " + index);
             selectNext();
         }
         timers.remove(index);
         if (index < currentTimerIndex) {
             currentTimerIndex--;
-            System.out.println("minus " + currentTimerIndex + " " + index);
         }
-        timers.forEach(t -> System.out.println(t));
         if (onTimerDeletedAction != null) {
             onTimerDeletedAction.accept(timer);
         }

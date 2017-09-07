@@ -162,7 +162,7 @@ public class Main extends Application {
             Toolkit.getDefaultToolkit().beep();
             showSwitchTimerAlert(newTimer.getTimerPurpose());
             pomoCtrl.deselectActiveTimer();
-            pomoCtrl.selectNext();
+            selectNextTimer();
             pomoCtrl.start();
             ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
         });
@@ -321,28 +321,24 @@ public class Main extends Application {
 
     private void onClickTrashBtn() {
         if (isDeleting) {
-            reportBtn.setVisible(true);
-            pomoCtrl.setVisibleOnDeleteBtn(false);
-            dateLabel.setVisible(true);
-            timeLabel.setVisible(true);
-            stopBtn.setVisible(true);
-            startOrPauseBtn.setVisible(true);
-            skipBtn.setVisible(true);
-            addWorkTimerBtn.setVisible(true);
-            addRestTimerBtn.setVisible(true);
+            hideOrShowOnDeletingMode(false);
             isDeleting = false;
         } else {
-            reportBtn.setVisible(false);
-            pomoCtrl.setVisibleOnDeleteBtn(true);
-            dateLabel.setVisible(false);
-            timeLabel.setVisible(false);
-            stopBtn.setVisible(false);
-            startOrPauseBtn.setVisible(false);
-            skipBtn.setVisible(false);
-            addWorkTimerBtn.setVisible(false);
-            addRestTimerBtn.setVisible(false);
+            hideOrShowOnDeletingMode(true);
             isDeleting = true;
         }
+    }
+
+    private void hideOrShowOnDeletingMode(boolean hide) {
+        reportBtn.setVisible(!hide);
+        pomoCtrl.setVisibleOnDeleteBtn(hide);
+        dateLabel.setVisible(!hide);
+        timeLabel.setVisible(!hide);
+        stopBtn.setVisible(!hide);
+        startOrPauseBtn.setVisible(!hide);
+        skipBtn.setVisible(!hide);
+        addWorkTimerBtn.setVisible(!hide);
+        addRestTimerBtn.setVisible(!hide);
     }
 
     private void onClickReportBtn() {
@@ -364,15 +360,27 @@ public class Main extends Application {
     private void onClickSkipBtn() {
         if (pomoCtrl.isActive()) {
             pomoCtrl.pause();
-            pomoCtrl.reset();
-            pomoCtrl.deselectCurrent();
-            pomoCtrl.selectNext();
+            resetAndDeselectCurrentTimer();
+            selectNextTimer();
             pomoCtrl.start();
         } else {
-            pomoCtrl.reset();
-            pomoCtrl.deselectCurrent();
-            pomoCtrl.selectNext();
+            resetAndDeselectCurrentTimer();
+            selectNextTimer();
         }
+    }
+
+    private void resetAndDeselectCurrentTimer() {
+        pomoCtrl.reset();
+        pomoCtrl.deselectCurrent();
+    }
+
+    private void selectNextTimer() {
+        pomoCtrl.selectNext();
+        changeColors(pomoCtrl.currentTimer().getColorSet());
+    }
+
+    private void selectTimer(int at) {
+        pomoCtrl.select(at);
         changeColors(pomoCtrl.currentTimer().getColorSet());
     }
 
@@ -385,10 +393,10 @@ public class Main extends Application {
     }
 
     private void onClickPomoResetBtn() {
-        pomoCtrl.reset();
+        resetAndDeselectCurrentTimer();
         showTimerReport(pomoCtrl.getReports());
         pomoCtrl.clearAllHistory();
-        pomoCtrl.select(0);
+        selectTimer(0);
     }
 
     private void onClickPomoAddTimerBtn() {
