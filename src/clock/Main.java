@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import clock.CountdownTimer.TimerPurpose;
-import clock.CountdownTimer.TimerType;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -156,7 +154,7 @@ public class Main extends Application {
         PomodoroController pomoCtrl = new PomodoroController(BG_COLORS.get(BG_COLOR_KEY));
         pomoCtrl.onTimerFinished((oldTimer, newTimer) -> {
             Toolkit.getDefaultToolkit().beep();
-            showSwitchTimerAlert(newTimer.getTimerPurpose());
+            showSwitchTimerAlert(newTimer.getTimerType());
             pomoCtrl.deselectActiveTimer();
             selectNextTimer();
             pomoCtrl.start();
@@ -401,7 +399,7 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_BLUE, BG_COLORS.get(BG_COLOR_KEY));
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_DEFAULT, BG_COLORS.get(BG_COLOR_KEY));
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
@@ -413,7 +411,7 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.REST_YELLOW, BG_COLORS.get(BG_COLOR_KEY));
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.BREAK_DEFAULT, BG_COLORS.get(BG_COLOR_KEY));
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
@@ -427,8 +425,8 @@ public class Main extends Application {
         showAlertAndWait(INFO_REPORT_TITLE, reportStr, AlertType.INFORMATION, true);
     }
 
-    private void showSwitchTimerAlert(TimerPurpose purpose) {
-        showAlertAndWait(ALERT_SWITCH_TIMERS_TITLE, ALERT_SWITCH_TIMERS_CONTENT + purpose.verb(), AlertType.INFORMATION, true);
+    private void showSwitchTimerAlert(TimerType timerType) {
+        showAlertAndWait(ALERT_SWITCH_TIMERS_TITLE, ALERT_SWITCH_TIMERS_CONTENT + timerType.verbPhrase(), AlertType.INFORMATION, true);
     }
 
     private void showMaxMinuteInputErrorAlert() {

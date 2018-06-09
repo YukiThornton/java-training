@@ -6,8 +6,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import clock.CountdownTimer.TimerPurpose;
-import clock.CountdownTimer.TimerType;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 
@@ -26,8 +24,8 @@ public class PomodoroController {
     private Consumer<CountdownTimer> onTimerDeletedAction;
     
     public PomodoroController(Color bgColor) {
-        workTimer = new CountdownTimer(TimerType.WORK_BLUE, bgColor);
-        restTimer = new CountdownTimer(TimerType.REST_YELLOW, bgColor);
+        workTimer = new CountdownTimer(TimerType.WORK_DEFAULT, bgColor);
+        restTimer = new CountdownTimer(TimerType.BREAK_DEFAULT, bgColor);
         timers = new ArrayList<>();
         timers.add(workTimer);
         timers.add(restTimer);
@@ -115,11 +113,11 @@ public class PomodoroController {
         if (timers.size() <= 2) {
             return false;
         }
-        int workCount = (int) timers.stream().filter(t -> t.getTimerPurpose() == TimerPurpose.WORK).count();
-        if (workCount <= 1 && timer.getTimerPurpose() == TimerPurpose.WORK) {
+        int workCount = (int) timers.stream().filter(t -> t.getTimerType().isWorkTimer()).count();
+        if (workCount <= 1 && timer.getTimerType().isWorkTimer()) {
             return false;
         }
-        if (timers.size() - workCount <= 1 && timer.getTimerPurpose() == TimerPurpose.REST) {
+        if (timers.size() - workCount <= 1 && timer.getTimerType().isBreakTimer()) {
             return false;
         }
         return true;
