@@ -6,14 +6,14 @@ import javafx.scene.chart.PieChart;
 public class TimerChart extends PieChart {
     private Data remainingTimeData;
     private Data passedTimeData;
-    private ColorSet colorSet;
+    private ColorPalette colorGroup;
 
-    public TimerChart(int remainingTime, int passedTime, ColorSet colorSet) {
+    public TimerChart(int remainingTime, int passedTime, ColorPalette colorGroup) {
         super();
         this.remainingTimeData = new Data("remaining", remainingTime);
         this.passedTimeData = new Data("passed", passedTime);
         this.setData(FXCollections.observableArrayList(passedTimeData, remainingTimeData));
-        this.colorSet = colorSet;
+        this.colorGroup = colorGroup;
         dimColor();
         this.setLegendVisible(false);
         this.setLabelsVisible(false);
@@ -26,13 +26,13 @@ public class TimerChart extends PieChart {
     }
 
     public void dimColor() {
-        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.light() + ";-fx-border-color: derive(-fx-pie-color, -10%);");
-        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.dark() + ";-fx-border-color: derive(-fx-pie-color, -10%);");
+        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorGroup.getTextOf(ColorPalette.Key.LIGHT) + ";-fx-border-color: derive(-fx-pie-color, -10%);");
+        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorGroup.getTextOf(ColorPalette.Key.DARK) + ";-fx-border-color: derive(-fx-pie-color, -10%);");
     }
 
     public void brighterColor() {
-        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.saturatedLight() + ";-fx-border-color: derive(-fx-pie-color, -10%);");
-        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorSet.saturatedDark() + ";-fx-border-color: derive(-fx-pie-color, -10%);");
+        remainingTimeData.getNode().setStyle("-fx-pie-color: " + colorGroup.getTextOf(ColorPalette.Key.SATURATED_LIGHT) + ";-fx-border-color: derive(-fx-pie-color, -10%);");
+        passedTimeData.getNode().setStyle("-fx-pie-color: " + colorGroup.getTextOf(ColorPalette.Key.SATURATED_DARK) + ";-fx-border-color: derive(-fx-pie-color, -10%);");
     }
 
 }

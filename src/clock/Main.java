@@ -27,7 +27,6 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -43,8 +42,8 @@ public class Main extends Application {
     private static final double WINDOW_PREF_HEIGHT = 700;
     private static final double WINDOW_MIN_WIDTH = 340;
     private static final double WINDOW_MIN_HEIGHT = 535;
-    private static final ColorSet BG_COLOR_SET = ColorSet.GRAY;
-    private static final Color BG_COLOR = BG_COLOR_SET.lightColor();
+    private static final ColorPalette BG_COLORS = ColorPalette.GRAY;
+    private static final ColorPalette.Key BG_COLOR_KEY = ColorPalette.Key.LIGHT;
     private static final String INFO_REPORT_TITLE = "Good job!";
     private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
     private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
@@ -62,7 +61,7 @@ public class Main extends Application {
     private Timer timer;
     private boolean initialized = false;
     private boolean isDeleting = false;
-    private ColorSet currentColorSet;
+    private ColorPalette currentPalette;
     private HBox timerBox;
     private ScrollPane timerScrlPane;
     private BorderPane rootBox;
@@ -86,8 +85,8 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
         pomoCtrl = createPomoCtrl();
-        currentColorSet = pomoCtrl.currentTimer().getColorSet();
-        clock = new Clock(PomoFont.TEXT_20, PomoFont.TEXT_30, currentColorSet.darkColor());
+        currentPalette = pomoCtrl.currentTimer().getColorPalette();
+        clock = new Clock(PomoFont.TEXT_20, PomoFont.TEXT_30, currentPalette);
 
         timerBox = createHBox(Pos.CENTER, pomoCtrl.getNodes());
         timerScrlPane = wrapWithScrollPane(timerBox);
@@ -140,7 +139,7 @@ public class Main extends Application {
         Scene scene = new Scene(rootBox);
         scene.getStylesheets().add("clock/css/main.css");
 
-        rootBox.setStyle("-fx-background-color: " + BG_COLOR_SET.toRGBTxt(BG_COLOR) + ";");
+        rootBox.setStyle("-fx-background-color: " + BG_COLORS.getTextOf(BG_COLOR_KEY) + ";");
 
         timer = createAndSetupTimer();
 
@@ -154,7 +153,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        PomodoroController pomoCtrl = new PomodoroController(BG_COLOR);
+        PomodoroController pomoCtrl = new PomodoroController(BG_COLORS.get(BG_COLOR_KEY));
         pomoCtrl.onTimerFinished((oldTimer, newTimer) -> {
             Toolkit.getDefaultToolkit().beep();
             showSwitchTimerAlert(newTimer.getTimerPurpose());
@@ -186,7 +185,7 @@ public class Main extends Application {
 
         Label btn = createLabelBtn(BTN_TXT_REPORT, PomoFont.ICON_40);
         btn.setOnMouseClicked(event -> onClickReportBtn());
-        setColorOnLabel(btn, ColorSet.GRAY);
+        setColorOnLabel(btn, ColorPalette.GRAY);
         return btn;
     }
 
@@ -197,7 +196,7 @@ public class Main extends Application {
 
         Label btn = createLabelBtn(BTN_TXT_TRASH, PomoFont.ICON_40);
         btn.setOnMouseClicked(event -> onClickTrashBtn());
-        setColorOnLabel(btn, ColorSet.GRAY);
+        setColorOnLabel(btn, ColorPalette.GRAY);
         return btn;
     }
 
@@ -241,7 +240,7 @@ public class Main extends Application {
 
         Label btn = createLabelBtn(BTN_TXT_ADD_TIMER, PomoFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickPomoAddTimerBtn());
-        setColorOnLabel(btn, ColorSet.BLUE);
+        setColorOnLabel(btn, ColorPalette.BLUE);
         return btn;
     }
 
@@ -252,28 +251,28 @@ public class Main extends Application {
 
         Label btn = createLabelBtn(BTN_TXT_ADD_TIMER, PomoFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickPomoAddRestBtn());
-        setColorOnLabel(btn, ColorSet.YELLOW);
+        setColorOnLabel(btn, ColorPalette.YELLOW);
         return btn;
     }
 
     private void setColorOnLabel(Label label) {
-        if (currentColorSet == null) {
+        if (currentPalette == null) {
             throw new IllegalStateException("currentColorSet is null.");
         }
-        label.setTextFill(currentColorSet.lightColor());
-        label.setOnMouseEntered(event -> label.setTextFill(currentColorSet.darkColor()));
-        label.setOnMouseExited(event -> label.setTextFill(currentColorSet.lightColor()));
+        label.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
+        label.setOnMouseEntered(event -> label.setTextFill(currentPalette.get(ColorPalette.Key.DARK)));
+        label.setOnMouseExited(event -> label.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT)));
     }
 
-    private void setColorOnLabel(Label label, ColorSet colorSet) {
-        if (colorSet == ColorSet.GRAY) {
-            label.setTextFill(colorSet.saturatedDarkColor());
-            label.setOnMouseEntered(event -> label.setTextFill(colorSet.darkColor()));
-            label.setOnMouseExited(event -> label.setTextFill(colorSet.saturatedDarkColor()));
+    private void setColorOnLabel(Label label, ColorPalette colorGroup) {
+        if (colorGroup == ColorPalette.GRAY) {
+            label.setTextFill(colorGroup.get(ColorPalette.Key.SATURATED_DARK));
+            label.setOnMouseEntered(event -> label.setTextFill(colorGroup.get(ColorPalette.Key.DARK)));
+            label.setOnMouseExited(event -> label.setTextFill(colorGroup.get(ColorPalette.Key.SATURATED_DARK)));
         } else {
-            label.setTextFill(colorSet.lightColor());
-            label.setOnMouseEntered(event -> label.setTextFill(colorSet.darkColor()));
-            label.setOnMouseExited(event -> label.setTextFill(colorSet.lightColor()));
+            label.setTextFill(colorGroup.get(ColorPalette.Key.LIGHT));
+            label.setOnMouseEntered(event -> label.setTextFill(colorGroup.get(ColorPalette.Key.DARK)));
+            label.setOnMouseExited(event -> label.setTextFill(colorGroup.get(ColorPalette.Key.LIGHT)));
         }
     }
 
@@ -373,20 +372,20 @@ public class Main extends Application {
 
     private void selectNextTimer() {
         pomoCtrl.selectNext();
-        changeColors(pomoCtrl.currentTimer().getColorSet());
+        changeColors(pomoCtrl.currentTimer().getColorPalette());
     }
 
     private void selectTimer(int at) {
         pomoCtrl.select(at);
-        changeColors(pomoCtrl.currentTimer().getColorSet());
+        changeColors(pomoCtrl.currentTimer().getColorPalette());
     }
 
-    private void changeColors(ColorSet colorSet) {
-        currentColorSet = colorSet;
-        startOrPauseBtn.setTextFill(currentColorSet.lightColor());
-        stopBtn.setTextFill(currentColorSet.lightColor());
-        skipBtn.setTextFill(currentColorSet.lightColor());
-        clock.changeTextColor(currentColorSet.darkColor());
+    private void changeColors(ColorPalette palette) {
+        currentPalette = palette;
+        startOrPauseBtn.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
+        stopBtn.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
+        skipBtn.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
+        clock.changeTextColor(currentPalette);
     }
 
     private void onClickPomoResetBtn() {
@@ -402,7 +401,7 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_BLUE, BG_COLOR);
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_BLUE, BG_COLORS.get(BG_COLOR_KEY));
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });
@@ -414,7 +413,7 @@ public class Main extends Application {
             return;
         }
         Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.REST_YELLOW, BG_COLOR);
+            Node newTimer = pomoCtrl.createNewTimer(TimerType.REST_YELLOW, BG_COLORS.get(BG_COLOR_KEY));
             timerBox.getChildren().add(newTimer);
             ensureVisibleInScrollPane(timerScrlPane, newTimer);
         });

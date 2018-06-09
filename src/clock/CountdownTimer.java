@@ -81,19 +81,19 @@ public class CountdownTimer {
 
     public enum TimerType {
         
-        WORK_BLUE(ColorSet.BLUE, TimerPurpose.WORK),
-        REST_YELLOW(ColorSet.YELLOW, TimerPurpose.REST);
+        WORK_BLUE(ColorPalette.BLUE, TimerPurpose.WORK),
+        REST_YELLOW(ColorPalette.YELLOW, TimerPurpose.REST);
 
-        private ColorSet colorSet;
+        private ColorPalette colorPalette;
         private TimerPurpose purpose;
 
-        private TimerType(ColorSet colorSet, TimerPurpose purpose) {
-            this.colorSet = colorSet;
+        private TimerType(ColorPalette colorGroup, TimerPurpose purpose) {
+            this.colorPalette = colorGroup;
             this.purpose = purpose;
         }
 
-        public ColorSet getColorSet() {
-            return colorSet;
+        public ColorPalette getColorPalette() {
+            return colorPalette;
         }
 
         public TimerPurpose getPurpose() {
@@ -129,7 +129,7 @@ public class CountdownTimer {
         topBox.setRight(deleteBtn);
         
 
-        chart = new TimerChart(timerType.initialTimerMinute(), 0, timerType.getColorSet());
+        chart = new TimerChart(timerType.initialTimerMinute(), 0, timerType.getColorPalette());
         donutHole = createHole(chart, bgColor);
         remainingMinuteLabel = createRemainingMinuteLabel();
         maxMinuteInput = createMaxMinuteInput(timerType.initialTimerMinute());
@@ -309,16 +309,16 @@ public class CountdownTimer {
     }
 
     private void setColorOnLabel(Label label) {
-        ColorSet colorSet = timerType.colorSet;
-        label.setTextFill(colorSet.lightColor());
+        ColorPalette colorPalette = timerType.colorPalette;
+        label.setTextFill(colorPalette.get(ColorPalette.Key.LIGHT));
         label.setOnMouseEntered((event) -> {
             if (!isActive()) {
-                label.setTextFill(colorSet.darkColor());
+                label.setTextFill(colorPalette.get(ColorPalette.Key.DARK));
             }
         });
         label.setOnMouseExited((event) -> {
             if (!isActive()) {
-                label.setTextFill(colorSet.lightColor());
+                label.setTextFill(colorPalette.get(ColorPalette.Key.LIGHT));
             }
         });
     }
@@ -342,8 +342,8 @@ public class CountdownTimer {
         return timerType.getPurpose();
     }
 
-    public ColorSet getColorSet() {
-        return timerType.getColorSet();
+    public ColorPalette getColorPalette() {
+        return timerType.getColorPalette();
     }
 
     public void select() {
@@ -356,17 +356,17 @@ public class CountdownTimer {
 
     public void start() {
         startTime = LocalDateTime.now();
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().saturatedDarkColor());
+        remainingMinuteLabel.setTextFill(timerType.getColorPalette().get(ColorPalette.Key.SATURATED_DARK));
         chart.brighterColor();
-        timerNameLabel.setTextFill(timerType.colorSet.saturatedDarkColor());
+        timerNameLabel.setTextFill(timerType.colorPalette.get(ColorPalette.Key.SATURATED_DARK));
         isActive = true;
     }
 
     public void pause() {
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().lightColor());
+        remainingMinuteLabel.setTextFill(timerType.getColorPalette().get(ColorPalette.Key.LIGHT));
         passedTimeInRound = passedTimeInRound.plus(Duration.between(startTime, LocalDateTime.now()));
         chart.dimColor();
-        timerNameLabel.setTextFill(timerType.colorSet.lightColor());
+        timerNameLabel.setTextFill(timerType.colorPalette.get(ColorPalette.Key.LIGHT));
         isActive = false;
     }
 
