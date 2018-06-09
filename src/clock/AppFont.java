@@ -2,11 +2,11 @@ package clock;
 
 import javafx.scene.text.Font;
 
-enum PomoFont {
+enum AppFont {
     ICON_50(50, Type.ICON), ICON_40(40, Type.ICON), ICON_30(30, Type.ICON),
     TEXT_50(50, Type.TEXT), TEXT_30(30, Type.TEXT), TEXT_20(20, Type.TEXT);
     
-    private PomoFont(int size, Type type) {
+    private AppFont(int size, Type type) {
         this.font = type.createIcon(size);
     }
 

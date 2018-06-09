@@ -86,7 +86,7 @@ public class Main extends Application {
         }
         pomoCtrl = createPomoCtrl();
         currentPalette = pomoCtrl.currentTimer().getColorPalette();
-        clock = new Clock(PomoFont.TEXT_20, PomoFont.TEXT_30, currentPalette);
+        clock = new Clock(AppFont.TEXT_20, AppFont.TEXT_30, currentPalette);
 
         timerBox = createHBox(Pos.CENTER, pomoCtrl.getNodes());
         timerScrlPane = wrapWithScrollPane(timerBox);
@@ -183,7 +183,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_REPORT, PomoFont.ICON_40);
+        Label btn = createLabelBtn(BTN_TXT_REPORT, AppFont.ICON_40);
         btn.setOnMouseClicked(event -> onClickReportBtn());
         setColorOnLabel(btn, ColorPalette.GRAY);
         return btn;
@@ -194,7 +194,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_TRASH, PomoFont.ICON_40);
+        Label btn = createLabelBtn(BTN_TXT_TRASH, AppFont.ICON_40);
         btn.setOnMouseClicked(event -> onClickTrashBtn());
         setColorOnLabel(btn, ColorPalette.GRAY);
         return btn;
@@ -205,7 +205,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_START, PomoFont.ICON_50);
+        Label btn = createLabelBtn(BTN_TXT_START, AppFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickPomoCtrlBtn());
         setColorOnLabel(btn);
         return btn;
@@ -216,7 +216,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_SKIP, PomoFont.ICON_50);
+        Label btn = createLabelBtn(BTN_TXT_SKIP, AppFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickSkipBtn());
         setColorOnLabel(btn);
         return btn;
@@ -227,7 +227,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_STOP, PomoFont.ICON_50);
+        Label btn = createLabelBtn(BTN_TXT_STOP, AppFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickPomoResetBtn());
         setColorOnLabel(btn);
         return btn;
@@ -238,7 +238,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_ADD_TIMER, PomoFont.ICON_50);
+        Label btn = createLabelBtn(BTN_TXT_ADD_TIMER, AppFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickPomoAddTimerBtn());
         setColorOnLabel(btn, ColorPalette.BLUE);
         return btn;
@@ -249,7 +249,7 @@ public class Main extends Application {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label btn = createLabelBtn(BTN_TXT_ADD_TIMER, PomoFont.ICON_50);
+        Label btn = createLabelBtn(BTN_TXT_ADD_TIMER, AppFont.ICON_50);
         btn.setOnMouseClicked(event -> onClickPomoAddRestBtn());
         setColorOnLabel(btn, ColorPalette.YELLOW);
         return btn;

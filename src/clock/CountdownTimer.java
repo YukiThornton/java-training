@@ -159,7 +159,7 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label label = createLabelBtn(initialText, PomoFont.TEXT_30);
+        Label label = createLabelBtn(initialText, AppFont.TEXT_30);
         label.setOnMouseClicked((event) -> {
             if (!isActive()) {
                 if (timerNameInput == null) {
@@ -177,7 +177,7 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        TextField textField = createTextField(initialText, PomoFont.TEXT_20, 150, 10, false);
+        TextField textField = createTextField(initialText, AppFont.TEXT_20, 150, 10, false);
         setInvisibleOnFocusLost(textField);
         acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
             if (validateTimerName(text)) {
@@ -219,7 +219,7 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label deleteBtn = createLabelBtn(BTN_TXT_DELETE, PomoFont.ICON_30);
+        Label deleteBtn = createLabelBtn(BTN_TXT_DELETE, AppFont.ICON_30);
         deleteBtn.setOnMouseClicked((event) -> {
             if (onTimerDeleteBtnSelectedAction == null) {
                 throw new IllegalStateException("No action is set.");
@@ -236,7 +236,7 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        Label label = createLabelBtn(toRemainingText(), PomoFont.TEXT_50);
+        Label label = createLabelBtn(toRemainingText(), AppFont.TEXT_50);
         label.setOnMouseClicked((event) -> {
             if (!isActive()) {
                 if (maxMinuteInput == null) {
@@ -254,7 +254,7 @@ public class CountdownTimer {
             throw new IllegalStateException("Already initialized.");
         }
 
-        TextField textField = createTextField(Integer.toString(maxMin), PomoFont.TEXT_20, 80, 10, false);
+        TextField textField = createTextField(Integer.toString(maxMin), AppFont.TEXT_20, 80, 10, false);
         setInvisibleOnFocusLost(textField);
         acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
             if (validateMaxMinute(text)) {

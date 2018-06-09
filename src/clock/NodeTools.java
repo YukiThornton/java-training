@@ -46,13 +46,13 @@ public class NodeTools {
         setFixedSize(target, size, size);
     }
 
-    public static Label createLabelBtn(String text, PomoFont font) {
+    public static Label createLabelBtn(String text, AppFont font) {
         Label label = new Label(text);
         label.setFont(font.get());
         return label;
     }
 
-    public static TextField createTextField(String initialText, PomoFont font, double maxWidth, double maxHeight, boolean visible) {
+    public static TextField createTextField(String initialText, AppFont font, double maxWidth, double maxHeight, boolean visible) {
         TextField textField = new TextField(initialText);
         textField.setFont(font.get());
         textField.setMaxSize(maxWidth, maxHeight);

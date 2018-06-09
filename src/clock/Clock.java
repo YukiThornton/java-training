@@ -14,7 +14,7 @@ class Clock {
     private Label clockDateLabel;
     private Label clockTimeLabel;
 
-    Clock(PomoFont dateFont, PomoFont timeFont, ColorPalette colorGroup) {
+    Clock(AppFont dateFont, AppFont timeFont, ColorPalette colorGroup) {
         clockDateLabel = new Label(clockDate());
         clockTimeLabel = new Label(clockTime());
         clockDateLabel.setFont(dateFont.get());
