@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 
 public class Clock {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
@@ -14,11 +13,11 @@ public class Clock {
     private Label clockDateLabel;
     private Label clockTimeLabel;
 
-    public Clock(Font dateFont, Font timeFont, Color color) {
+    public Clock(PomoFont dateFont, PomoFont timeFont, Color color) {
         clockDateLabel = new Label(clockDate());
         clockTimeLabel = new Label(clockTime());
-        clockDateLabel.setFont(dateFont);
-        clockTimeLabel.setFont(timeFont);
+        clockDateLabel.setFont(dateFont.get());
+        clockTimeLabel.setFont(timeFont.get());
         clockDateLabel.setTextFill(color);
         clockTimeLabel.setTextFill(color);
     }
