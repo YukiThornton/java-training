@@ -19,7 +19,7 @@ enum AppFont {
     private enum Type {
         ICON{
             Font createIcon(int size){
-                return Font.loadFont(this.getClass().getResource("font2/fontawesome-webfont.ttf").toExternalForm(), size);
+                return Font.loadFont(this.getClass().getResource("font/fontawesome-webfont.ttf").toExternalForm(), size);
             }
         },
         TEXT{

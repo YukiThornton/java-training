@@ -19,6 +19,9 @@ enum ColorPalette {
         DARK;
     }
 
+    public static final ColorPalette BG_COLORS = ColorPalette.GRAY;
+    public static final ColorPalette.Key BG_COLOR_KEY = ColorPalette.Key.LIGHT;
+
     private Map<Key, Value> map;
 
     private ColorPalette(String saturatedLight, String saturatedDark, String light, String dark) {

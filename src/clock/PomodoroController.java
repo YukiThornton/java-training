@@ -11,11 +11,13 @@ import javafx.scene.paint.Color;
 
 public class PomodoroController {
 
+    private static final TimerType[] INITIAL_TIMER_TYPES = {TimerType.WORK_DEFAULT, TimerType.BREAK_DEFAULT};
+    private static final int INITIAL_TIMER_INDEX = 0;
+    static final TimerType INITIAL_TIMER_TYPE = INITIAL_TIMER_TYPES[INITIAL_TIMER_INDEX];
+
     private static final int MAX_TIMER_COUNT = 10;
 
     private List<CountdownTimer> timers;
-    private CountdownTimer workTimer;
-    private CountdownTimer restTimer;
     private int currentTimerIndex;
     private BiConsumer<CountdownTimer, CountdownTimer> onTimerFinishedAction;
     private Consumer<CountdownTimer> onInvalidInputForMaxMinuteAction;
@@ -24,12 +26,11 @@ public class PomodoroController {
     private Consumer<CountdownTimer> onTimerDeletedAction;
     
     public PomodoroController(Color bgColor) {
-        workTimer = new CountdownTimer(TimerType.WORK_DEFAULT, bgColor);
-        restTimer = new CountdownTimer(TimerType.BREAK_DEFAULT, bgColor);
         timers = new ArrayList<>();
-        timers.add(workTimer);
-        timers.add(restTimer);
-        currentTimerIndex = 0;
+        for(TimerType timerType: INITIAL_TIMER_TYPES) {
+            timers.add(new CountdownTimer(timerType, bgColor));
+        }
+        currentTimerIndex = INITIAL_TIMER_INDEX;
         timers.get(currentTimerIndex).select();
     }
 
