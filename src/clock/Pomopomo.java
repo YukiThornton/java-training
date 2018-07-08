@@ -1,11 +1,6 @@
 package clock;
 
-import static clock.NodeTools.hideNode;
 import static clock.NodeTools.ensureVisibleInScrollPane;
-import static clock.NodeTools.createHBox;
-import static clock.NodeTools.createLabelBtn;
-import static clock.NodeTools.createVBox;
-import static clock.NodeTools.wrapWithScrollPane;
 import static clock.NodeTools.showAlertAndWait;
 
 import java.awt.Toolkit;
@@ -15,16 +10,13 @@ import java.util.TimerTask;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class Pomopomo extends Application {

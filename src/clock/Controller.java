@@ -1,5 +1,6 @@
 package clock;
 
+import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,7 +21,9 @@ class Controller {
         state = AppState.initState(INITIAL_TIMER_TYPES, INITIAL_TIMER_INDEX);
         view = new View.Builder(state, appStage)
                 .onCloseBtnClicked(this::onWindowClosing)
+                .addClock(LocalDateTime.now())
                 .addDeleteModeSwitch(this::onDeleteBtnClicked)
+                .addReportButton(this::onReportBtnClicked)
                 .build();
         periodicViewUpdateTask = new Timer();
     }
@@ -39,7 +42,7 @@ class Controller {
             @Override
             public void run() {
                 Platform.runLater(() -> {
-//                    clock.update();
+                    view.updateClock(LocalDateTime.now());
 //                    if (pomoCtrl.isActive()) {
 //                        pomoCtrl.update();
 //                    }
@@ -53,6 +56,11 @@ class Controller {
     }
 
     void onDeleteBtnClicked() {
+        state = state.switchDeleteMode();
+    }
+
+    void onReportBtnClicked() {
+        view.showReport("hellooooooooo");
         state = state.switchDeleteMode();
     }
 
