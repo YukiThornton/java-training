@@ -165,45 +165,45 @@ public class Pomopomo extends Application {
         return pomoCtrl;
     }
 
-    private Label createReportBtn() {
-        IconButton.REPORT.setOnMouseClicked(event -> onClickReportBtn());
-        return IconButton.REPORT.get();
-    }
-
-    private Label createDeleteBtn() {
-        IconButton.DELETE.setOnMouseClicked(event -> onClickTrashBtn());
-        return IconButton.DELETE.get();
-    }
-
-    private Label createStartBtn() {
-        IconButton.START.setOnMouseClicked(event -> onClickPomoCtrlBtn());
-        return IconButton.START.get();
-    }
-
-    private Label createPauseBtn() {
-        IconButton.PAUSE.setOnMouseClicked(event -> onClickPomoCtrlBtn());
-        return IconButton.PAUSE.get();
-    }
-
-    private Label createSkipBtn() {
-        IconButton.SKIP.setOnMouseClicked(event -> onClickSkipBtn());
-        return IconButton.SKIP.get();
-    }
-
-    private Label createStopBtn() {
-        IconButton.STOP.setOnMouseClicked(event -> onClickPomoResetBtn());
-        return IconButton.STOP.get();
-    }
-
-    private Label createAddWorkTimerBtn() {
-        IconButton.ADD_WORK_TIMER.setOnMouseClicked(event -> onClickPomoAddTimerBtn());
-        return IconButton.ADD_WORK_TIMER.get();
-    }
-
-    private Label createAddBreakTimerBtn() {
-        IconButton.ADD_BREAK_TIMER.setOnMouseClicked(event -> onClickPomoAddRestBtn());
-        return IconButton.ADD_BREAK_TIMER.get();
-    }
+//    private Label createReportBtn() {
+//        IconButton.REPORT.setOnMouseClicked(event -> onClickReportBtn());
+//        return IconButton.REPORT.get();
+//    }
+//
+//    private Label createDeleteBtn() {
+//        IconButton.DELETE.setOnMouseClicked(event -> onClickTrashBtn());
+//        return IconButton.DELETE.get();
+//    }
+//
+//    private Label createStartBtn() {
+//        IconButton.START.setOnMouseClicked(event -> onClickPomoCtrlBtn());
+//        return IconButton.START.get();
+//    }
+//
+//    private Label createPauseBtn() {
+//        IconButton.PAUSE.setOnMouseClicked(event -> onClickPomoCtrlBtn());
+//        return IconButton.PAUSE.get();
+//    }
+//
+//    private Label createSkipBtn() {
+//        IconButton.SKIP.setOnMouseClicked(event -> onClickSkipBtn());
+//        return IconButton.SKIP.get();
+//    }
+//
+//    private Label createStopBtn() {
+//        IconButton.STOP.setOnMouseClicked(event -> onClickPomoResetBtn());
+//        return IconButton.STOP.get();
+//    }
+//
+//    private Label createAddWorkTimerBtn() {
+//        IconButton.ADD_WORK_TIMER.setOnMouseClicked(event -> onClickPomoAddTimerBtn());
+//        return IconButton.ADD_WORK_TIMER.get();
+//    }
+//
+//    private Label createAddBreakTimerBtn() {
+//        IconButton.ADD_BREAK_TIMER.setOnMouseClicked(event -> onClickPomoAddRestBtn());
+//        return IconButton.ADD_BREAK_TIMER.get();
+//    }
 
     private Timer createAndSetupTimer() {
         if (initialized) {

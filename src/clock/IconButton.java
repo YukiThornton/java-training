@@ -1,13 +1,12 @@
 package clock;
 
-import java.util.Arrays;
-
 import javafx.event.EventHandler;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-enum IconButton {
+enum IconButton implements ControlButton {
     DELETE("\uf1f8", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
     REPORT("\uf15c", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
     ADD_WORK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.WORK_DEFAULT.colorPalette()),
@@ -32,18 +31,23 @@ enum IconButton {
         setColorPalette(label, palette);
     }
 
-    Label get() {
+    public Control get() {
         return label;
     }
 
-    void setOnMouseClicked(EventHandler<MouseEvent> handler) {
+    public void setOnMouseClicked(EventHandler<MouseEvent> handler) {
         label.setOnMouseClicked(handler);
     }
 
-    static void changeColorPalette(ColorPalette to) {
-        Arrays.stream(values())
-            .filter(clickableLabel -> clickableLabel.colorPolicy == ColorPolicy.DYNAMIC)
-            .forEach(clickableLabel -> setColorPalette(clickableLabel.label, to));
+    public boolean canChangeColorPalette(){
+        return this.colorPolicy == ColorPolicy.DYNAMIC;
+    }
+
+    public void changeColorPalette(ColorPalette to) {
+        if (!canChangeColorPalette()) {
+            throw new IllegalStateException("Not allowed to change color palette.");
+        }
+        setColorPalette(this.label, to);
     }
 
     private static void setColorPalette(Label label, ColorPalette palette) {

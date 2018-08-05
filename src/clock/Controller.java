@@ -20,10 +20,10 @@ class Controller {
     private Controller(Stage appStage) {
         state = AppState.initState(INITIAL_TIMER_TYPES, INITIAL_TIMER_INDEX);
         view = new View.Builder(state, appStage)
-                .onCloseBtnClicked(this::onWindowClosing)
-                .addClock(LocalDateTime.now())
-                .addDeleteModeSwitch(this::onDeleteBtnClicked)
-                .addReportButton(this::onReportBtnClicked)
+                .onClosed(this::onWindowClosing)
+                .registerClock(LocalDateTime.now())
+                .registerDeleteModeAction(this::onDeleteBtnClicked)
+                .registerReportAction(this::onReportBtnClicked)
                 .build();
         periodicViewUpdateTask = new Timer();
     }
@@ -55,11 +55,11 @@ class Controller {
         periodicViewUpdateTask.cancel();
     }
 
-    void onDeleteBtnClicked() {
+    private void onDeleteBtnClicked() {
         state = state.switchDeleteMode();
     }
 
-    void onReportBtnClicked() {
+    private void onReportBtnClicked() {
         view.showReport("hellooooooooo");
         state = state.switchDeleteMode();
     }
