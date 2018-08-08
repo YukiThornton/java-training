@@ -22,8 +22,14 @@ class Controller {
         view = new View.Builder(state, appStage)
                 .onClosed(this::onWindowClosing)
                 .registerClock(LocalDateTime.now())
-                .registerDeleteModeAction(this::onDeleteBtnClicked)
-                .registerReportAction(this::onReportBtnClicked)
+                .registerDeleteModeAction(this::switchDeleteMode)
+                .registerReportAction(this::showReport)
+                .registerAddWorkTimerAction(() -> System.out.println("addWorkTimer pressed"))
+                .registerAddBreakTimerAction(() -> System.out.println("addBreakTimer pressed"))
+                .registerStartTimerAction(this::startTimer)
+                .registerPauseTimerAction(this::pauseTimer)
+                .registerSkipNextTimerAction(() -> System.out.println("skipNextTimer pressed"))
+                .registerStopPomoAction(() -> System.out.println("stopPomo pressed"))
                 .build();
         periodicViewUpdateTask = new Timer();
     }
@@ -55,13 +61,20 @@ class Controller {
         periodicViewUpdateTask.cancel();
     }
 
-    private void onDeleteBtnClicked() {
+    private void switchDeleteMode() {
         state = state.switchDeleteMode();
     }
 
-    private void onReportBtnClicked() {
+    private void startTimer() {
+        view.activateRunningView();
+    }
+
+    private void pauseTimer() {
+        view.deactivateRunningView();
+    }
+
+    private void showReport() {
         view.showReport("hellooooooooo");
-        state = state.switchDeleteMode();
     }
 
 }

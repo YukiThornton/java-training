@@ -18,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -30,6 +31,12 @@ class View {
       private Runnable onClosedAction;
       private Runnable deleteModeSwitchAction;
       private Runnable reportAction;
+      private Runnable addWorkTimerAction;
+      private Runnable addBreakTimerAction;
+      private Runnable startTimerAction;
+      private Runnable pauseTimerAction;
+      private Runnable skipNextTimerAction;
+      private Runnable stopPomoAction;
 
       Builder(AppState state, Stage appStage) {
           this.state = state;
@@ -56,6 +63,36 @@ class View {
           return this;
       }
 
+      Builder registerAddWorkTimerAction(Runnable action) {
+          this.addWorkTimerAction = action;
+          return this;
+      }
+
+      Builder registerAddBreakTimerAction(Runnable action) {
+          this.addBreakTimerAction = action;
+          return this;
+      }
+
+      Builder registerStartTimerAction(Runnable action) {
+          this.startTimerAction = action;
+          return this;
+      }
+
+      Builder registerPauseTimerAction(Runnable action) {
+          this.pauseTimerAction = action;
+          return this;
+      }
+
+      Builder registerSkipNextTimerAction(Runnable action) {
+          this.skipNextTimerAction = action;
+          return this;
+      }
+
+      Builder registerStopPomoAction(Runnable action) {
+          this.stopPomoAction = action;
+          return this;
+      }
+
       View build() {
           if (canBuild()) {
               return new View(this);
@@ -68,7 +105,13 @@ class View {
           return (timeToDisplayOnClock != null)
                  && (onClosedAction != null)
                  && (deleteModeSwitchAction != null)
-                 && (reportAction != null);
+                 && (reportAction != null)
+                 && (addWorkTimerAction != null)
+                 && (addBreakTimerAction != null)
+                 && (startTimerAction != null)
+                 && (pauseTimerAction != null)
+                 && (skipNextTimerAction != null)
+                 && (stopPomoAction != null);
       }
     }
 
@@ -83,30 +126,39 @@ class View {
     private static final ColorPalette.Key TEXT_COLOR_KEY = ColorPalette.Key.DARK;
 
     private final Stage appStage;
-    private final Scene scene;
-    private final BorderPane rootPane = createEmptyPane();
     private Label clockDateLabel;
     private Label clockTimeLabel;
-    private final ControlButton deleteModeSwitch;
-    private final ControlButton reportButton;
-    private final Set<ControlButton> colorChangeableButtons;
+    private ControlButton deleteModeSwitch;
+    private ControlButton reportButton;
+    private ControlButton addWorkTimerButton;
+    private ControlButton addBreakTimerButton;
+    private ControlButton startTimerButton;
+    private ControlButton pauseTimerButton;
+    private ControlButton skipNextTimerButton;
+    private ControlButton stopPomoButton;
+    private final Set<ControlButton> colorChangeableButtons = new HashSet<>();
 
     private View(Builder builder) {
-        appStage = builder.appStage;
-        scene = createScene(rootPane);
+        BorderPane rootPane = createEmptyPane();
+        appStage = setupStage(builder.appStage, rootPane, builder);
+
+        createItems(builder);
+        setupRootPaneWithItems(rootPane);
+
+    }
+
+    private Stage setupStage(Stage stage, BorderPane rootPane, Builder builder) {
+        Scene scene = createScene(rootPane);
         setBackgroundColor(scene, rootPane);
-        setupStage(appStage, scene);
-        appStage.setOnCloseRequest(e -> builder.onClosedAction.run());
 
-        addClockDateTimeLabels(builder.timeToDisplayOnClock, builder.state);
-
-        deleteModeSwitch = createDeleteModeSwitch(builder.deleteModeSwitchAction);
-        reportButton = createReportButton(builder.reportAction);
-
-        colorChangeableButtons = new HashSet<>();
-
-        setupRootPaneWithItems();
-
+        stage.setOnCloseRequest(e -> builder.onClosedAction.run());
+        stage.setScene(scene);
+        stage.setTitle(APP_TITLE);
+        stage.setHeight(WINDOW_PREF_HEIGHT);
+        stage.setWidth(WINDOW_PREF_WIDTH);
+        stage.setMinHeight(WINDOW_MIN_HEIGHT);
+        stage.setMinWidth(WINDOW_MIN_WIDTH);
+        return stage;
     }
 
     private void setBackgroundColor(Scene scene, BorderPane pane) {
@@ -114,22 +166,34 @@ class View {
         pane.setStyle("-fx-background-color: " + BG_COLORS.getTextOf(BG_COLOR_KEY) + ";");
     }
 
-    private void setupStage(Stage stage, Scene scene) {
-        stage.setScene(scene);
-        stage.setTitle(APP_TITLE);
-        stage.setHeight(WINDOW_PREF_HEIGHT);
-        stage.setWidth(WINDOW_PREF_WIDTH);
-        stage.setMinHeight(WINDOW_MIN_HEIGHT);
-        stage.setMinWidth(WINDOW_MIN_WIDTH);
+    private void createItems(Builder builder) {
+        addClockDateTimeLabels(builder.timeToDisplayOnClock, builder.state);
+
+        deleteModeSwitch = setupButton(IconButton.DELETE, builder.deleteModeSwitchAction);
+        reportButton = setupButton(IconButton.REPORT, builder.reportAction);
+        addWorkTimerButton = setupButton(IconButton.ADD_WORK_TIMER, builder.addWorkTimerAction);
+        addBreakTimerButton = setupButton(IconButton.ADD_BREAK_TIMER, builder.addBreakTimerAction);
+        startTimerButton = setupButton(IconButton.START, builder.startTimerAction);
+        pauseTimerButton = setupButton(IconButton.PAUSE, builder.pauseTimerAction);
+        skipNextTimerButton = setupButton(IconButton.SKIP, builder.skipNextTimerAction);
+        stopPomoButton = setupButton(IconButton.STOP, builder.stopPomoAction);
     }
 
-    private void setupRootPaneWithItems() {
+    private ControlButton setupButton(ControlButton button, Runnable action) {
+        button.setOnMouseClicked(e -> action.run());
+        if (button.canChangeColorPalette()) {
+            colorChangeableButtons.add(button);
+        }
+        return button;
+    }
+
+    private void setupRootPaneWithItems(BorderPane rootPane) {
         rootPane.setPadding(new Insets(10, 20, 10, 10));
 
         rootPane.setTop(createHeader());
         rootPane.setCenter(createBody());
 //        rootBox.setCenter(createVBox(Pos.CENTER, timeLabel, timerScrlPane, ctrlBtns));
-//        rootBox.setBottom(bottomBox);
+        rootPane.setBottom(createFooter());
 //        rootBox.widthProperty().addListener((observable, oldValue, newValue) -> {
 //            double btnWidth = addBreakTimerBtn.getWidth() + skipBtn.getWidth() + stopBtn.getWidth() + (addWorkTimerBtn.getWidth() + addBreakTimerBtn.getWidth()) * 2;
 //            if (btnWidth >= rootBox.getWidth()) {
@@ -164,7 +228,21 @@ class View {
     }
 
     private Node createBody() {
-        return createVBox(Pos.CENTER, clockTimeLabel);
+        HBox ctrlBtns =
+                createHBox(
+                        Pos.CENTER,
+                        stopPomoButton.get(),
+                        startTimerButton.get(),
+                        pauseTimerButton.get(),
+                        skipNextTimerButton.get()
+                );
+        ctrlBtns.setSpacing(30);
+        return createVBox(Pos.CENTER, clockTimeLabel, ctrlBtns);
+    }
+
+    private Node createFooter() {
+        HBox timerBtns = createHBox(Pos.CENTER_RIGHT, addWorkTimerButton.get(), addBreakTimerButton.get());
+        return createVBox(null, timerBtns);
     }
 
     void show() {
@@ -174,6 +252,16 @@ class View {
     void updateClock(LocalDateTime dateTime) {
         clockDateLabel.setText(formatDate(dateTime));
         clockTimeLabel.setText(formatTime(dateTime));
+    }
+
+    void activateRunningView() {
+        startTimerButton.hide();
+        pauseTimerButton.show();
+    }
+
+    void deactivateRunningView() {
+        startTimerButton.show();
+        pauseTimerButton.hide();
     }
 
     void showReport(String content) {
@@ -188,18 +276,6 @@ class View {
         Color textColor = getTextColor(state);
         this.clockDateLabel = createTextLabel(formatDate(timeToDisplayOnClock), AppFont.TEXT_20.get(), textColor);
         this.clockTimeLabel = createTextLabel(formatTime(timeToDisplayOnClock), AppFont.TEXT_30.get(), textColor);
-    }
-
-    private ControlButton createDeleteModeSwitch(Runnable deleteModeSwitchAction) {
-        ControlButton btn = IconButton.DELETE;
-        btn.setOnMouseClicked(e -> deleteModeSwitchAction.run());
-        return btn;
-    }
-
-    private ControlButton createReportButton(Runnable reportAction) {
-        ControlButton btn = IconButton.REPORT;
-        btn.setOnMouseClicked(e -> reportAction.run());
-        return btn;
     }
 
     private static String formatDate(LocalDateTime dateTime) {

@@ -35,6 +35,14 @@ enum IconButton implements ControlButton {
         return label;
     }
 
+    public void show() {
+        label.setVisible(true);
+    }
+
+    public void hide() {
+        label.setVisible(false);
+    }
+
     public void setOnMouseClicked(EventHandler<MouseEvent> handler) {
         label.setOnMouseClicked(handler);
     }
