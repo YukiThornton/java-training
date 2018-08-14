@@ -6,22 +6,70 @@ import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-enum IconButton implements ControlButton {
-    DELETE("\uf1f8", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
-    REPORT("\uf15c", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
-    ADD_WORK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.WORK_DEFAULT.colorPalette()),
-    ADD_BREAK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.BREAK_DEFAULT.colorPalette()),
-    START("\uf04b", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
-    PAUSE("\uf04c", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
-    SKIP("\uf051", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
-    STOP("\uf04d", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette());
-
-    private Label label;
-    private ColorPolicy colorPolicy;
+class IconButton implements ControlButton {
 
     private static enum ColorPolicy {
         STATIC,
         DYNAMIC;
+    }
+
+    static enum Type {
+        DELETE_TIMER("\uf00d", AppFont.ICON_30, ColorPolicy.STATIC, ColorPalette.GRAY);
+
+        private String iconIdentifier;
+        private AppFont font;
+        private ColorPolicy colorPolicy;
+        private ColorPalette palette;
+
+        private Type(String iconIdentifier, AppFont font, ColorPolicy colorPolicy, ColorPalette palette) {
+            this.iconIdentifier = iconIdentifier;
+            this.font = font;
+            this.colorPolicy = colorPolicy;
+            this.palette = palette;
+        }
+    }
+
+    private static enum SingletonType {
+        SINGLE_DELETE_MODE_SWITCH("\uf1f8", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
+        SINGLE_REPORT("\uf15c", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
+        SINGLE_ADD_WORK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.WORK_DEFAULT.colorPalette()),
+        SINGLE_ADD_BREAK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.BREAK_DEFAULT.colorPalette()),
+        SINGLE_START("\uf04b", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
+        SINGLE_PAUSE("\uf04c", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
+        SINGLE_SKIP("\uf051", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
+        SINGLE_STOP("\uf04d", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette());
+
+        private String iconIdentifier;
+        private AppFont font;
+        private ColorPolicy colorPolicy;
+        private ColorPalette palette;
+
+        private SingletonType(String iconIdentifier, AppFont font, ColorPolicy colorPolicy, ColorPalette palette) {
+            this.iconIdentifier = iconIdentifier;
+            this.font = font;
+            this.colorPolicy = colorPolicy;
+            this.palette = palette;
+        }
+    }
+
+    static IconButton DELETE_MODE_SWITCH = create(SingletonType.SINGLE_DELETE_MODE_SWITCH);
+    static IconButton REPORT = create(SingletonType.SINGLE_REPORT);
+    static IconButton ADD_WORK_TIMER = create(SingletonType.SINGLE_ADD_WORK_TIMER);
+    static IconButton ADD_BREAK_TIMER = create(SingletonType.SINGLE_ADD_BREAK_TIMER);
+    static IconButton START = create(SingletonType.SINGLE_START);
+    static IconButton PAUSE = create(SingletonType.SINGLE_PAUSE);
+    static IconButton SKIP = create(SingletonType.SINGLE_SKIP);
+    static IconButton STOP = create(SingletonType.SINGLE_STOP);
+
+    private Label label;
+    private ColorPolicy colorPolicy;
+
+    static IconButton create(Type type) {
+        return new IconButton(type.iconIdentifier, type.font, type.colorPolicy, type.palette);
+    }
+
+    private static IconButton create(SingletonType type) {
+        return new IconButton(type.iconIdentifier, type.font, type.colorPolicy, type.palette);
     }
 
     private IconButton(String iconIdentifier, AppFont font, ColorPolicy colorPolicy, ColorPalette palette) {
@@ -31,26 +79,32 @@ enum IconButton implements ControlButton {
         setColorPalette(label, palette);
     }
 
+    @Override
     public Control get() {
         return label;
     }
 
-    public void show() {
-        label.setVisible(true);
-    }
-
-    public void hide() {
-        label.setVisible(false);
-    }
-
+    @Override
     public void setOnMouseClicked(EventHandler<MouseEvent> handler) {
         label.setOnMouseClicked(handler);
     }
 
-    public boolean canChangeColorPalette(){
+    @Override
+    public void hide() {
+        label.setVisible(false);
+    }
+
+    @Override
+    public void show() {
+        label.setVisible(true);
+    }
+
+    @Override
+    public boolean canChangeColorPalette() {
         return this.colorPolicy == ColorPolicy.DYNAMIC;
     }
 
+    @Override
     public void changeColorPalette(ColorPalette to) {
         if (!canChangeColorPalette()) {
             throw new IllegalStateException("Not allowed to change color palette.");

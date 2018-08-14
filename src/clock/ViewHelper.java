@@ -1,12 +1,16 @@
 package clock;
 
+import java.awt.Dimension;
 import java.util.Arrays;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -44,11 +48,35 @@ final class ViewHelper {
         return box;
     }
 
-    public static Label createTextLabel(String text, Font font, Color textFill) {
+    public static Label createTextLabel(String text, Font font) {
         Label label = new Label(text);
         label.setFont(font);
+        return label;
+    }
+
+    public static Label createTextLabel(String text, Font font, Color textFill) {
+        Label label = createTextLabel(text, font);
         label.setTextFill(textFill);
         return label;
+    }
+
+    public static TextField createTextField(String initialText, Font font, Dimension maxSize) {
+        TextField textField = new TextField(initialText);
+        textField.setFont(font);
+        textField.setMaxSize(maxSize.getWidth(), maxSize.getHeight());
+        return textField;
+    }
+
+    public static void setInvisibleAfterFocusLeft(Node node) {
+        node.focusedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+                    Boolean newValue) {
+                    if (!newValue) {
+                        node.setVisible(false);
+                    }
+            }
+        });
     }
 
     public static void showAlertAndWait(String title, String content, AlertType type, boolean onTop){

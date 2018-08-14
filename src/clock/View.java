@@ -4,8 +4,12 @@ import static clock.ViewHelper.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.List;
 
 import static clock.ColorPalette.BG_COLORS;
 import static clock.ColorPalette.BG_COLOR_KEY;
@@ -18,7 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -37,6 +41,10 @@ class View {
       private Runnable pauseTimerAction;
       private Runnable skipNextTimerAction;
       private Runnable stopPomoAction;
+      private Predicate<String> validatorForTimerName;
+      private Predicate<String> validatorForCountdownTime;
+      private Consumer<String> onInvalidInputForTimerName;
+      private Consumer<String> onInvalidInputForCountdownTime;
 
       Builder(AppState state, Stage appStage) {
           this.state = state;
@@ -93,6 +101,28 @@ class View {
           return this;
       }
 
+      Builder setValidatorForTimerName(Predicate<String> validator) {
+          this.validatorForTimerName = validator;
+          return this;
+      }
+
+      Builder setValidatorForCountdownTime(Predicate<String> validator) {
+          this.validatorForCountdownTime = validator;
+          return this;
+      }
+
+      Builder onInvalidInputForTimerName(Consumer<String> action) {
+          this.onInvalidInputForTimerName = action;
+          return this;
+      }
+
+      Builder onInvalidInputForCountdownTime(Consumer<String> action) {
+          this.onInvalidInputForCountdownTime = action;
+          return this;
+      }
+
+
+
       View build() {
           if (canBuild()) {
               return new View(this);
@@ -111,7 +141,12 @@ class View {
                  && (startTimerAction != null)
                  && (pauseTimerAction != null)
                  && (skipNextTimerAction != null)
-                 && (stopPomoAction != null);
+                 && (stopPomoAction != null)
+                 && (validatorForTimerName != null)
+                 && (validatorForCountdownTime != null)
+                 && (onInvalidInputForTimerName != null)
+                 && (onInvalidInputForCountdownTime != null)
+                 ;
       }
     }
 
@@ -128,6 +163,7 @@ class View {
     private final Stage appStage;
     private Label clockDateLabel;
     private Label clockTimeLabel;
+    private List<TimerCard> timerCards = new ArrayList<>();
     private ControlButton deleteModeSwitch;
     private ControlButton reportButton;
     private ControlButton addWorkTimerButton;
@@ -168,8 +204,18 @@ class View {
 
     private void createItems(Builder builder) {
         addClockDateTimeLabels(builder.timeToDisplayOnClock, builder.state);
+        for(TimerState timerState : builder.state.timerStates()) {
+            TimerCard card = new TimerCardImpl.Builder(timerState)
+                                .setValidatorForTimerName(builder.validatorForTimerName)
+                                .setValidatorForCountdownTime(builder.validatorForCountdownTime)
+                                .onInvalidInputForTimerName(builder.onInvalidInputForTimerName)
+                                .onInvalidInputForCountdownTime(builder.onInvalidInputForCountdownTime)
+                                .onTimerDeletionRequested((c,s) -> System.out.println("hello"))
+                                .build();
+            timerCards.add(card);
+        }
 
-        deleteModeSwitch = setupButton(IconButton.DELETE, builder.deleteModeSwitchAction);
+        deleteModeSwitch = setupButton(IconButton.DELETE_MODE_SWITCH, builder.deleteModeSwitchAction);
         reportButton = setupButton(IconButton.REPORT, builder.reportAction);
         addWorkTimerButton = setupButton(IconButton.ADD_WORK_TIMER, builder.addWorkTimerAction);
         addBreakTimerButton = setupButton(IconButton.ADD_BREAK_TIMER, builder.addBreakTimerAction);
@@ -228,6 +274,8 @@ class View {
     }
 
     private Node createBody() {
+        Region[] timerCardRegions = timerCards.stream().map(timerCard -> timerCard.get()).toArray(Region[]::new);
+        HBox timerCardBox = createHBox(Pos.CENTER, timerCardRegions);
         HBox ctrlBtns =
                 createHBox(
                         Pos.CENTER,
@@ -237,7 +285,7 @@ class View {
                         skipNextTimerButton.get()
                 );
         ctrlBtns.setSpacing(30);
-        return createVBox(Pos.CENTER, clockTimeLabel, ctrlBtns);
+        return createVBox(Pos.CENTER, clockTimeLabel, timerCardBox, ctrlBtns);
     }
 
     private Node createFooter() {
@@ -262,6 +310,14 @@ class View {
     void deactivateRunningView() {
         startTimerButton.show();
         pauseTimerButton.hide();
+    }
+
+    void activateTimerDeletionView() {
+        timerCards.stream().forEach(card -> card.showDeleteTimerButton());
+    }
+
+    void deactivateTimerDeletionView() {
+        timerCards.stream().forEach(card -> card.hideDeleteTimerButton());
     }
 
     void showReport(String content) {

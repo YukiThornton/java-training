@@ -35,6 +35,10 @@ class AppState {
         return timerStates.get(currentTimerIndex);
     }
 
+    List<TimerState> timerStates() {
+        return timerStates;
+    }
+
     ColorPalette currentColorPalette() {
         return timerStates.get(currentTimerIndex).colorPalette();
     }
@@ -45,6 +49,10 @@ class AppState {
 
     AppState switchDeleteMode() {
         return new AppState(this, !this.deleteModeOn);
+    }
+
+    boolean isDeleteModeOn() {
+        return deleteModeOn;
     }
 
     private AppState(List<TimerState> timerStates, int index) {
