@@ -39,8 +39,8 @@ public class Pomopomo extends Application {
     private static final String ALERT_TIMER_DELETE_REJECT_TITLE = "You can't!";
     private static final String ALERT_TIMER_DELETE_REJECT_CONTENT = "You MUST have at least 1 work timer and 1 rest timer.";
 
-    private Clock clock;
-    private PomodoroController pomoCtrl;
+//    private Clock clock;
+//    private PomodoroController pomoCtrl;
     private Timer timer;
     private boolean initialized = false;
     private boolean isDeleting = false;
@@ -135,36 +135,36 @@ public class Pomopomo extends Application {
 //        initialized = true;
     }
 
-    private PomodoroController createPomoCtrl() {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        PomodoroController pomoCtrl = new PomodoroController(BG_COLORS.get(BG_COLOR_KEY));
-        pomoCtrl.onTimerFinished((oldTimer, newTimer) -> {
-            Toolkit.getDefaultToolkit().beep();
-            showSwitchTimerAlert(newTimer.getTimerType());
-            pomoCtrl.deselectActiveTimer();
-            selectNextTimer();
-            pomoCtrl.start();
-            ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
-        });
-        pomoCtrl.onInvalidInputForMaxMinute(t -> showMaxMinuteInputErrorAlert());
-        pomoCtrl.onInvalidInputForTimerName(t -> showTimerNameInputErrorAlert());
-        pomoCtrl.onTimerDeleteBtnSelected(timer -> {
-            if (!pomoCtrl.canDeleteTimer(timer)) {
-                showTimerDeleteRejectionAlert();
-                return;
-            }
-            pomoCtrl.deleteTimer(timer);
-        });
-        pomoCtrl.onTimerDeleted(timer -> {
-            timerBox.getChildren().clear();
-            timerBox.getChildren().addAll(pomoCtrl.getNodes());
-        });
-        return pomoCtrl;
-    }
-
+//    private PomodoroController createPomoCtrl() {
+//        if (initialized) {
+//            throw new IllegalStateException("Already initialized.");
+//        }
+//
+//        PomodoroController pomoCtrl = new PomodoroController(BG_COLORS.get(BG_COLOR_KEY));
+//        pomoCtrl.onTimerFinished((oldTimer, newTimer) -> {
+//            Toolkit.getDefaultToolkit().beep();
+//            showSwitchTimerAlert(newTimer.getTimerType());
+//            pomoCtrl.deselectActiveTimer();
+//            selectNextTimer();
+//            pomoCtrl.start();
+//            ensureVisibleInScrollPane(timerScrlPane, newTimer.getNode());
+//        });
+//        pomoCtrl.onInvalidInputForMaxMinute(t -> showMaxMinuteInputErrorAlert());
+//        pomoCtrl.onInvalidInputForTimerName(t -> showTimerNameInputErrorAlert());
+//        pomoCtrl.onTimerDeleteBtnSelected(timer -> {
+//            if (!pomoCtrl.canDeleteTimer(timer)) {
+//                showTimerDeleteRejectionAlert();
+//                return;
+//            }
+//            pomoCtrl.deleteTimer(timer);
+//        });
+//        pomoCtrl.onTimerDeleted(timer -> {
+//            timerBox.getChildren().clear();
+//            timerBox.getChildren().addAll(pomoCtrl.getNodes());
+//        });
+//        return pomoCtrl;
+//    }
+//
 //    private Label createReportBtn() {
 //        IconButton.REPORT.setOnMouseClicked(event -> onClickReportBtn());
 //        return IconButton.REPORT.get();
@@ -205,28 +205,28 @@ public class Pomopomo extends Application {
 //        return IconButton.ADD_BREAK_TIMER.get();
 //    }
 
-    private Timer createAndSetupTimer() {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                Platform.runLater(() -> {
-                    if (clock == null || pomoCtrl == null) {
-                        throw new IllegalStateException("Not ready yet.");
-                    }
-                    clock.update();
-                    if (pomoCtrl.isActive()) {
-                        pomoCtrl.update();
-                    }
-                });
-            }
-        }, 0, 500);
-        return timer;
-    }
+//    private Timer createAndSetupTimer() {
+//        if (initialized) {
+//            throw new IllegalStateException("Already initialized.");
+//        }
+//
+//        Timer timer = new Timer();
+//        timer.scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                Platform.runLater(() -> {
+//                    if (clock == null || pomoCtrl == null) {
+//                        throw new IllegalStateException("Not ready yet.");
+//                    }
+//                    clock.update();
+//                    if (pomoCtrl.isActive()) {
+//                        pomoCtrl.update();
+//                    }
+//                });
+//            }
+//        }, 0, 500);
+//        return timer;
+//    }
 
     private void setUpStage(Stage stage, Scene scene) {
         if (initialized) {
@@ -256,7 +256,7 @@ public class Pomopomo extends Application {
 
     private void hideOrShowOnDeletingMode(boolean hide) {
         reportBtn.setVisible(!hide);
-        pomoCtrl.setVisibleOnDeleteBtn(hide);
+//        pomoCtrl.setVisibleOnDeleteBtn(hide);
         dateLabel.setVisible(!hide);
         timeLabel.setVisible(!hide);
         stopBtn.setVisible(!hide);
@@ -268,48 +268,48 @@ public class Pomopomo extends Application {
     }
 
     private void onClickReportBtn() {
-        showTimerReport(pomoCtrl.getReports());
+//        showTimerReport(pomoCtrl.getReports());
     }
 
     private void onClickPomoCtrlBtn() {
-        if (pomoCtrl.isActive()) {
-            startBtn.setVisible(true);
-            pauseBtn.setVisible(false);
-            stopBtn.setVisible(true);
-            pomoCtrl.pause();
-        } else {
-            startBtn.setVisible(false);
-            pauseBtn.setVisible(true);
-            stopBtn.setVisible(false);
-            pomoCtrl.start();
-        }
+//        if (pomoCtrl.isActive()) {
+//            startBtn.setVisible(true);
+//            pauseBtn.setVisible(false);
+//            stopBtn.setVisible(true);
+//            pomoCtrl.pause();
+//        } else {
+//            startBtn.setVisible(false);
+//            pauseBtn.setVisible(true);
+//            stopBtn.setVisible(false);
+//            pomoCtrl.start();
+//        }
     }
 
     private void onClickSkipBtn() {
-        if (pomoCtrl.isActive()) {
-            pomoCtrl.pause();
-            resetAndDeselectCurrentTimer();
-            selectNextTimer();
-            pomoCtrl.start();
-        } else {
-            resetAndDeselectCurrentTimer();
-            selectNextTimer();
-        }
+//        if (pomoCtrl.isActive()) {
+//            pomoCtrl.pause();
+//            resetAndDeselectCurrentTimer();
+//            selectNextTimer();
+//            pomoCtrl.start();
+//        } else {
+//            resetAndDeselectCurrentTimer();
+//            selectNextTimer();
+//        }
     }
 
     private void resetAndDeselectCurrentTimer() {
-        pomoCtrl.reset();
-        pomoCtrl.deselectCurrent();
+//        pomoCtrl.reset();
+//        pomoCtrl.deselectCurrent();
     }
 
     private void selectNextTimer() {
-        pomoCtrl.selectNext();
-        changeColors(pomoCtrl.currentTimer().getColorPalette());
+//        pomoCtrl.selectNext();
+//        changeColors(pomoCtrl.currentTimer().getColorPalette());
     }
 
     private void selectTimer(int at) {
-        pomoCtrl.select(at);
-        changeColors(pomoCtrl.currentTimer().getColorPalette());
+//        pomoCtrl.select(at);
+//        changeColors(pomoCtrl.currentTimer().getColorPalette());
     }
 
     private void changeColors(ColorPalette palette) {
@@ -318,38 +318,38 @@ public class Pomopomo extends Application {
         pauseBtn.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
         stopBtn.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
         skipBtn.setTextFill(currentPalette.get(ColorPalette.Key.LIGHT));
-        clock.changeTextColor(currentPalette);
+//        clock.changeTextColor(currentPalette);
     }
 
     private void onClickPomoResetBtn() {
         resetAndDeselectCurrentTimer();
-        showTimerReport(pomoCtrl.getReports());
-        pomoCtrl.clearAllHistory();
+//        showTimerReport(pomoCtrl.getReports());
+//        pomoCtrl.clearAllHistory();
         selectTimer(0);
     }
 
     private void onClickPomoAddTimerBtn() {
-        if (!pomoCtrl.canAddMoreTimer()) {
-            showTooManyTimerAlert();
-            return;
-        }
-        Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_DEFAULT, BG_COLORS.get(BG_COLOR_KEY));
-            timerBox.getChildren().add(newTimer);
-            ensureVisibleInScrollPane(timerScrlPane, newTimer);
-        });
+//        if (!pomoCtrl.canAddMoreTimer()) {
+//            showTooManyTimerAlert();
+//            return;
+//        }
+//        Platform.runLater(() -> {
+//            Node newTimer = pomoCtrl.createNewTimer(TimerType.WORK_DEFAULT, BG_COLORS.get(BG_COLOR_KEY));
+//            timerBox.getChildren().add(newTimer);
+//            ensureVisibleInScrollPane(timerScrlPane, newTimer);
+//        });
     }
 
     private void onClickPomoAddRestBtn() {
-        if (!pomoCtrl.canAddMoreTimer()) {
-            showTooManyTimerAlert();
-            return;
-        }
-        Platform.runLater(() -> {
-            Node newTimer = pomoCtrl.createNewTimer(TimerType.BREAK_DEFAULT, BG_COLORS.get(BG_COLOR_KEY));
-            timerBox.getChildren().add(newTimer);
-            ensureVisibleInScrollPane(timerScrlPane, newTimer);
-        });
+//        if (!pomoCtrl.canAddMoreTimer()) {
+//            showTooManyTimerAlert();
+//            return;
+//        }
+//        Platform.runLater(() -> {
+//            Node newTimer = pomoCtrl.createNewTimer(TimerType.BREAK_DEFAULT, BG_COLORS.get(BG_COLOR_KEY));
+//            timerBox.getChildren().add(newTimer);
+//            ensureVisibleInScrollPane(timerScrlPane, newTimer);
+//        });
     }
 
     private void showTimerReport(List<TimerReport> reports) {

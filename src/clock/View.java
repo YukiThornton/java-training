@@ -44,7 +44,7 @@ class View {
       private Predicate<String> validatorForTimerName;
       private Predicate<String> validatorForCountdownTime;
       private Consumer<String> onInvalidInputForTimerName;
-      private Consumer<String> onInvalidInputForCountdownTime;
+      private Consumer<String> onInvalidInputForTimerDuration;
 
       Builder(AppState state, Stage appStage) {
           this.state = state;
@@ -116,8 +116,8 @@ class View {
           return this;
       }
 
-      Builder onInvalidInputForCountdownTime(Consumer<String> action) {
-          this.onInvalidInputForCountdownTime = action;
+      Builder onInvalidInputForTimerDuration(Consumer<String> action) {
+          this.onInvalidInputForTimerDuration = action;
           return this;
       }
 
@@ -145,7 +145,7 @@ class View {
                  && (validatorForTimerName != null)
                  && (validatorForCountdownTime != null)
                  && (onInvalidInputForTimerName != null)
-                 && (onInvalidInputForCountdownTime != null)
+                 && (onInvalidInputForTimerDuration != null)
                  ;
       }
     }
@@ -155,7 +155,6 @@ class View {
     private static final double WINDOW_MIN_WIDTH = 340;
     private static final double WINDOW_MIN_HEIGHT = 535;
     private static final String APP_TITLE = "Pomopomo Timer";
-    private static final String INFO_REPORT_TITLE = "Good job!";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm:ss a");
     private static final ColorPalette.Key TEXT_COLOR_KEY = ColorPalette.Key.DARK;
@@ -164,6 +163,7 @@ class View {
     private Label clockDateLabel;
     private Label clockTimeLabel;
     private List<TimerCard> timerCards = new ArrayList<>();
+    private int selectedTimerCardIndex;
     private ControlButton deleteModeSwitch;
     private ControlButton reportButton;
     private ControlButton addWorkTimerButton;
@@ -180,7 +180,7 @@ class View {
 
         createItems(builder);
         setupRootPaneWithItems(rootPane);
-
+        selectedTimerCardIndex = builder.state.currentTimerIndex();
     }
 
     private Stage setupStage(Stage stage, BorderPane rootPane, Builder builder) {
@@ -204,12 +204,12 @@ class View {
 
     private void createItems(Builder builder) {
         addClockDateTimeLabels(builder.timeToDisplayOnClock, builder.state);
-        for(TimerState timerState : builder.state.timerStates()) {
-            TimerCard card = new TimerCardImpl.Builder(timerState)
+        for(Timer timer : builder.state.timers()) {
+            TimerCard card = new TimerCardImpl.Builder(timer)
                                 .setValidatorForTimerName(builder.validatorForTimerName)
                                 .setValidatorForCountdownTime(builder.validatorForCountdownTime)
                                 .onInvalidInputForTimerName(builder.onInvalidInputForTimerName)
-                                .onInvalidInputForCountdownTime(builder.onInvalidInputForCountdownTime)
+                                .onInvalidInputForTimerDuration(builder.onInvalidInputForTimerDuration)
                                 .onTimerDeletionRequested((c,s) -> System.out.println("hello"))
                                 .build();
             timerCards.add(card);
@@ -302,14 +302,24 @@ class View {
         clockTimeLabel.setText(formatTime(dateTime));
     }
 
+    void updateTimerTime(Timer.Values values) {
+        timerCards.get(selectedTimerCardIndex).updateTime(values);
+    }
+
+    void selectTimer(int index) {
+        selectedTimerCardIndex = index;
+    }
+
     void activateRunningView() {
         startTimerButton.hide();
         pauseTimerButton.show();
+        stopPomoButton.hide();
     }
 
     void deactivateRunningView() {
         startTimerButton.show();
         pauseTimerButton.hide();
+        stopPomoButton.show();
     }
 
     void activateTimerDeletionView() {
@@ -320,12 +330,12 @@ class View {
         timerCards.stream().forEach(card -> card.hideDeleteTimerButton());
     }
 
-    void showReport(String content) {
-//        String reportStr = "";
-//        for (int i = 0; i < reports.size(); i++) {
-//            reportStr += reports.get(i).toString() + "\n";
-//        }
-        showAlertAndWait(INFO_REPORT_TITLE, content, AlertType.INFORMATION, true);
+    void showInfoDialog(DialogMessage message) {
+        showAlertAndWait(message.title(), message.content(), AlertType.INFORMATION, false);
+    }
+
+    void showInfoDialogOnTop(DialogMessage message) {
+        showAlertAndWait(message.title(), message.content(), AlertType.INFORMATION, true);
     }
 
     private void addClockDateTimeLabels(LocalDateTime timeToDisplayOnClock, AppState state) {

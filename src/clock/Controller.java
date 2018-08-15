@@ -1,9 +1,9 @@
 package clock;
 
 import java.time.LocalDateTime;
-import java.util.Timer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
@@ -11,35 +11,31 @@ import javafx.stage.Stage;
 
 class Controller {
 
-    private static final TimerType[] INITIAL_TIMER_TYPES = {TimerType.WORK_DEFAULT, TimerType.BREAK_DEFAULT};
-    private static final int INITIAL_TIMER_INDEX = 0;
     private static final long PERIODIC_VIEW_UPDATE_INTERVAL = 500;
-    private static final int MAX_COUNTDOWN_TIME = 999;
-    private static final int MAX_TIMER_NAME_LENGTH = 15;
 
     private final View view;
     private AppState state;
-    private final Timer periodicViewUpdateTask;
+    private final java.util.Timer periodicViewUpdateTask;
 
     private Controller(Stage appStage) {
-        state = AppState.initState(INITIAL_TIMER_TYPES, INITIAL_TIMER_INDEX);
+        state = AppState.initState(InitialValues.TIMER_TYPES, InitialValues.TIMER_INDEX);
         view = new View.Builder(state, appStage)
                 .onClosed(this::onWindowClosing)
                 .registerClock(LocalDateTime.now())
                 .registerDeleteModeAction(this::switchDeleteMode)
-                .registerReportAction(this::showReport)
+                .registerReportAction(this::createAndShowReport)
                 .registerAddWorkTimerAction(() -> System.out.println("addWorkTimer pressed"))
                 .registerAddBreakTimerAction(() -> System.out.println("addBreakTimer pressed"))
-                .registerStartTimerAction(this::startTimer)
-                .registerPauseTimerAction(this::pauseTimer)
-                .registerSkipNextTimerAction(() -> System.out.println("skipNextTimer pressed"))
-                .registerStopPomoAction(() -> System.out.println("stopPomo pressed"))
+                .registerStartTimerAction(this::startCurrentTimer)
+                .registerPauseTimerAction(this::pauseCurrentTimer)
+                .registerSkipNextTimerAction(this::skipCurrentTimer)
+                .registerStopPomoAction(this::stop)
                 .setValidatorForTimerName(validateTimerNameInput())
                 .setValidatorForCountdownTime(validateCountdownTimeInput())
                 .onInvalidInputForTimerName(input -> showInvalidTimerNameError(input))
-                .onInvalidInputForCountdownTime(input -> showInvalidCountdownTimeError(input))
+                .onInvalidInputForTimerDuration(input -> showInvalidTimerDurationError(input))
                 .build();
-        periodicViewUpdateTask = new Timer();
+        periodicViewUpdateTask = new java.util.Timer();
     }
 
     static Controller create(Stage appStage) {
@@ -57,9 +53,10 @@ class Controller {
             public void run() {
                 Platform.runLater(() -> {
                     view.updateClock(LocalDateTime.now());
-//                    if (pomoCtrl.isActive()) {
-//                        pomoCtrl.update();
-//                    }
+                    Timer currentTimer = state.currentTimer();
+                    if (currentTimer.isRunning()) {
+                        view.updateTimerTime(state.currentTimer().timeValues());
+                    }
                 });
             }
         }, 0, PERIODIC_VIEW_UPDATE_INTERVAL);
@@ -78,31 +75,93 @@ class Controller {
         }
     }
 
-    private void startTimer() {
+    private void startCurrentTimer() {
+        state.currentTimer().start();
         view.activateRunningView();
     }
 
-    private void pauseTimer() {
+    private void pauseCurrentTimer() {
+        state.currentTimer().pause();
         view.deactivateRunningView();
     }
 
-    private void showReport() {
-        view.showReport("hellooooooooo");
+    private void finishCurrentTimerSession() {
+        if (state.currentTimer().isRunning()) {
+            pauseCurrentTimer();
+        }
+        if (state.currentTimer().isPaused()) {
+            state.currentTimer().clearCurrentSession();
+            view.updateTimerTime(state.currentTimer().timeValues());
+        }
+    }
+
+    private void skipCurrentTimer() {
+        boolean oldTimerWasRunning = state.currentTimer().isRunning();
+        finishCurrentTimerSession();
+        selectTimer(nextTimerIndex());
+        if (oldTimerWasRunning) {
+            startCurrentTimer();
+        }
+    }
+
+    private void selectTimer(int index) {
+        state = state.setTimerIndex(index);
+        view.selectTimer(state.currentTimerIndex());
+    }
+
+    private int nextTimerIndex() {
+        int currentIndex = state.currentTimerIndex();
+        if (currentIndex + 1 == state.timers().size()) {
+            return 0;
+        }
+        return currentIndex + 1;
+    }
+
+    private void stop() {
+        finishCurrentTimerSession();
+        createAndShowReport();
+        for (Timer timer: state.timers()) {
+            timer.clearAll();
+        }
+        selectTimer(0);
+    }
+
+    private void createAndShowReport() {
+        List<TimerReport> reports = createTimerReports();
+        String contents = createReportContents(reports);
+        view.showInfoDialogOnTop(DialogMessage.REPORT.setContent(contents));
+    }
+
+    private List<TimerReport> createTimerReports() {
+        List<TimerReport> reports = new ArrayList<>(state.timers().size());
+        for (clock.Timer timer: state.timers()) {
+            reports.add(timer.report());
+        }
+        return reports;
+    }
+
+    private String createReportContents(List<TimerReport> reports) {
+        StringBuilder contents = new StringBuilder();
+        for (TimerReport report: reports) {
+            contents.append(report.toString());
+            contents.append("\n");
+        }
+        return contents.toString();
     }
 
     private void showInvalidTimerNameError(String input) {
-        view.showReport("showInvalidTimerNameError " + input);
+        view.showInfoDialog(DialogMessage.INVALID_TIMER_NAME);
     }
 
-    private void showInvalidCountdownTimeError(String input) {
-        view.showReport("showInvalidCountdownTimeError  " + input);
+    private void showInvalidTimerDurationError(String input) {
+        view.showInfoDialog(DialogMessage.INVALID_TIMER_DURATION);
     }
 
     private Predicate<String> validateCountdownTimeInput() {
         return input -> {
             try {
                 int val = Integer.parseInt(input);
-                if (val <= MAX_COUNTDOWN_TIME && val > 0) {
+                if (val <= LimitationValues.MAX_TIMER_DURATION_TARGET && val > 0) {
                     return true;
                 }
                 return false;
@@ -113,7 +172,7 @@ class Controller {
     }
 
     private Predicate<String> validateTimerNameInput() {
-        return input -> input.length() <= MAX_TIMER_NAME_LENGTH;
+        return input -> input.length() <= LimitationValues.MAX_TIMER_NAME_LENGTH;
     }
 
 

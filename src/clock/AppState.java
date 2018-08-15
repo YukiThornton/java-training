@@ -5,7 +5,7 @@ import java.util.List;
 
 class AppState {
 
-    private final List<TimerState> timerStates;
+    private final List<Timer> timers;
     private final int currentTimerIndex;
     private final boolean deleteModeOn;
 
@@ -14,11 +14,11 @@ class AppState {
     }
 
     static AppState initState(TimerType[] timerTypes, int index) {
-        List<TimerState> timerStates = new ArrayList<>();
+        List<Timer> timers = new ArrayList<>();
         for(TimerType type: timerTypes) {
-            timerStates.add(new TimerState(type));
+            timers.add(CountdownTimer.create(type));
         }
-        return new AppState(timerStates, index);
+        return new AppState(timers, index);
     }
 
     PomodoroStatus pomodoroStatus() {
@@ -31,16 +31,20 @@ class AppState {
         return PomodoroStatus.SELECTED;
     }
 
-    TimerState currentTimer() {
-        return timerStates.get(currentTimerIndex);
+    int currentTimerIndex() {
+        return currentTimerIndex;
     }
 
-    List<TimerState> timerStates() {
-        return timerStates;
+    Timer currentTimer() {
+        return timers.get(currentTimerIndex);
+    }
+
+    List<Timer> timers() {
+        return timers;
     }
 
     ColorPalette currentColorPalette() {
-        return timerStates.get(currentTimerIndex).colorPalette();
+        return timers.get(currentTimerIndex).timerType().colorPalette();
     }
 
     AppState setTimerIndex(int index) {
@@ -55,26 +59,26 @@ class AppState {
         return deleteModeOn;
     }
 
-    private AppState(List<TimerState> timerStates, int index) {
-        this.timerStates = timerStates;
+    private AppState(List<Timer> timers, int index) {
+        this.timers = timers;
         this.currentTimerIndex = index;
         this.deleteModeOn = false;
     }
 
     private AppState(AppState original, int index) {
-        this.timerStates = original.timerStates;
+        this.timers = original.timers;
         this.currentTimerIndex = index;
         this.deleteModeOn = original.deleteModeOn;
     }
 
     private AppState(AppState original, boolean deleteModeOn) {
-        this.timerStates = original.timerStates;
+        this.timers = original.timers;
         this.currentTimerIndex = original.currentTimerIndex;
         this.deleteModeOn = deleteModeOn;
     }
 
     private boolean currentTimerIsRunning() {
-        return timerStates.get(currentTimerIndex).isRunning();
+        return timers.get(currentTimerIndex).isRunning();
     }
 
     private boolean timerSelected() {

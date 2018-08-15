@@ -7,7 +7,7 @@ public class TimerReport {
     private Duration duration;
     private String timerName;
 
-    public TimerReport(Duration duration, String timerName) {
+    TimerReport(Duration duration, String timerName) {
         this.duration = duration;
         this.timerName = timerName;
     }

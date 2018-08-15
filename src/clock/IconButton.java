@@ -34,10 +34,10 @@ class IconButton implements ControlButton {
         SINGLE_REPORT("\uf15c", AppFont.ICON_40, ColorPolicy.STATIC, ColorPalette.GRAY),
         SINGLE_ADD_WORK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.WORK_DEFAULT.colorPalette()),
         SINGLE_ADD_BREAK_TIMER("\uf0fe", AppFont.ICON_50, ColorPolicy.STATIC, TimerType.BREAK_DEFAULT.colorPalette()),
-        SINGLE_START("\uf04b", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
-        SINGLE_PAUSE("\uf04c", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
-        SINGLE_SKIP("\uf051", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette()),
-        SINGLE_STOP("\uf04d", AppFont.ICON_50, ColorPolicy.DYNAMIC, PomodoroController.INITIAL_TIMER_TYPE.colorPalette());
+        SINGLE_START("\uf04b", AppFont.ICON_50, ColorPolicy.DYNAMIC, InitialValues.COLOR_PALETTE),
+        SINGLE_PAUSE("\uf04c", AppFont.ICON_50, ColorPolicy.DYNAMIC, InitialValues.COLOR_PALETTE),
+        SINGLE_SKIP("\uf051", AppFont.ICON_50, ColorPolicy.DYNAMIC, InitialValues.COLOR_PALETTE),
+        SINGLE_STOP("\uf04d", AppFont.ICON_50, ColorPolicy.DYNAMIC, InitialValues.COLOR_PALETTE);
 
         private String iconIdentifier;
         private AppFont font;
