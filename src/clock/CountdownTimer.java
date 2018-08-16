@@ -20,7 +20,7 @@ public class CountdownTimer implements Timer {
     private CountdownTimer(TimerType type) {
         this.timerType = type;
         this.timerName = type.initialTimerName();
-        this.targetTimeInSeconds = type.initialTimerMinute() * 60;
+        this.targetTimeInSeconds = type.initialTimerSeconds();
     }
 
     @Override
@@ -75,8 +75,8 @@ public class CountdownTimer implements Timer {
         if (isRunning()) {
             throw new IllegalStateException("Not allowed to modify values of running timer");
         }
-        if (seconds < LimitationValues.MIN_TIMER_DURATION_TARGET * 60
-                || seconds > LimitationValues.MAX_TIMER_DURATION_TARGET * 60
+        if (seconds < LimitationValues.MIN_TIMER_DURATION_TARGET
+                || seconds > LimitationValues.MAX_TIMER_DURATION_TARGET
         ) {
             throw new IllegalArgumentException("Timer duration target invalid: " + seconds);
         }

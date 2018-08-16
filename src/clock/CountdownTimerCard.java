@@ -10,7 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-class TimerCardImpl implements TimerCard {
+class CountdownTimerCard implements TimerCard {
 
     static class Builder implements TimerCard.Builder {
 
@@ -64,7 +64,7 @@ class TimerCardImpl implements TimerCard {
                ) {
                 throw new IllegalStateException("Not enough parameter");
             }
-            return new TimerCardImpl(this);
+            return new CountdownTimerCard(this);
         }
     }
 
@@ -74,19 +74,20 @@ class TimerCardImpl implements TimerCard {
     private final ControlButton deleteTimerButton;
     private final VBox root;
 
-    private TimerCardImpl(Builder builder) {
+    private CountdownTimerCard(Builder builder) {
         this.timer = builder.timer;
-        editableTextForTimerName = new EditableTextImpl.Builder(timer.timerName(), AppFont.TEXT_30, timer.timerType().colorPalette())
+        editableTextForTimerName = new EditableTextSingleInput.Builder(timer.timerName(), AppFont.TEXT_30, timer.timerType().colorPalette())
                 .defineEditableCondition(() -> !timer.isRunning())
                 .setTextValidation(text -> builder.validatorForTimerName.test(text))
                 .onInvalidInput(builder.onInvalidInputForTimerName)
                 .onValidInput(text -> timer.changeTimerName(text))
                 .build();
-        editableTextForCountdownTime = new EditableTextImpl.Builder(Integer.toString(timer.timeValues().targetTimeInSeconds()), AppFont.TEXT_50, timer.timerType().colorPalette())
+        editableTextForCountdownTime = new EditableTextSingleInput.Builder(formatSeconds(timer.timeValues().targetTimeInSeconds()), AppFont.TEXT_50, timer.timerType().colorPalette())
+                .setEditTextFont(AppFont.TEXT_30)
                 .defineEditableCondition(() -> !timer.isRunning())
                 .setTextValidation(text -> builder.validatorForCountdownTime.test(text))
                 .onInvalidInput(builder.onInvalidInputForTimerDutaion)
-                .onValidInput(text -> System.out.println("set new countdown time"))
+                .onValidInput(text -> timer.changeTargetTime(convertTimeStrToInt(text)))
                 .build();
         deleteTimerButton = IconButton.create(IconButton.Type.DELETE_TIMER);
         deleteTimerButton.setOnMouseClicked(e -> {
@@ -103,9 +104,21 @@ class TimerCardImpl implements TimerCard {
         root.setAlignment(Pos.TOP_CENTER);
     }
 
+    private static String formatSeconds(int seconds) {
+        return String.format("%02d:%02d", seconds / 60, seconds % 60);
+    }
+
+    private static int convertTimeStrToInt(String timeStr) {
+        String[] minuteAndSecond = timeStr.split(":");
+        int minutes = Integer.parseInt(minuteAndSecond[0]);
+        int seconds = Integer.parseInt(minuteAndSecond[1]);
+        System.out.println(minutes + " " + seconds);
+        return minutes * 60 + seconds;
+    }
+
     @Override
     public void updateTime(Values values) {
-        editableTextForCountdownTime.changeText(Integer.toString(values.timeLeftInSeconds()));
+        editableTextForCountdownTime.changeText(formatSeconds(values.timeLeftInSeconds()));
     }
 
     @Override

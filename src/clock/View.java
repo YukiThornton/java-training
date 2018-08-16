@@ -205,7 +205,7 @@ class View {
     private void createItems(Builder builder) {
         addClockDateTimeLabels(builder.timeToDisplayOnClock, builder.state);
         for(Timer timer : builder.state.timers()) {
-            TimerCard card = new TimerCardImpl.Builder(timer)
+            TimerCard card = new CountdownTimerCard.Builder(timer)
                                 .setValidatorForTimerName(builder.validatorForTimerName)
                                 .setValidatorForCountdownTime(builder.validatorForCountdownTime)
                                 .onInvalidInputForTimerName(builder.onInvalidInputForTimerName)

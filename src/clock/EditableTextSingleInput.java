@@ -14,58 +14,65 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-class EditableTextImpl implements EditableText {
+class EditableTextSingleInput implements EditableText {
 
     static class Builder implements EditableText.Builder {
 
         private String text;
-        private AppFont font;
+        private AppFont labelFont;
+        private AppFont textFieldFont;
         private ColorPalette colorPalette;
         private BooleanSupplier editable;
         private Predicate<String> textValidation;
         private Consumer<String> onInvalidInput;
         private Consumer<String> onValidInput;
 
-        Builder(String text, AppFont appFont, ColorPalette colorPalette) {
+        Builder(String text, AppFont font, ColorPalette colorPalette) {
             this.text = text;
-            this.font = appFont;
+            this.labelFont = font;
+            this.textFieldFont = font;
             this.colorPalette = colorPalette;
         }
 
+        Builder setEditTextFont(AppFont editTextFont) {
+            this.textFieldFont = editTextFont;
+            return this;
+        }
+
         @Override
-        public EditableText.Builder defineEditableCondition(BooleanSupplier editable){
+        public Builder defineEditableCondition(BooleanSupplier editable){
             this.editable = editable;
             return this;
         }
 
         @Override
-        public EditableText.Builder setTextValidation(Predicate<String> validation) {
+        public Builder setTextValidation(Predicate<String> validation) {
             this.textValidation = validation;
             return this;
         }
 
         @Override
-        public EditableText.Builder onInvalidInput(Consumer<String> action) {
+        public Builder onInvalidInput(Consumer<String> action) {
             this.onInvalidInput = action;
             return this;
         }
 
         @Override
-        public EditableText.Builder onValidInput(Consumer<String> action) {
+        public Builder onValidInput(Consumer<String> action) {
             this.onValidInput = action;
             return this;
         }
 
         @Override
-        public EditableText build() {
+        public EditableTextSingleInput build() {
             if (editable == null || textValidation == null || onInvalidInput == null || onValidInput == null) {
                 throw new IllegalStateException("Not enough parameters");
             }
-            return new EditableTextImpl(text, font, colorPalette, editable, textValidation, onInvalidInput, onValidInput);
+            return new EditableTextSingleInput(text, labelFont, textFieldFont, colorPalette, editable, textValidation, onInvalidInput, onValidInput);
         }
     }
 
-    private static Dimension MAX_TEXT_FIELD_SIZE = new Dimension(150, 10);
+    private static Dimension MAX_TEXT_FIELD_SIZE = new Dimension(150, 50);
 
     private BooleanSupplier editable;
     private Predicate<String> textValidation;
@@ -75,15 +82,15 @@ class EditableTextImpl implements EditableText {
     private final TextField textField;
     private final StackPane labelAndTextField;
 
-    private EditableTextImpl(String text, AppFont appFont, ColorPalette colorPalette, BooleanSupplier editable,
+    private EditableTextSingleInput(String text, AppFont labelFont, AppFont textFieldFont, ColorPalette colorPalette, BooleanSupplier editable,
             Predicate<String> validation, Consumer<String> onInvalidInput, Consumer<String> onValidInput) {
         this.editable = editable;
         this.textValidation = validation;
         this.onInvalidInput = onInvalidInput;
         this.onValidInput = onValidInput;
 
-        label = initReadOnlyLabel(text, appFont.get(), colorPalette);
-        textField = initTextField(text, appFont.get());
+        label = initReadOnlyLabel(text, labelFont.get(), colorPalette);
+        textField = initTextField(text, textFieldFont.get());
         labelAndTextField = new StackPane(label, textField);
     }
 
@@ -135,10 +142,11 @@ class EditableTextImpl implements EditableText {
     private void invokeTextValidation(String text) {
         if (textValidation.test(text)) {
             changeText(text);
-            textField.setVisible(false);
+            showReadOnlyMode();
             onValidInput.accept(text);
         } else {
             onInvalidInput.accept(text);
+            showEditMode();
         }
     }
 
@@ -149,11 +157,13 @@ class EditableTextImpl implements EditableText {
 
     @Override
     public void showReadOnlyMode() {
+        label.setVisible(true);
         textField.setVisible(false);
     }
 
     @Override
     public void showEditMode() {
+        label.setVisible(false);
         textField.setText(label.getText());
         textField.setVisible(true);
         textField.requestFocus();

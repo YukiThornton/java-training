@@ -158,17 +158,18 @@ class Controller {
     }
 
     private Predicate<String> validateCountdownTimeInput() {
-        return input -> {
-            try {
-                int val = Integer.parseInt(input);
-                if (val <= LimitationValues.MAX_TIMER_DURATION_TARGET && val > 0) {
-                    return true;
-                }
-                return false;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        };
+        return text -> text.matches("^([0-5][0-9]:[0-5][0-9]|60:00)$");
+//        return input -> {
+//            try {
+//                int val = Integer.parseInt(input);
+//                if (val <= LimitationValues.MAX_TIMER_DURATION_TARGET && val > 0) {
+//                    return true;
+//                }
+//                return false;
+//            } catch (NumberFormatException e) {
+//                return false;
+//            }
+//        };
     }
 
     private Predicate<String> validateTimerNameInput() {

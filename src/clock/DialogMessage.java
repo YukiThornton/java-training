@@ -3,7 +3,7 @@ package clock;
 enum DialogMessage {
     REPORT("Good job!"),
     INVALID_TIMER_NAME("You can't!", "Too long!"),
-    INVALID_TIMER_DURATION("You can't!", "Set time between 1 and 999.");
+    INVALID_TIMER_DURATION("You can't!", "You can set up to 60 min.");
 
     private ContentPolicy contentPolicy;
     private String title;

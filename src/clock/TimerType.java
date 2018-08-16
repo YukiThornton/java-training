@@ -32,21 +32,21 @@ enum TimerType {
         return role.verbPhrase;
     }
 
-    int initialTimerMinute() {
-        return role.initialTimerMinute;
+    int initialTimerSeconds() {
+        return role.initialTimerSeconds;
     }
 
     private enum Role {
-        WORK("Work", "work", 25), BREAK("Break", "take a break", 5);
+        WORK("Work", "work", 1500), BREAK("Break", "take a break", 300);
 
         private String initialTimerName;
         private String verbPhrase;
-        private int initialTimerMinute;
+        private int initialTimerSeconds;
 
-        private Role(String initialTimerName, String verbPhrase, int initialTimerMinute) {
+        private Role(String initialTimerName, String verbPhrase, int initialTimerSeconds) {
             this.initialTimerName = initialTimerName;
             this.verbPhrase = verbPhrase;
-            this.initialTimerMinute = initialTimerMinute;
+            this.initialTimerSeconds = initialTimerSeconds;
         }
     }
 

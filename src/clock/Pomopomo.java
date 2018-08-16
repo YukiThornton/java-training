@@ -30,8 +30,8 @@ public class Pomopomo extends Application {
     private static final String INFO_REPORT_TITLE = "Good job!";
     private static final String ALERT_SWITCH_TIMERS_TITLE = "Time's up!";
     private static final String ALERT_SWITCH_TIMERS_CONTENT = "Time to ";
-    private static final String ALERT_MAX_MINUTE_INPUT_ERROR_TITLE = "You can't!";
-    private static final String ALERT_MAX_MINUTE_INPUT_ERROR_CONTENT = "Set time between 1 and 999.";
+    private static final String ALERT_MAX_TIMER_TARGET_INPUT_ERROR_TITLE = "You can't!";
+    private static final String ALERT_MAX_TIMER_TARGET_INPUT_ERROR_CONTENT = "Set time between 1 and 999.";
     private static final String ALERT_TIMER_NAME_INPUT_ERROR_TITLE = "You can't!";
     private static final String ALERT_TIMER_NAME_INPUT_ERROR_CONTENT = "Too long!";
     private static final String ALERT_TOO_MANY_TIMERS_TITLE = "You can't!";
@@ -365,7 +365,7 @@ public class Pomopomo extends Application {
     }
 
     private void showMaxMinuteInputErrorAlert() {
-        showAlertAndWait(ALERT_MAX_MINUTE_INPUT_ERROR_TITLE, ALERT_MAX_MINUTE_INPUT_ERROR_CONTENT, AlertType.INFORMATION, false);
+        showAlertAndWait(ALERT_MAX_TIMER_TARGET_INPUT_ERROR_TITLE, ALERT_MAX_TIMER_TARGET_INPUT_ERROR_CONTENT, AlertType.INFORMATION, false);
     }
 
     private void showTimerNameInputErrorAlert() {

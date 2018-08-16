@@ -22,7 +22,11 @@ public class TimerReport {
 
     @Override
     public String toString() {
-        return timerName + ": " + duration.toMinutes() + "min";
+        long s = duration.getSeconds();
+        StringBuilder sb = new StringBuilder(timerName);
+        sb.append(" : ");
+        sb.append(String.format("%dh %dmin %dsec", s / 3600, (s % 3600) / 60, (s % 60)));
+        return sb.toString();
     }
     
 }
