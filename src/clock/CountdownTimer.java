@@ -1,457 +1,222 @@
 package clock;
 
-import static clock.NodeTools.*;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
 
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+public class CountdownTimer implements Timer {
 
-public class CountdownTimer {
-    private static final String BTN_TXT_DELETE = "\uf00d";
-    private static final int MAX_VALID_MINUTE = 999;
-    private static final int MAX_TIMER_NAME_SIZE = 15;
-    private static final double CENTERBOX_SIZE_SMALL = 230;
-    private static final double CENTERBOX_SIZE_BIG = 300;
-
-    private Duration passedTimeInRound;
-    private Duration passedTimeInTotal;
-    private LocalDateTime startTime;
-    private int passedSeconds;
-    private int maxSeconds;
+    private final TimerType timerType;
     private String timerName;
-    private boolean initialized = false;
-    private boolean isActive = false;
-    private boolean exceeded = false;
-    private TimerType timerType;
-    private Consumer<CountdownTimer> onTimerDeleteBtnSelectedAction;
-    private Consumer<CountdownTimer> onInvalidInputForMaxMinuteAction;
-    private Consumer<CountdownTimer> onInvalidInputForTimerNameAction;
+    private int targetTimeInSeconds;
+    private final List<Session> finishedSessions = new ArrayList<>();
+    private Session currentSession = null;
 
-    private Label timerNameLabel;
-    private TextField timerNameInput;
-    private TimerChart chart;
-    private Circle donutHole;
-    private Label remainingMinuteLabel;
-    private TextField maxMinuteInput;
-    private Node deleteBtn;
-    private Region centerBox;
-    private Node rootNode;
-
-    public enum UpdateCheckResult {
-        UPDATED, NO_CHANGE, HIT_MAXIMUM, OVER_MAXIMUM;
+    static CountdownTimer create(TimerType type) {
+        return new CountdownTimer(type);
     }
 
-    public enum TimerPurpose {
-        WORK("work", "work", 25), REST("rest", "rest", 5);
-
-        private String initialTimerName;
-        private String verb;
-        private int initialTimerMinute;
-
-        private TimerPurpose(String initialTimerName, String verb, int initialTimerMinute) {
-            this.initialTimerName = initialTimerName;
-            this.verb = verb;
-            this.initialTimerMinute = initialTimerMinute;
-        }
-
-        public String initialTimerName() {
-            return initialTimerName;
-        }
-
-        public String verb() {
-            return verb;
-        }
-
-        public int initialTimerMinute() {
-            return initialTimerMinute;
-        }
+    private CountdownTimer(TimerType type) {
+        this.timerType = type;
+        this.timerName = type.initialTimerName();
+        this.targetTimeInSeconds = type.initialTimerSeconds();
     }
 
-    public enum TimerType {
-        
-        WORK_BLUE(ColorSet.BLUE, TimerPurpose.WORK),
-        REST_YELLOW(ColorSet.YELLOW, TimerPurpose.REST);
-
-        private ColorSet colorSet;
-        private TimerPurpose purpose;
-
-        private TimerType(ColorSet colorSet, TimerPurpose purpose) {
-            this.colorSet = colorSet;
-            this.purpose = purpose;
-        }
-
-        public ColorSet getColorSet() {
-            return colorSet;
-        }
-
-        public TimerPurpose getPurpose() {
-            return purpose;
-        }
-
-        public String initialTimerName() {
-            return purpose.initialTimerName();
-        }
-
-        public int initialTimerMinute() {
-            return purpose.initialTimerMinute();
-        }
-    }
-
-    public CountdownTimer(TimerType timerType, Color bgColor) {
-        this.timerName = timerType.initialTimerName();
-        this.maxSeconds = timerType.initialTimerMinute() * 60;
-        this.timerType = timerType;
-        passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
-        passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
-        startTime = LocalDateTime.now();
-
-        timerNameLabel = createTimerNameLabel(timerName);
-        timerNameInput = createTimerNameInput(timerName);
-        Node timerNameNode = new StackPane(timerNameLabel, timerNameInput);
-        deleteBtn = createDeleteBtn();
-        Node hiddenDeleteBtn = createDeleteBtn();
-        hiddenDeleteBtn.setVisible(false);
-        BorderPane topBox = new BorderPane();
-        topBox.setLeft(hiddenDeleteBtn);
-        topBox.setCenter(timerNameNode);
-        topBox.setRight(deleteBtn);
-        
-
-        chart = new TimerChart(timerType.initialTimerMinute(), 0, timerType.getColorSet());
-        donutHole = createHole(chart, bgColor);
-        remainingMinuteLabel = createRemainingMinuteLabel();
-        maxMinuteInput = createMaxMinuteInput(timerType.initialTimerMinute());
-        Node donutCenter = new StackPane(remainingMinuteLabel, maxMinuteInput);
-        centerBox = createDonut(chart, donutHole, donutCenter);
-        Region centerArea = createHBox(Pos.CENTER, centerBox);
-        setFixedSize(centerArea, CENTERBOX_SIZE_BIG);
-
-        rootNode = createRootNode(topBox, centerArea);
-        initialized = true;
-    }
-
-    public void onTimerDeleteBtnSelected(Consumer<CountdownTimer> consumer) {
-        this.onTimerDeleteBtnSelectedAction = consumer;
-    }
-
-    public void onInvalidInputForMaxMinute(Consumer<CountdownTimer> consumer) {
-        this.onInvalidInputForMaxMinuteAction = consumer;
-    }
-
-    public void onInvalidInputForTimerName(Consumer<CountdownTimer> consumer) {
-        this.onInvalidInputForTimerNameAction = consumer;
-    }
-
-    private Label createTimerNameLabel(String initialText) {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        Label label = createTextBtn(initialText, FONT_SMALL);
-        label.setOnMouseClicked((event) -> {
-            if (!isActive()) {
-                if (timerNameInput == null) {
-                    throw new IllegalStateException("The input is not initialized yet.");
-                }
-                showHiddenTextField(timerNameInput, CountdownTimer.this.timerName);
-            }
-        });
-        setColorOnLabel(label);
-        return label;
-    }
-
-    private TextField createTimerNameInput(String initialText) {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        TextField textField = createTextField(initialText, FONT_TINY, 150, 10, false);
-        setInvisibleOnFocusLost(textField);
-        acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
-            if (validateTimerName(text)) {
-                changeTimerName(text);
-                textField.setVisible(false);
-            } else {
-                if (onInvalidInputForTimerNameAction != null) {
-                    onInvalidInputForTimerNameAction.accept(this);
-                    textField.setVisible(true);
-                }
-            }
-        });
-        return textField;
-    }
-
-    private Region createDonut(Node donutRing, Node donutHole, Node donutCenter) {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        StackPane chartPane = new StackPane(donutRing, donutHole, donutCenter);
-        setFixedSize(chartPane, CENTERBOX_SIZE_SMALL);
-        return chartPane;
-    }
-
-    private Circle createHole(TimerChart donutRing, Color bgColor) {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        Circle circle = new Circle(100, bgColor);
-        circle.setStrokeWidth(0);
-        circle.radiusProperty().bind(donutRing.heightProperty().multiply(0.35));
-        return circle;
-    }
-
-    private Node createDeleteBtn() {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        Label deleteBtn = createIconBtn(BTN_TXT_DELETE, IconFont.SMALL);
-        deleteBtn.setOnMouseClicked((event) -> {
-            if (onTimerDeleteBtnSelectedAction == null) {
-                throw new IllegalStateException("No action is set.");
-            }
-            onTimerDeleteBtnSelectedAction.accept(CountdownTimer.this);
-        });
-        setColorOnLabel(deleteBtn);
-        deleteBtn.setVisible(false);
-        return deleteBtn;
-    }
-
-    private Label createRemainingMinuteLabel() {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        Label label = createTextBtn(toRemainingText(), FONT_MEDIUM);
-        label.setOnMouseClicked((event) -> {
-            if (!isActive()) {
-                if (maxMinuteInput == null) {
-                    throw new IllegalStateException("The input is not initialized yet.");
-                }
-                showHiddenTextField(maxMinuteInput, toTextInMinute(maxSeconds));
-            }
-        });
-        setColorOnLabel(label);
-        return label;
-    }
-
-    private TextField createMaxMinuteInput(int maxMin) {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        TextField textField = createTextField(Integer.toString(maxMin), FONT_TINY, 80, 10, false);
-        setInvisibleOnFocusLost(textField);
-        acceptOnEnterAndSetInvisibleOnEscape(textField, text -> {
-            if (validateMaxMinute(text)) {
-                changeMaxMinute(Integer.parseInt(text));
-                textField.setVisible(false);
-            } else {
-                if (onInvalidInputForMaxMinuteAction != null) {
-                    onInvalidInputForMaxMinuteAction.accept(this);
-                    textField.setVisible(true);
-                }
-            }
-        });
-        return textField;
-    }
-
-    private Node createRootNode(Node... contents) {
-        if (initialized) {
-            throw new IllegalStateException("Already initialized.");
-        }
-
-        VBox box = new VBox(contents);
-        box.setAlignment(Pos.TOP_CENTER);
-        return box;
-    }
-
-    private boolean validateMaxMinute(String input) {
-        try {
-            int val = Integer.parseInt(input);
-            if (val <= MAX_VALID_MINUTE && val > 0) {
-                return true;
-            }
-            return false;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private boolean validateTimerName(String input) {
-        return input.length() <= MAX_TIMER_NAME_SIZE;
-    }
-
-    private void changeTimerName(String newName) {
-        this.timerName = newName;
-        timerNameLabel.setText(timerName);
-    }
-
-    private void changeMaxMinute(int newValue) {
-        maxSeconds = newValue * 60;
-        int passed = passedSeconds();
-        int remaining = remainingSeconds(passed);
-        updateChartAndRemainingLabel(remaining, passed);
-    }
-
-    private void setColorOnLabel(Label label) {
-        ColorSet colorSet = timerType.colorSet;
-        label.setTextFill(colorSet.lightColor());
-        label.setOnMouseEntered((event) -> {
-            if (!isActive()) {
-                label.setTextFill(colorSet.darkColor());
-            }
-        });
-        label.setOnMouseExited((event) -> {
-            if (!isActive()) {
-                label.setTextFill(colorSet.lightColor());
-            }
-        });
-    }
-
-    public Node getNode() {
-        return rootNode;
-    }
-
-    public void setVisibleOnDeleteBtn(boolean visibleAndManaged) {
-        if (isActive()) {
-            return;
-        }
-        deleteBtn.setVisible(visibleAndManaged);
-    }
-
-    public TimerType getTimerType() {
+    @Override
+    public TimerType timerType() {
         return timerType;
     }
 
-    public TimerPurpose getTimerPurpose() {
-        return timerType.getPurpose();
+    @Override
+    public String timerName() {
+        return timerName;
     }
 
-    public ColorSet getColorSet() {
-        return timerType.getColorSet();
+    @Override
+    public void changeTimerName(String name) {
+        if (isRunning()) {
+            throw new IllegalStateException("Not allowed to modify values of running timer");
+        }
+        if (name == null || name.length() > LimitationValues.MAX_TIMER_NAME_LENGTH) {
+            throw new IllegalArgumentException("Timer name invalid: " + name);
+        }
+        this.timerName = name;
     }
 
-    public void select() {
-        setFixedSize(centerBox, CENTERBOX_SIZE_BIG);
+    @Override
+    public boolean isRunning() {
+        return hasCurrentSession() && !currentSession.paused();
     }
 
-    public void deselect() {
-        setFixedSize(centerBox, CENTERBOX_SIZE_SMALL);
+    private boolean hasCurrentSession() {
+        return currentSession != null;
     }
 
+    @Override
+    public boolean isPaused() {
+        return hasCurrentSession() && currentSession.paused();
+    }
+
+    private int timePassedInSeconds() {
+        if (hasCurrentSession()) {
+            return (int)currentSession.passedTimeInSession().getSeconds();
+        }
+        return 0;
+    }
+
+    @Override
+    public Timer.Values timeValues() {
+        return new Values(targetTimeInSeconds, timePassedInSeconds());
+    }
+
+    @Override
+    public void changeTargetTime(int seconds) {
+        if (isRunning()) {
+            throw new IllegalStateException("Not allowed to modify values of running timer");
+        }
+        if (seconds < LimitationValues.MIN_TIMER_DURATION_TARGET
+                || seconds > LimitationValues.MAX_TIMER_DURATION_TARGET
+        ) {
+            throw new IllegalArgumentException("Timer duration target invalid: " + seconds);
+        }
+        targetTimeInSeconds = seconds;
+    }
+
+    @Override
     public void start() {
-        startTime = LocalDateTime.now();
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().saturatedDarkColor());
-        chart.brighterColor();
-        timerNameLabel.setTextFill(timerType.colorSet.saturatedDarkColor());
-        isActive = true;
+        if (isRunning()) {
+            throw new IllegalStateException("Aleady running.");
+        }
+        if (currentSession == null) {
+            currentSession = new Session();
+        } else {
+            currentSession.resume();
+        }
     }
 
+    @Override
     public void pause() {
-        remainingMinuteLabel.setTextFill(timerType.getColorSet().lightColor());
-        passedTimeInRound = passedTimeInRound.plus(Duration.between(startTime, LocalDateTime.now()));
-        chart.dimColor();
-        timerNameLabel.setTextFill(timerType.colorSet.lightColor());
-        isActive = false;
-    }
-
-    public void reset() {
-        if (isActive) {
-            throw new IllegalStateException("Pause the timer first.");
+        if (!hasCurrentSession() || isPaused()) {
+            throw new IllegalStateException("Timer is not running.");
         }
-        passedTimeInTotal = passedTimeInTotal.plus(passedTimeInRound);
-        clearRoundVariable();
-        int passed = passedSeconds();
-        int remaining = remainingSeconds(passed);
-        updateChartAndRemainingLabel(remaining, passed);
+        currentSession.pause();
     }
 
-    public void clearHistory() {
-        passedTimeInTotal = Duration.of(0, ChronoUnit.SECONDS);
-        clearRoundVariable();
+    @Override
+    public void clearCurrentSession() {
+        if (!hasCurrentSession()) {
+            throw new IllegalStateException("Timer does not have currentSession");
+        }
+        if (!isPaused()) {
+            currentSession.pause();
+        }
+        finishedSessions.add(currentSession);
+        currentSession = null;
     }
 
-    public TimerReport getReport() {
-        if (isActive()) {
-            return new TimerReport(passedTimeInTotal.plus(passedTimeInRound).plus(Duration.between(startTime, LocalDateTime.now())), timerName);
+    @Override
+    public void clearAll() {
+        if (hasCurrentSession()) {
+            clearCurrentSession();
+        }
+        finishedSessions.clear();
+    }
+
+    @Override
+    public TimerReport report() {
+        Duration totalPassedTimeOfSessions;
+        if (hasCurrentSession()) {
+            totalPassedTimeOfSessions = currentSession.passedTimeInSession();
         } else {
-            return new TimerReport(passedTimeInTotal.plus(passedTimeInRound), timerName);
+            totalPassedTimeOfSessions = Duration.ZERO;
+        }
+        for (Session session: finishedSessions) {
+            totalPassedTimeOfSessions = totalPassedTimeOfSessions.plus(session.passedTimeInSession());
+        }
+        return new TimerReport(totalPassedTimeOfSessions, timerName);
+    }
+
+    private static class Values implements Timer.Values {
+
+        private final int targetTimeInSeconds;
+        private final int timePassedInSeconds;
+        private final int timeLeftInSeconds;
+
+        Values(int targetTimeInSeconds, int timePassedInSeconds) {
+            this.targetTimeInSeconds = targetTimeInSeconds;
+            this.timePassedInSeconds = timePassedInSeconds;
+            this.timeLeftInSeconds = targetTimeInSeconds - timePassedInSeconds;
+        }
+
+        @Override
+        public int targetTimeInSeconds() {
+            return targetTimeInSeconds;
+        }
+
+        @Override
+        public int timePassedInSeconds() {
+            return timePassedInSeconds;
+        }
+
+        @Override
+        public int timeLeftInSeconds() {
+            return timeLeftInSeconds;
         }
     }
-    
-    public UpdateCheckResult checkAndUpdateIfNecessary() {
-        int passed = passedSeconds();
-        if (passed <= passedSeconds) {
-            return UpdateCheckResult.NO_CHANGE;
+
+    private class Session {
+        private final List<Block> finishedBlocks = new ArrayList<>();
+        private Duration totalPassedTimeOfFinishedBlocks = Duration.ZERO;
+        private Block currentBlock = null;
+
+        Session() {
+            currentBlock = new Block();
         }
-        passedSeconds = passed;
-        if (passedSeconds > maxSeconds && !exceeded) {
-            exceeded = true;
-            return UpdateCheckResult.HIT_MAXIMUM;
+
+        Duration passedTimeInSession() {
+            if (currentBlock == null) {
+                return totalPassedTimeOfFinishedBlocks;
+            } else {
+                return totalPassedTimeOfFinishedBlocks.plus(currentBlock.passedTimeInBlock());
+            }
         }
-        int remaining = remainingSeconds(passedSeconds);
-        updateChartAndRemainingLabel(remaining, passedSeconds);
-        if (exceeded) {
-            return UpdateCheckResult.OVER_MAXIMUM;
+
+        void pause() {
+            currentBlock.finish();
+            finishedBlocks.add(currentBlock);
+            totalPassedTimeOfFinishedBlocks = totalPassedTimeOfFinishedBlocks.plus(currentBlock.passedTimeInBlock());
+            currentBlock = null;
         }
-        return UpdateCheckResult.UPDATED;
-    }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    private void updateChartAndRemainingLabel(int remaining, int passed) {
-        if (remaining >= 0) {
-            chart.setTimeValues(remaining, passed);
+        boolean paused() {
+            return currentBlock == null;
         }
-        remainingMinuteLabel.setText(toTextInMinute(remaining));
+
+        void resume() {
+            currentBlock = new Block();
+        }
     }
 
-    private void clearRoundVariable() {
-        exceeded = false;
-        passedSeconds = 0;
-        passedTimeInRound = Duration.of(0, ChronoUnit.SECONDS);
-        startTime = null;
-    }
+    private class Block {
+        private final LocalDateTime startedTime;
+        private LocalDateTime finishedTime;
+        private Duration duration;
 
-    private int remainingSeconds() {
-        return remainingSeconds(passedSeconds());
-    }
+        Block() {
+            this.startedTime = LocalDateTime.now();
+        }
 
-    private int remainingSeconds(int passedSeconds) {
-        return maxSeconds- passedSeconds;
-    }
+        Duration passedTimeInBlock() {
+            if (finishedTime == null) {
+                return Duration.between(startedTime, LocalDateTime.now());
+            }
+            return duration;
+        }
 
-    private String toRemainingText() {
-        return toTextInMinute(remainingSeconds());
-    }
-
-    private String toTextInMinute(int remainingSeconds) {
-        return Integer.toString((int)Math.ceil(remainingSeconds / 60.0));
-    }
-
-    private int passedSeconds() {
-        if(isActive) {
-            Duration durationAfterStart = Duration.between(startTime, LocalDateTime.now());
-            return (int)(durationAfterStart.getSeconds() + passedTimeInRound.getSeconds());
-        } else {
-            return (int)passedTimeInRound.getSeconds();
+        void finish() {
+            this.finishedTime = LocalDateTime.now();
+            duration = Duration.between(startedTime, finishedTime);
         }
     }
 

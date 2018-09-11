@@ -17,28 +17,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class NodeTools {
-    public static final Font FONT_MEDIUM = new Font(50);
-    public static final Font FONT_SMALL = new Font(30);
-    public static final Font FONT_TINY = new Font(20);
-
-    enum IconFont {
-        SMALL(30), MEDIUM(40), LARGE(50);
-
-        private Font font;
-
-        private IconFont(int size) {
-            this.font = Font.loadFont(this.getClass().getResource("font/fontawesome-webfont.ttf").toExternalForm(), size);
-        }
-
-        private Font get() {
-            return font;
-        }
-    }
-
     public static void hideNode(Node node, boolean visibleAndManaged) {
         node.setVisible(visibleAndManaged);
         node.setManaged(visibleAndManaged);
@@ -65,19 +46,15 @@ public class NodeTools {
         setFixedSize(target, size, size);
     }
 
-    public static Label createIconBtn(String text, IconFont iconFont) {
-        return createTextBtn(text, iconFont.get());
-    }
-
-    public static Label createTextBtn(String text, Font font) {
+    public static Label createLabelBtn(String text, AppFont font) {
         Label label = new Label(text);
-        label.setFont(font);
+        label.setFont(font.get());
         return label;
     }
 
-    public static TextField createTextField(String initialText, Font font, double maxWidth, double maxHeight, boolean visible) {
+    public static TextField createTextField(String initialText, AppFont font, double maxWidth, double maxHeight, boolean visible) {
         TextField textField = new TextField(initialText);
-        textField.setFont(font);
+        textField.setFont(font.get());
         textField.setMaxSize(maxWidth, maxHeight);
         textField.setVisible(visible);
         return textField;

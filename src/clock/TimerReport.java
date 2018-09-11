@@ -7,7 +7,7 @@ public class TimerReport {
     private Duration duration;
     private String timerName;
 
-    public TimerReport(Duration duration, String timerName) {
+    TimerReport(Duration duration, String timerName) {
         this.duration = duration;
         this.timerName = timerName;
     }
@@ -22,7 +22,11 @@ public class TimerReport {
 
     @Override
     public String toString() {
-        return timerName + ": " + duration.toMinutes() + "min";
+        long s = duration.getSeconds();
+        StringBuilder sb = new StringBuilder(timerName);
+        sb.append(" : ");
+        sb.append(String.format("%dh %dmin %dsec", s / 3600, (s % 3600) / 60, (s % 60)));
+        return sb.toString();
     }
     
 }
